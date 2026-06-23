@@ -5,11 +5,11 @@ import { APP_NAME } from "@/lib/constants";
 import { useId } from "react";
 
 const sizeMap = {
-  sm: 22,
-  md: 28,
-  lg: 32,
-  xl: 40,
-  "2xl": 52,
+  sm: 24,
+  md: 32,
+  lg: 36,
+  xl: 44,
+  "2xl": 56,
 } as const;
 
 type LogoSize = keyof typeof sizeMap;
@@ -22,22 +22,25 @@ function LogoMark({ size }: { size: number }) {
     <svg
       width={size}
       height={size}
-      viewBox="0 0 24 24"
+      viewBox="0 0 100 100"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden
       className="shrink-0"
     >
       <defs>
-        <linearGradient id={gradId} x1="5" y1="21" x2="19" y2="3" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#6D28D9" />
-          <stop offset="1" stopColor="#A78BFA" />
+        <linearGradient id={gradId} x1="12" y1="88" x2="88" y2="12" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#4338CA" />
+          <stop offset="0.45" stopColor="#7C3AED" />
+          <stop offset="1" stopColor="#C4B5FD" />
         </linearGradient>
       </defs>
+      <path d="M50 6 10 28v44l40 22 40-22V28L50 6Z" fill={`url(#${gradId})`} />
       <path
-        d="M13.2 2.75 8.25 12.1h3.45l-1.65 5.9 7.2-10.85h-3.35L13.2 2.75Z"
-        fill={`url(#${gradId})`}
+        d="M58 30c9.5 0 15 5.2 15 12.8 0 5.5-3.2 9.8-8.5 11.8 6.2 2 10 7.2 10 14.2 0 9-7.5 14.2-18 14.2H36V30h22Zm-2 0H40v16h7.5c5.2 0 8-2.8 8-6.8s-2.8-6.8-8-6.8Zm0 23H40v16h8.5c5.8 0 9.5-2.8 9.5-7.5s-3.7-7.5-9.5-7.5Z"
+        className="fill-background"
       />
+      <path d="M54 30 43 52h7.5L46 70l20-30h-7.5L54 30Z" fill="white" />
     </svg>
   );
 }
