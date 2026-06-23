@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Zap } from "lucide-react";
+import { BotFlowLogo } from "@/components/brand/botflow-logo";
 import { useLocale, useLocalizedPath } from "@/components/providers/locale-provider";
 import { APP_NAME } from "@/lib/constants";
 
@@ -32,11 +32,8 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-6 py-16">
         <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
-            <Link href={lp("/")} className="flex items-center gap-2.5 font-semibold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Zap className="h-4 w-4" />
-              </span>
-              {APP_NAME}
+            <Link href={lp("/")} className="inline-block transition-opacity hover:opacity-90">
+              <BotFlowLogo size="lg" />
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
               {t.footer.tagline}

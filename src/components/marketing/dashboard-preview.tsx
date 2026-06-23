@@ -1,6 +1,7 @@
 "use client";
 
 import { Brain, Inbox, Radio, Settings } from "lucide-react";
+import { BotFlowLogoMark } from "@/components/brand/botflow-logo";
 import { useLocale } from "@/components/providers/locale-provider";
 import { ChannelLogo } from "@/components/channels/channel-logo";
 import { cn } from "@/lib/utils";
@@ -35,9 +36,7 @@ export function DashboardPreview() {
       <div className="flex min-h-[320px] sm:min-h-[380px]">
         <aside className="hidden w-44 shrink-0 border-r border-border/60 bg-sidebar/50 p-3 sm:block">
           <div className="mb-4 flex items-center gap-2 px-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-[10px] font-bold text-primary-foreground">
-              BF
-            </span>
+            <BotFlowLogoMark size="sm" />
             <span className="text-xs font-semibold">BotFlow</span>
           </div>
           <nav className="space-y-0.5">

@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Menu, Moon, Sun, X, Zap } from "lucide-react";
+import { Menu, Moon, Sun, X } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "next-themes";
+import { BotFlowLogo } from "@/components/brand/botflow-logo";
 import { LanguageSwitcher } from "@/components/marketing/language-switcher";
 import { useLocale, useLocalizedPath } from "@/components/providers/locale-provider";
 import { Button } from "@/components/ui/button";
-import { APP_NAME } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 export function MarketingNavbar() {
@@ -32,11 +32,8 @@ export function MarketingNavbar() {
       className="fixed inset-x-0 top-0 z-50 border-b border-border/40 bg-background/70 backdrop-blur-xl"
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        <Link href={lp("/")} className="flex items-center gap-2.5 font-semibold">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Zap className="h-4 w-4" />
-          </span>
-          {APP_NAME}
+        <Link href={lp("/")} className="transition-opacity hover:opacity-90">
+          <BotFlowLogo size="lg" />
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">

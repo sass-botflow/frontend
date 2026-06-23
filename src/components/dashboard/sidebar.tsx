@@ -10,10 +10,10 @@ import {
   Radio,
   Settings,
   Users,
-  Zap,
 } from "lucide-react";
+import { BotFlowLogo } from "@/components/brand/botflow-logo";
 import { cn } from "@/lib/utils";
-import { APP_NAME, NAV_ITEMS } from "@/lib/constants";
+import { NAV_ITEMS } from "@/lib/constants";
 
 const iconMap = {
   Radio,
@@ -32,12 +32,9 @@ export function DashboardSidebar() {
     <aside className="hidden w-56 shrink-0 flex-col border-r border-border/60 bg-sidebar md:flex">
       <Link
         href="/dashboard/channels"
-        className="flex h-14 items-center gap-2.5 border-b border-border/60 px-5 transition-colors hover:bg-sidebar-accent/50"
+        className="flex h-16 items-center border-b border-border/60 px-5 transition-colors hover:bg-sidebar-accent/50"
       >
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-          <Zap className="h-4 w-4" />
-        </span>
-        <span className="font-semibold tracking-tight">{APP_NAME}</span>
+        <BotFlowLogo size="md" />
       </Link>
 
       <nav className="flex-1 space-y-0.5 p-3">

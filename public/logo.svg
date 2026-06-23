@@ -1,5 +1,42 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <rect width="32" height="32" rx="8" fill="#6366f1"/>
-  <path d="M16 6L8 12v10l8 6 8-6V12L16 6z" stroke="white" stroke-width="2" stroke-linejoin="round"/>
-  <path d="M16 14v8M12 16h8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="g" x1="96" y1="416" x2="416" y2="96" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#312E81"/>
+      <stop offset="0.35" stop-color="#6D28D9"/>
+      <stop offset="0.7" stop-color="#8B5CF6"/>
+      <stop offset="1" stop-color="#E9D5FF"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="140" y1="130" x2="340" y2="360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0.4"/>
+      <stop offset="1" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="ambient" cx="256" cy="290" r="200" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6366F1" stop-opacity="0.28"/>
+      <stop offset="1" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="50" y="50" width="412" height="412" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="#08080E"/>
+  <rect width="512" height="512" rx="116" fill="url(#ambient)"/>
+  <g filter="url(#shadow)">
+    <path
+      d="M256 104 144 168v176l112 64 112-64V168L256 104Z"
+      fill="url(#g)"
+    />
+    <path
+      d="M256 104 144 168v176l112 64 112-64V168L256 104Z"
+      fill="url(#shine)"
+    />
+    <path
+      d="M286 168c34 0 54 18 54 46 0 20-9 34-26 42 20 8 32 24 32 48 0 32-26 52-62 52h-78V168h80Zm-2 84h36c16 0 24-8 24-20s-8-20-24-20h-36v40Zm0-108h34c14 0 22-7 22-18s-8-18-22-18h-34v36Z"
+      fill="#08080E"
+      fill-opacity="0.9"
+    />
+    <path
+      d="m248 188-36 104h-20l24-80h14l18 58 18-58h14l-24 80h-20l-18-58-18 58h-14l24-80h14Z"
+      fill="#F8FAFC"
+    />
+  </g>
 </svg>
