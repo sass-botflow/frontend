@@ -1,40 +1,45 @@
+"use client";
+
 import Link from "next/link";
 import { Zap } from "lucide-react";
+import { useLocale, useLocalizedPath } from "@/components/providers/locale-provider";
 import { APP_NAME } from "@/lib/constants";
 
-const footerLinks = {
-  Product: [
-    { href: "#how-it-works", label: "How it works" },
-    { href: "#features", label: "Features" },
-    { href: "#channels", label: "Channels" },
-    { href: "/pricing", label: "Pricing" },
-  ],
-  Company: [
-    { href: "/login", label: "Sign in" },
-    { href: "/register", label: "Start free" },
-    { href: "#faq", label: "FAQ" },
-  ],
-  Support: [
-    { href: "/dashboard/settings/support", label: "Help Center" },
-    { href: "mailto:support@botflow.ink", label: "Contact" },
-  ],
-};
-
 export function Footer() {
+  const { t } = useLocale();
+  const lp = useLocalizedPath();
+
+  const footerLinks = {
+    [t.footer.product]: [
+      { href: "#how-it-works", label: t.nav.howItWorks },
+      { href: "#features", label: t.nav.features },
+      { href: "#channels", label: t.nav.channels },
+      { href: lp("/pricing"), label: t.nav.pricing },
+    ],
+    [t.footer.company]: [
+      { href: "/login", label: t.nav.signIn },
+      { href: "/register", label: t.nav.startFree },
+      { href: "#faq", label: t.nav.faq },
+    ],
+    [t.footer.support]: [
+      { href: "/dashboard/settings/support", label: t.footer.helpCenter },
+      { href: "mailto:support@botflow.ink", label: t.footer.contact },
+    ],
+  };
+
   return (
     <footer className="border-t border-border/60 bg-muted/10">
       <div className="mx-auto max-w-7xl px-6 py-16">
         <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
-            <Link href="/" className="flex items-center gap-2.5 font-semibold">
+            <Link href={lp("/")} className="flex items-center gap-2.5 font-semibold">
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                 <Zap className="h-4 w-4" />
               </span>
               {APP_NAME}
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
-              AI customer automation for WhatsApp, Instagram, and TikTok.
-              Built for businesses that want to reply faster without hiring more staff.
+              {t.footer.tagline}
             </p>
           </div>
 
@@ -59,11 +64,11 @@ export function Footer() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border/40 pt-8 sm:flex-row">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} {APP_NAME}. All rights reserved.
+            © {new Date().getFullYear()} {APP_NAME}. {t.footer.rights}
           </p>
           <div className="flex gap-6 text-sm text-muted-foreground">
-            <Link href="#" className="hover:text-foreground">Privacy</Link>
-            <Link href="#" className="hover:text-foreground">Terms</Link>
+            <Link href="#" className="hover:text-foreground">{t.footer.privacy}</Link>
+            <Link href="#" className="hover:text-foreground">{t.footer.terms}</Link>
           </div>
         </div>
       </div>

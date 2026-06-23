@@ -1,20 +1,21 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useLocale } from "@/components/providers/locale-provider";
 import { CHANNELS } from "@/lib/channels";
 import { ChannelLogo } from "@/components/channels/channel-logo";
 
 export function Channels() {
+  const { t } = useLocale();
+
   return (
     <section id="channels" className="py-24 lg:py-32">
       <div className="mx-auto max-w-7xl px-6">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            Works where your customers are
+            {t.channels.title}
           </h2>
-          <p className="mt-4 text-lg text-muted-foreground">
-            WhatsApp, Instagram, TikTok — one inbox, one AI, zero missed messages.
-          </p>
+          <p className="mt-4 text-lg text-muted-foreground">{t.channels.subtitle}</p>
         </div>
 
         <div className="mt-16 grid gap-6 sm:grid-cols-3">
@@ -41,7 +42,7 @@ export function Channels() {
                 <p className="mt-2 text-sm text-muted-foreground">{channel.description}</p>
                 <div className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  Official API
+                  {t.channels.officialApi}
                 </div>
               </div>
             </motion.div>

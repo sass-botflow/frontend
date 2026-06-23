@@ -3,18 +3,17 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle2, Play, Sparkles } from "lucide-react";
+import { useLocale } from "@/components/providers/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChannelLogo } from "@/components/channels/channel-logo";
 import { DashboardPreview } from "@/components/marketing/dashboard-preview";
 
-const trustPoints = [
-  "No credit card required",
-  "Cancel anytime",
-  "Official WhatsApp API",
-];
-
 export function Hero() {
+  const { t } = useLocale();
+
+  const trustPoints = [t.hero.trust1, t.hero.trust2, t.hero.trust3];
+
   return (
     <section className="relative overflow-hidden pt-28 pb-16 lg:pb-24">
       <div className="absolute inset-0 grid-pattern opacity-40" />
@@ -33,31 +32,29 @@ export function Hero() {
             className="mb-6 gap-2 border border-border/60 bg-card/60 px-3 py-1 backdrop-blur"
           >
             <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            Trusted by 500+ businesses worldwide
+            {t.hero.badge}
           </Badge>
 
           <h1 className="text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl xl:text-7xl">
-            Your AI customer assistant for{" "}
-            <span className="gradient-text">WhatsApp, Instagram & TikTok</span>
+            {t.hero.title}{" "}
+            <span className="gradient-text">{t.hero.titleHighlight}</span>
           </h1>
 
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
-            Connect your channels, teach the AI about your business, and let it
-            reply to customers 24/7. Set up in 5 minutes — no coding, no flow
-            builders.
+            {t.hero.subtitle}
           </p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button size="lg" className="h-12 px-8 text-base" asChild>
               <Link href="/register">
-                Start free — 14-day trial
+                {t.hero.ctaPrimary}
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
             <Button size="lg" variant="outline" className="h-12 gap-2 px-8 text-base" asChild>
               <Link href="#how-it-works">
                 <Play className="h-4 w-4" />
-                See how it works
+                {t.hero.ctaSecondary}
               </Link>
             </Button>
           </div>
@@ -85,8 +82,8 @@ export function Hero() {
             <div className="flex items-center gap-2">
               <ChannelLogo channel="whatsapp" size="sm" />
               <div>
-                <p className="text-xs font-medium">New message</p>
-                <p className="text-[10px] text-muted-foreground">AI replied in 2s</p>
+                <p className="text-xs font-medium">{t.hero.floatNewMessage}</p>
+                <p className="text-[10px] text-muted-foreground">{t.hero.floatAiReplied}</p>
               </div>
             </div>
           </div>
@@ -95,8 +92,8 @@ export function Hero() {
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
               <div>
-                <p className="text-xs font-medium">AI Brain active</p>
-                <p className="text-[10px] text-emerald-500">98% accuracy</p>
+                <p className="text-xs font-medium">{t.hero.floatBrainActive}</p>
+                <p className="text-[10px] text-emerald-500">{t.hero.floatAccuracy}</p>
               </div>
             </div>
           </div>

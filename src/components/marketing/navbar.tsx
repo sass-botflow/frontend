@@ -5,21 +5,25 @@ import { motion } from "framer-motion";
 import { Menu, Moon, Sun, X, Zap } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "next-themes";
+import { LanguageSwitcher } from "@/components/marketing/language-switcher";
+import { useLocale, useLocalizedPath } from "@/components/providers/locale-provider";
 import { Button } from "@/components/ui/button";
 import { APP_NAME } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
-const links = [
-  { href: "#how-it-works", label: "How it works" },
-  { href: "#features", label: "Features" },
-  { href: "#channels", label: "Channels" },
-  { href: "#faq", label: "FAQ" },
-  { href: "/pricing", label: "Pricing" },
-];
-
 export function MarketingNavbar() {
   const { theme, setTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { t } = useLocale();
+  const lp = useLocalizedPath();
+
+  const links = [
+    { href: "#how-it-works", label: t.nav.howItWorks },
+    { href: "#features", label: t.nav.features },
+    { href: "#channels", label: t.nav.channels },
+    { href: "#faq", label: t.nav.faq },
+    { href: lp("/pricing"), label: t.nav.pricing },
+  ];
 
   return (
     <motion.header
@@ -28,7 +32,7 @@ export function MarketingNavbar() {
       className="fixed inset-x-0 top-0 z-50 border-b border-border/40 bg-background/70 backdrop-blur-xl"
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        <Link href="/" className="flex items-center gap-2.5 font-semibold">
+        <Link href={lp("/")} className="flex items-center gap-2.5 font-semibold">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Zap className="h-4 w-4" />
           </span>
@@ -47,7 +51,8 @@ export function MarketingNavbar() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
+          <LanguageSwitcher />
           <Button
             variant="ghost"
             size="icon"
@@ -58,10 +63,10 @@ export function MarketingNavbar() {
             <Moon className="absolute h-4 w-4 rotate-90 scale-0 dark:rotate-0 dark:scale-100" />
           </Button>
           <Button variant="ghost" size="sm" className="hidden sm:inline-flex" asChild>
-            <Link href="/login">Sign in</Link>
+            <Link href="/login">{t.nav.signIn}</Link>
           </Button>
           <Button size="sm" className="hidden sm:inline-flex" asChild>
-            <Link href="/register">Start free</Link>
+            <Link href="/register">{t.nav.startFree}</Link>
           </Button>
           <Button
             variant="ghost"
@@ -77,7 +82,7 @@ export function MarketingNavbar() {
       <div
         className={cn(
           "overflow-hidden border-t border-border/40 bg-background/95 backdrop-blur-xl md:hidden",
-          mobileOpen ? "max-h-96" : "max-h-0",
+          mobileOpen ? "max-h-[28rem]" : "max-h-0",
         )}
       >
         <nav className="flex flex-col gap-1 px-6 py-4">
@@ -91,12 +96,16 @@ export function MarketingNavbar() {
               {link.label}
             </Link>
           ))}
-          <div className="mt-2 flex flex-col gap-2 border-t border-border/40 pt-4">
+          <div className="mt-2 flex items-center justify-between border-t border-border/40 pt-4">
+            <span className="px-3 text-xs text-muted-foreground">Language</span>
+            <LanguageSwitcher />
+          </div>
+          <div className="mt-2 flex flex-col gap-2">
             <Button variant="outline" asChild>
-              <Link href="/login">Sign in</Link>
+              <Link href="/login">{t.nav.signIn}</Link>
             </Button>
             <Button asChild>
-              <Link href="/register">Start free</Link>
+              <Link href="/register">{t.nav.startFree}</Link>
             </Button>
           </div>
         </nav>

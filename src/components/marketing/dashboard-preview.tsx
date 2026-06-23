@@ -1,41 +1,24 @@
 "use client";
 
 import { Brain, Inbox, Radio, Settings } from "lucide-react";
+import { useLocale } from "@/components/providers/locale-provider";
 import { ChannelLogo } from "@/components/channels/channel-logo";
 import { cn } from "@/lib/utils";
 
-const navItems = [
-  { icon: Radio, label: "Channels", active: false },
-  { icon: Brain, label: "AI Brain", active: false },
-  { icon: Inbox, label: "Inbox", active: true },
-  { icon: Settings, label: "Settings", active: false },
-];
+const navIcons = [Radio, Brain, Inbox, Settings];
+const navKeys = ["Channels", "AI Brain", "Inbox", "Settings"] as const;
 
-const messages = [
-  {
-    channel: "whatsapp" as const,
-    name: "Fatima B.",
-    preview: "Salam, bghit n3ref les prix dyal...",
-    time: "2m",
-    unread: true,
-  },
-  {
-    channel: "instagram" as const,
-    name: "Youssef M.",
-    preview: "Do you ship to Casablanca?",
-    time: "8m",
-    unread: true,
-  },
-  {
-    channel: "tiktok" as const,
-    name: "Lina K.",
-    preview: "Thanks! The AI answered perfectly.",
-    time: "1h",
-    unread: false,
-  },
-];
+const messageChannels = ["whatsapp", "instagram", "tiktok"] as const;
 
 export function DashboardPreview() {
+  const { t } = useLocale();
+
+  const navItems = navKeys.map((label, i) => ({
+    icon: navIcons[i],
+    label,
+    active: i === 2,
+  }));
+
   return (
     <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-card shadow-2xl shadow-black/20 ring-1 ring-white/5">
       <div className="flex items-center gap-2 border-b border-border/60 bg-muted/30 px-4 py-3">
@@ -77,20 +60,22 @@ export function DashboardPreview() {
 
         <div className="flex min-w-0 flex-1 flex-col">
           <div className="border-b border-border/60 px-4 py-3">
-            <p className="text-sm font-semibold">Inbox</p>
-            <p className="text-[11px] text-muted-foreground">3 conversations · 2 need attention</p>
+            <p className="text-sm font-semibold">{t.preview.inbox}</p>
+            <p className="text-[11px] text-muted-foreground">
+              3 {t.preview.conversations} · 2 {t.preview.needAttention}
+            </p>
           </div>
 
           <div className="flex-1 divide-y divide-border/40">
-            {messages.map((msg) => (
+            {t.preview.sampleMessages.map((msg, i) => (
               <div
                 key={msg.name}
                 className={cn(
                   "flex items-center gap-3 px-4 py-3",
-                  msg.unread && "bg-primary/[0.03]",
+                  i < 2 && "bg-primary/[0.03]",
                 )}
               >
-                <ChannelLogo channel={msg.channel} size="sm" />
+                <ChannelLogo channel={messageChannels[i]} size="sm" />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
                     <p className="truncate text-xs font-medium">{msg.name}</p>
@@ -98,9 +83,7 @@ export function DashboardPreview() {
                   </div>
                   <p className="truncate text-[11px] text-muted-foreground">{msg.preview}</p>
                 </div>
-                {msg.unread && (
-                  <span className="h-2 w-2 shrink-0 rounded-full bg-primary" />
-                )}
+                {i < 2 && <span className="h-2 w-2 shrink-0 rounded-full bg-primary" />}
               </div>
             ))}
           </div>
@@ -108,7 +91,7 @@ export function DashboardPreview() {
           <div className="border-t border-border/60 bg-muted/20 px-4 py-2.5">
             <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              AI handling 94% of conversations automatically
+              {t.preview.aiHandling}
             </div>
           </div>
         </div>

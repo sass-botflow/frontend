@@ -1,14 +1,14 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { useLocale } from "@/components/providers/locale-provider";
 import { Button } from "@/components/ui/button";
 
-const trustBadges = [
-  "No card required",
-  "99.9% uptime",
-  "Built for all businesses",
-];
-
 export function CTA() {
+  const { t } = useLocale();
+  const trustBadges = [t.cta.trust1, t.cta.trust2, t.cta.trust3];
+
   return (
     <section className="relative overflow-hidden py-24 lg:py-32">
       <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-primary/10 to-transparent" />
@@ -16,19 +16,16 @@ export function CTA() {
 
       <div className="relative mx-auto max-w-3xl px-6 text-center">
         <p className="text-sm font-medium uppercase tracking-wider text-primary">
-          500+ Businesses Trust BotFlow
+          {t.cta.label}
         </p>
         <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
-          Ready to automate your customer replies?
+          {t.cta.title}
         </h2>
-        <p className="mt-4 text-lg text-muted-foreground">
-          Join hundreds of businesses letting BotFlow handle WhatsApp, Instagram,
-          and TikTok messages 24/7.
-        </p>
+        <p className="mt-4 text-lg text-muted-foreground">{t.cta.subtitle}</p>
 
         <Button size="lg" className="mt-10 h-12 px-10 text-base" asChild>
           <Link href="/register">
-            Get Started for Free
+            {t.cta.button}
             <ArrowRight className="h-4 w-4" />
           </Link>
         </Button>

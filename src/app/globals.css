@@ -94,6 +94,10 @@ body {
   font-feature-settings: "rlig" 1, "calt" 1;
 }
 
+[dir="rtl"] .rtl-flip {
+  transform: scaleX(-1);
+}
+
 .gradient-text {
   background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
   -webkit-background-clip: text;

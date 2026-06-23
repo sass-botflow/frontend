@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { HelpCircle, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
+import { LanguageSwitcher } from "@/components/marketing/language-switcher";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +22,7 @@ export function DashboardHeader({ title }: { title?: string }) {
       <h1 className="text-base font-semibold tracking-tight">{title}</h1>
 
       <div className="flex items-center gap-1">
+        <LanguageSwitcher variant="compact" />
         <Button variant="ghost" size="sm" className="hidden h-8 gap-1.5 text-muted-foreground sm:inline-flex" asChild>
           <Link href="/dashboard/settings/support">
             <HelpCircle className="h-4 w-4" />
