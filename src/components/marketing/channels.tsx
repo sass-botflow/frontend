@@ -1,6 +1,7 @@
 "use client";
 
-import { CHANNELS } from "@/lib/constants";
+import { CHANNELS } from "@/lib/channels";
+import { ChannelLogo } from "@/components/channels/channel-logo";
 
 export function Channels() {
   return (
@@ -10,21 +11,16 @@ export function Channels() {
           Works where your customers are
         </h2>
         <p className="mt-3 text-muted-foreground">
-          All messages land in one simple inbox.
+          WhatsApp, Instagram, TikTok — all in one inbox.
         </p>
 
-        <div className="mt-12 flex flex-wrap items-center justify-center gap-4">
+        <div className="mt-12 flex flex-wrap items-center justify-center gap-6">
           {CHANNELS.map((channel) => (
             <div
               key={channel.id}
-              className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card px-6 py-4"
+              className="flex flex-col items-center gap-3 rounded-2xl border border-border/60 bg-card px-8 py-6"
             >
-              <div
-                className="flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold text-white"
-                style={{ backgroundColor: channel.color }}
-              >
-                {channel.name[0]}
-              </div>
+              <ChannelLogo channel={channel.id} size="lg" />
               <span className="font-medium">{channel.name}</span>
             </div>
           ))}

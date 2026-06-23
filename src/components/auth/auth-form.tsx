@@ -36,7 +36,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         { method: "POST", body: JSON.stringify(body) },
       );
       setToken(res.accessToken);
-      router.push("/dashboard");
+      router.push("/dashboard/channels");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {

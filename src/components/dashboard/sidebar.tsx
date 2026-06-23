@@ -29,7 +29,7 @@ export function DashboardSidebar() {
   return (
     <aside className="hidden w-56 shrink-0 flex-col border-r border-border/60 bg-sidebar md:flex">
       <Link
-        href="/dashboard"
+        href="/dashboard/channels"
         className="flex h-14 items-center gap-2.5 border-b border-border/60 px-5 transition-colors hover:bg-sidebar-accent/50"
       >
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">

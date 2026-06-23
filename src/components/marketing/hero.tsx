@@ -41,7 +41,7 @@ export function Hero() {
               </Link>
             </Button>
             <Button size="lg" variant="outline" className="h-12 px-8" asChild>
-              <Link href="/dashboard">See how it works</Link>
+              <Link href="/dashboard/channels">See how it works</Link>
             </Button>
           </div>
 

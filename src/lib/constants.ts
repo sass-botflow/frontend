@@ -1,25 +1,7 @@
 export const APP_NAME = "BotFlow";
 
-export const CHANNELS = [
-  {
-    id: "whatsapp",
-    name: "WhatsApp",
-    color: "#25D366",
-    description: "Reply to customers automatically on WhatsApp Business.",
-  },
-  {
-    id: "instagram",
-    name: "Instagram",
-    color: "#E4405F",
-    description: "Handle Instagram DMs and story replies.",
-  },
-  {
-    id: "tiktok",
-    name: "TikTok",
-    color: "#010101",
-    description: "Respond to TikTok messages and comments.",
-  },
-] as const;
+export { CHANNELS, CHANNEL_MAP, getChannel } from "@/lib/channels";
+export type { ChannelId, ChannelMeta } from "@/lib/channels";
 
 export const PLANS = [
   {
