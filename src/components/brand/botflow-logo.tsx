@@ -1,33 +1,35 @@
 "use client";
 
-import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { APP_NAME } from "@/lib/constants";
+import { APP_NAME, OFFICIAL_LOGO_PATH } from "@/lib/constants";
 
 const sizeMap = {
-  sm: 24,
-  md: 32,
-  lg: 36,
-  xl: 44,
-  "2xl": 56,
+  sm: 28,
+  md: 36,
+  lg: 44,
+  xl: 52,
+  "2xl": 64,
 } as const;
 
 type LogoSize = keyof typeof sizeMap;
 
-const LOGO_WIDTH = 451;
-const LOGO_HEIGHT = 584;
+const LOGO_WIDTH = 1536;
+const LOGO_HEIGHT = 1024;
 
 function LogoMark({ size }: { size: number }) {
   const width = Math.round(size * (LOGO_WIDTH / LOGO_HEIGHT));
 
   return (
-    <Image
-      src="/logo.png"
+    // Native img so the exact uploaded PNG is served without Next image optimization.
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={OFFICIAL_LOGO_PATH}
       alt=""
       width={width}
       height={size}
       className="shrink-0 object-contain"
       style={{ width, height: size }}
+      decoding="async"
     />
   );
 }

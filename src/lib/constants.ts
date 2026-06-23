@@ -1,5 +1,9 @@
 export const APP_NAME = "BotFlow";
 
+/** Official brand mark uploaded by the team. */
+export const OFFICIAL_LOGO_PATH =
+  "/ChatGPT Image Jun 23, 2026, 11_54_05 PM.png";
+
 export { CHANNELS, CHANNEL_MAP, getChannel } from "@/lib/channels";
 export type { ChannelId, ChannelMeta } from "@/lib/channels";
 
