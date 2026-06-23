@@ -5,11 +5,11 @@ import { APP_NAME } from "@/lib/constants";
 import { useId } from "react";
 
 const sizeMap = {
-  sm: 24,
-  md: 32,
-  lg: 36,
-  xl: 44,
-  "2xl": 56,
+  sm: 22,
+  md: 28,
+  lg: 32,
+  xl: 40,
+  "2xl": 52,
 } as const;
 
 type LogoSize = keyof typeof sizeMap;
@@ -22,30 +22,41 @@ function LogoMark({ size }: { size: number }) {
     <svg
       width={size}
       height={size}
-      viewBox="0 0 32 32"
+      viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden
       className="shrink-0"
     >
       <defs>
-        <linearGradient id={gradId} x1="6" y1="28" x2="26" y2="4" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#5B21B6" />
-          <stop offset="0.5" stopColor="#8B5CF6" />
-          <stop offset="1" stopColor="#C4B5FD" />
+        <linearGradient id={gradId} x1="5" y1="21" x2="19" y2="3" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#6D28D9" />
+          <stop offset="1" stopColor="#A78BFA" />
         </linearGradient>
       </defs>
       <path
-        d="M16 3.5 25.5 9v14L16 28.5 6.5 23V9L16 3.5Z"
-        stroke={`url(#${gradId})`}
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M17.2 9.5 12.5 17.5H16l-2.2 6.5L21 13.5h-3.3L17.2 9.5Z"
+        d="M13.2 2.75 8.25 12.1h3.45l-1.65 5.9 7.2-10.85h-3.35L13.2 2.75Z"
         fill={`url(#${gradId})`}
       />
     </svg>
+  );
+}
+
+function Wordmark({ size }: { size: LogoSize }) {
+  return (
+    <span
+      className={cn(
+        "select-none font-semibold leading-none tracking-[-0.045em]",
+        size === "sm" && "text-[13px]",
+        size === "md" && "text-[15px]",
+        size === "lg" && "text-base",
+        size === "xl" && "text-lg",
+        size === "2xl" && "text-xl",
+      )}
+    >
+      <span className="text-foreground">Bot</span>
+      <span className="text-foreground/50">Flow</span>
+    </span>
   );
 }
 
@@ -65,21 +76,11 @@ export function BotFlowLogo({
   const px = sizeMap[size];
 
   return (
-    <div className={cn("flex items-center gap-3", className)}>
+    <div className={cn("flex items-center gap-2.5", className)}>
       <LogoMark size={px} />
       {showWordmark && (
-        <span
-          className={cn(
-            "font-medium tracking-[-0.03em] text-foreground",
-            size === "sm" && "text-[13px]",
-            size === "md" && "text-[15px]",
-            size === "lg" && "text-base",
-            size === "xl" && "text-lg",
-            size === "2xl" && "text-xl",
-            wordmarkClassName,
-          )}
-        >
-          {APP_NAME}
+        <span className={wordmarkClassName}>
+          <Wordmark size={size} />
         </span>
       )}
     </div>
