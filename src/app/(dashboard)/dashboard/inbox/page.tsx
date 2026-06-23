@@ -1,68 +1,83 @@
 import { DashboardHeader } from "@/components/dashboard/header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Search, Send } from "lucide-react";
-
-export const metadata = { title: "Inbox" };
+import { Send } from "lucide-react";
 
 const conversations = [
   {
     id: "1",
-    name: "Sarah Mitchell",
-    preview: "Can I book a consultation for next week?",
+    name: "Fatima B.",
+    preview: "Do you have appointments available tomorrow?",
     channel: "WhatsApp",
-    unread: 2,
     time: "2m",
+    active: true,
   },
   {
     id: "2",
-    name: "Alex Rivera",
-    preview: "What are your pricing plans?",
+    name: "Youssef K.",
+    preview: "What are your opening hours?",
     channel: "Instagram",
-    unread: 0,
-    time: "15m",
+    time: "18m",
+    active: false,
   },
   {
     id: "3",
-    name: "Emma Chen",
-    preview: "Thanks! That helps a lot.",
+    name: "Lina M.",
+    preview: "How much is a cleaning?",
     channel: "TikTok",
-    unread: 0,
     time: "1h",
+    active: false,
   },
 ];
 
 const messages = [
-  { from: "customer", text: "Hi, I'd like to book an appointment.", time: "10:32 AM" },
-  { from: "bot", text: "Hello Sarah! I'd be happy to help. What day works best for you?", time: "10:32 AM" },
-  { from: "customer", text: "Can I book a consultation for next week?", time: "10:33 AM" },
+  {
+    from: "customer",
+    text: "Hi! Do you have appointments available tomorrow?",
+    time: "10:32",
+  },
+  {
+    from: "ai",
+    text: "Hello Fatima! Yes, we have openings tomorrow at 10am, 2pm, and 4pm. Which time works best for you?",
+    time: "10:32",
+  },
+  {
+    from: "customer",
+    text: "2pm please!",
+    time: "10:33",
+  },
+  {
+    from: "ai",
+    text: "Perfect! I've noted your appointment for tomorrow at 2pm. We'll send you a reminder. See you then! 😊",
+    time: "10:33",
+  },
 ];
+
+export const metadata = { title: "Inbox" };
 
 export default function InboxPage() {
   return (
     <>
       <DashboardHeader title="Inbox" />
       <div className="flex flex-1 overflow-hidden">
-        <div className="w-80 shrink-0 border-r border-border">
-          <div className="border-b border-border p-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input placeholder="Search conversations..." className="pl-9" />
-            </div>
+        <div className="w-72 shrink-0 border-r border-border/60">
+          <div className="border-b border-border/60 p-3">
+            <Input placeholder="Search conversations..." className="h-9" />
           </div>
-          <ScrollArea className="h-[calc(100vh-8rem)]">
+          <ScrollArea className="h-[calc(100vh-7rem)]">
             {conversations.map((convo) => (
               <button
                 key={convo.id}
                 type="button"
-                className="flex w-full items-start gap-3 border-b border-border p-4 text-left transition-colors hover:bg-muted/50"
+                className={`flex w-full items-start gap-3 border-b border-border/40 p-4 text-left transition-colors hover:bg-muted/40 ${
+                  convo.active ? "bg-muted/60" : ""
+                }`}
               >
-                <Avatar className="h-10 w-10">
-                  <AvatarFallback>
+                <Avatar className="h-9 w-9">
+                  <AvatarFallback className="text-xs">
                     {convo.name
                       .split(" ")
                       .map((n) => n[0])
@@ -70,21 +85,18 @@ export default function InboxPage() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between">
-                    <p className="truncate font-medium">{convo.name}</p>
-                    <span className="text-xs text-muted-foreground">{convo.time}</span>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="truncate text-sm font-medium">{convo.name}</p>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {convo.time}
+                    </span>
                   </div>
-                  <p className="truncate text-sm text-muted-foreground">
+                  <p className="truncate text-xs text-muted-foreground">
                     {convo.preview}
                   </p>
-                  <div className="mt-1 flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs">
-                      {convo.channel}
-                    </Badge>
-                    {convo.unread > 0 && (
-                      <Badge className="h-5 min-w-5 px-1.5">{convo.unread}</Badge>
-                    )}
-                  </div>
+                  <Badge variant="outline" className="mt-1.5 h-5 text-[10px]">
+                    {convo.channel}
+                  </Badge>
                 </div>
               </button>
             ))}
@@ -92,43 +104,46 @@ export default function InboxPage() {
         </div>
 
         <div className="flex flex-1 flex-col">
-          <div className="flex items-center justify-between border-b border-border px-6 py-4">
+          <div className="flex items-center justify-between border-b border-border/60 px-5 py-3">
             <div>
-              <p className="font-semibold">Sarah Mitchell</p>
-              <p className="text-sm text-muted-foreground">WhatsApp · Lead</p>
+              <p className="font-medium">Fatima B.</p>
+              <p className="text-xs text-muted-foreground">WhatsApp</p>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm">Assign</Button>
-              <Button variant="outline" size="sm">Add tag</Button>
-            </div>
+            <Badge variant="secondary" className="text-xs">
+              AI handled
+            </Badge>
           </div>
 
-          <ScrollArea className="flex-1 p-6">
-            <div className="mx-auto max-w-2xl space-y-4">
+          <ScrollArea className="flex-1 p-5">
+            <div className="mx-auto max-w-xl space-y-3">
               {messages.map((msg, i) => (
                 <div
                   key={i}
                   className={`flex ${msg.from === "customer" ? "justify-start" : "justify-end"}`}
                 >
-                  <Card
-                    className={`max-w-[80%] px-4 py-2 ${
-                      msg.from === "bot"
+                  <div
+                    className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                      msg.from === "ai"
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted"
                     }`}
                   >
-                    <p className="text-sm">{msg.text}</p>
-                    <p className="mt-1 text-xs opacity-70">{msg.time}</p>
-                  </Card>
+                    {msg.from === "ai" && (
+                      <p className="mb-1 text-[10px] font-medium opacity-70">
+                        AI · {msg.time}
+                      </p>
+                    )}
+                    {msg.text}
+                  </div>
                 </div>
               ))}
             </div>
           </ScrollArea>
 
-          <div className="border-t border-border p-4">
-            <div className="mx-auto flex max-w-2xl gap-2">
-              <Input placeholder="Type a message..." className="flex-1" />
-              <Button size="icon">
+          <div className="border-t border-border/60 p-4">
+            <div className="mx-auto flex max-w-xl gap-2">
+              <Input placeholder="Take over this conversation..." className="flex-1" />
+              <Button size="icon" className="shrink-0">
                 <Send className="h-4 w-4" />
               </Button>
             </div>

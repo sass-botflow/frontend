@@ -1,88 +1,62 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  BarChart3,
-  Bot,
-  Calendar,
-  Inbox,
-  Users,
-  Zap,
-} from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Brain, Inbox, Radio } from "lucide-react";
 
-const features = [
+const steps = [
+  {
+    icon: Radio,
+    step: "1",
+    title: "Connect a channel",
+    description: "WhatsApp, Instagram, or TikTok — one click.",
+  },
+  {
+    icon: Brain,
+    step: "2",
+    title: "Teach your AI",
+    description: "Add your business name, description, and a PDF. Done.",
+  },
   {
     icon: Inbox,
-    title: "Unified Inbox",
-    description:
-      "WhatsApp, Instagram, TikTok and Messenger in one place. Assign, tag, note and collaborate.",
-  },
-  {
-    icon: Bot,
-    title: "AI Agent Builder",
-    description:
-      "Drag-and-drop workflows with AI responses, conditions, lead capture and human handoff.",
-  },
-  {
-    icon: Users,
-    title: "Built-in CRM",
-    description:
-      "Contacts, pipelines, stages and lead scoring — everything your sales team needs.",
-  },
-  {
-    icon: Calendar,
-    title: "Appointment Booking",
-    description:
-      "Availability, reminders and rescheduling integrated directly into conversations.",
-  },
-  {
-    icon: BarChart3,
-    title: "Analytics",
-    description:
-      "Revenue, leads, conversion rate and response time — beautiful charts that drive decisions.",
-  },
-  {
-    icon: Zap,
-    title: "Agency Mode",
-    description:
-      "Manage multiple clients with white-label branding, teams and granular permissions.",
+    step: "3",
+    title: "Let AI handle messages",
+    description: "Every reply is automatic. Jump in anytime from your inbox.",
   },
 ];
 
 export function Features() {
   return (
-    <section id="features" className="py-24">
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            Everything to automate customer communication
+    <section id="features" className="border-t border-border/60 py-24">
+      <div className="mx-auto max-w-4xl px-6">
+        <div className="text-center">
+          <h2 className="text-3xl font-semibold tracking-tight">
+            Three steps. That&apos;s it.
           </h2>
-          <p className="mt-4 text-muted-foreground">
-            From first message to booked appointment — one platform for clinics,
-            agencies, e-commerce and local businesses.
+          <p className="mt-3 text-muted-foreground">
+            Built for dentists, restaurants, shops, and coaches — not developers.
           </p>
         </div>
 
-        <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {features.map((feature, i) => (
+        <div className="mt-16 grid gap-8 sm:grid-cols-3">
+          {steps.map((item, i) => (
             <motion.div
-              key={feature.title}
-              initial={{ opacity: 0, y: 20 }}
+              key={item.step}
+              initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.08 }}
+              transition={{ delay: i * 0.1 }}
+              className="text-center"
             >
-              <Card className="h-full border-border/60 transition-colors hover:border-primary/30">
-                <CardHeader>
-                  <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <feature.icon className="h-5 w-5" />
-                  </div>
-                  <CardTitle className="text-lg">{feature.title}</CardTitle>
-                  <CardDescription>{feature.description}</CardDescription>
-                </CardHeader>
-                <CardContent />
-              </Card>
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
+                <item.icon className="h-6 w-6 text-primary" />
+              </div>
+              <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Step {item.step}
+              </p>
+              <h3 className="font-semibold">{item.title}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {item.description}
+              </p>
             </motion.div>
           ))}
         </div>

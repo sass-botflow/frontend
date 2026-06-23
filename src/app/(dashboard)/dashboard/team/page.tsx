@@ -1,56 +1,51 @@
 import { DashboardHeader } from "@/components/dashboard/header";
-import { PageHeader } from "@/components/dashboard/page-header";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Plus } from "lucide-react";
 
 export const metadata = { title: "Team" };
 
 const members = [
-  { name: "You", email: "owner@botflow.ink", role: "OWNER" },
-  { name: "Sarah Admin", email: "sarah@botflow.ink", role: "ADMIN" },
-  { name: "Mike Agent", email: "mike@botflow.ink", role: "AGENT" },
-  { name: "Lisa Manager", email: "lisa@botflow.ink", role: "MANAGER" },
+  { name: "You", email: "owner@business.com", role: "Owner" },
+  { name: "Sara Ahmed", email: "sara@business.com", role: "Member" },
 ];
-
-const roleColors: Record<string, "default" | "secondary" | "outline" | "success"> = {
-  OWNER: "default",
-  ADMIN: "success",
-  MANAGER: "secondary",
-  AGENT: "outline",
-};
 
 export default function TeamPage() {
   return (
     <>
       <DashboardHeader title="Team" />
-      <div className="flex-1 p-6">
-        <PageHeader
-          title="Team Management"
-          description="Invite members and manage roles & permissions."
-          action={
-            <Button>
-              <Plus className="h-4 w-4" />
-              Invite member
-            </Button>
-          }
-        />
+      <div className="mx-auto max-w-2xl flex-1 p-6">
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-semibold tracking-tight">Your team</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Invite people who can view the inbox and reply to customers.
+            </p>
+          </div>
+          <Button size="sm">
+            <Plus className="h-4 w-4" />
+            Invite
+          </Button>
+        </div>
 
-        <Card>
+        <Card className="border-border/60 shadow-none">
           <CardHeader>
-            <CardTitle>Team members</CardTitle>
+            <CardTitle className="text-base">Members</CardTitle>
+            <CardDescription>
+              Everyone on your team can see conversations and jump in when
+              needed.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {members.map((member) => (
               <div
                 key={member.email}
-                className="flex items-center justify-between rounded-lg border border-border p-4"
+                className="flex items-center justify-between rounded-lg border border-border/60 p-4"
               >
                 <div className="flex items-center gap-3">
-                  <Avatar>
-                    <AvatarFallback>
+                  <Avatar className="h-9 w-9">
+                    <AvatarFallback className="text-xs">
                       {member.name
                         .split(" ")
                         .map((n) => n[0])
@@ -58,13 +53,11 @@ export default function TeamPage() {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{member.name}</p>
-                    <p className="text-sm text-muted-foreground">{member.email}</p>
+                    <p className="text-sm font-medium">{member.name}</p>
+                    <p className="text-xs text-muted-foreground">{member.email}</p>
                   </div>
                 </div>
-                <Badge variant={roleColors[member.role] ?? "outline"}>
-                  {member.role}
-                </Badge>
+                <span className="text-xs text-muted-foreground">{member.role}</span>
               </div>
             ))}
           </CardContent>

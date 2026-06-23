@@ -1,10 +1,9 @@
 "use client";
 
-import { Bell, Moon, Search, Sun } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,27 +16,14 @@ export function DashboardHeader({ title }: { title?: string }) {
   const { theme, setTheme } = useTheme();
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-border bg-background/80 px-6 backdrop-blur-sm">
-      <div>
-        {title && (
-          <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
-        )}
-      </div>
+    <header className="flex h-14 items-center justify-between border-b border-border/60 px-6">
+      <h1 className="text-base font-semibold tracking-tight">{title}</h1>
 
-      <div className="flex items-center gap-3">
-        <div className="relative hidden sm:block">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Search..." className="w-64 pl-9" />
-        </div>
-
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-4 w-4" />
-          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-primary" />
-        </Button>
-
+      <div className="flex items-center gap-1">
         <Button
           variant="ghost"
           size="icon"
+          className="h-8 w-8"
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
         >
           <Sun className="h-4 w-4 rotate-0 scale-100 dark:-rotate-90 dark:scale-0" />
@@ -46,15 +32,14 @@ export function DashboardHeader({ title }: { title?: string }) {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-              <Avatar className="h-9 w-9">
-                <AvatarFallback>BF</AvatarFallback>
+            <Button variant="ghost" className="h-8 w-8 rounded-full p-0">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="text-xs">BF</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>Sign out</DropdownMenuItem>
           </DropdownMenuContent>

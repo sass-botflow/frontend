@@ -1,91 +1,89 @@
-import {
-  DollarSign,
-  MessageSquare,
-  Timer,
-  Users,
-} from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, MessageSquare, Radio, Sparkles, User } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/header";
-import { StatsCard } from "@/components/dashboard/stats-card";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
-export const metadata = { title: "Dashboard" };
+export const metadata = { title: "Home" };
 
-const recentConversations = [
-  { name: "Sarah Mitchell", channel: "WhatsApp", status: "Open", time: "2m ago" },
-  { name: "Alex Rivera", channel: "Instagram", status: "Pending", time: "15m ago" },
-  { name: "Emma Chen", channel: "TikTok", status: "Open", time: "1h ago" },
-  { name: "Michael Brown", channel: "Messenger", status: "Resolved", time: "3h ago" },
+const stats = [
+  {
+    label: "Total conversations",
+    value: "1,284",
+    icon: MessageSquare,
+  },
+  {
+    label: "AI handled",
+    value: "78%",
+    icon: Sparkles,
+    accent: "text-violet-500",
+  },
+  {
+    label: "Human handled",
+    value: "22%",
+    icon: User,
+    accent: "text-blue-500",
+  },
+  {
+    label: "Active channels",
+    value: "2",
+    icon: Radio,
+    accent: "text-emerald-500",
+  },
 ];
 
 export default function DashboardPage() {
   return (
     <>
-      <DashboardHeader title="Overview" />
-      <div className="flex-1 space-y-8 p-6">
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatsCard title="Revenue" value="$24,580" change={12.5} icon={DollarSign} />
-          <StatsCard title="Leads" value="412" change={8.2} icon={Users} />
-          <StatsCard title="Conversations" value="2,847" change={15.3} icon={MessageSquare} />
-          <StatsCard title="Avg. Response" value="12s" change={-22} icon={Timer} />
+      <DashboardHeader title="Home" />
+      <div className="mx-auto max-w-4xl flex-1 p-6">
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold tracking-tight">
+            Good morning 👋
+          </h2>
+          <p className="mt-1 text-muted-foreground">
+            Here&apos;s how your AI assistant is doing today.
+          </p>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent conversations</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {recentConversations.map((convo) => (
-                <div
-                  key={convo.name}
-                  className="flex items-center justify-between rounded-lg border border-border p-3"
-                >
-                  <div>
-                    <p className="font-medium">{convo.name}</p>
-                    <p className="text-sm text-muted-foreground">{convo.channel}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant={
-                        convo.status === "Resolved" ? "secondary" : "success"
-                      }
-                    >
-                      {convo.status}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      {convo.time}
-                    </span>
-                  </div>
+        <div className="mb-8 grid gap-4 sm:grid-cols-2">
+          {stats.map((stat) => (
+            <Card key={stat.label} className="border-border/60 shadow-none">
+              <CardContent className="flex items-center gap-4 p-5">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
+                  <stat.icon className={`h-5 w-5 ${stat.accent ?? "text-muted-foreground"}`} />
                 </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Active AI agents</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {[
-                { name: "Lead Qualifier", channel: "WhatsApp", runs: "1.2k" },
-                { name: "Appointment Bot", channel: "Instagram", runs: "856" },
-                { name: "FAQ Assistant", channel: "All channels", runs: "2.4k" },
-              ].map((bot) => (
-                <div
-                  key={bot.name}
-                  className="flex items-center justify-between rounded-lg border border-border p-3"
-                >
-                  <div>
-                    <p className="font-medium">{bot.name}</p>
-                    <p className="text-sm text-muted-foreground">{bot.channel}</p>
-                  </div>
-                  <span className="text-sm font-medium">{bot.runs} runs</span>
+                <div>
+                  <p className="text-sm text-muted-foreground">{stat.label}</p>
+                  <p className="text-2xl font-semibold tracking-tight">{stat.value}</p>
                 </div>
-              ))}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ))}
         </div>
+
+        <Card className="border-dashed border-primary/30 bg-primary/5 shadow-none">
+          <CardContent className="flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-medium">Get started in under 5 minutes</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Connect a channel, teach your AI about your business, and start
+                replying automatically.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/dashboard/brain">Set up AI Brain</Link>
+              </Button>
+              <Button size="sm" asChild>
+                <Link href="/dashboard/channels">
+                  Connect channel
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </>
   );
