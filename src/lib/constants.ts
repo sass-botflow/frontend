@@ -50,6 +50,7 @@ export const NAV_ITEMS = [
   { href: "/dashboard/team", label: "Team", icon: "Users" },
   { href: "/dashboard/billing", label: "Billing", icon: "CreditCard" },
   { href: "/dashboard/settings", label: "Settings", icon: "Settings" },
+  { href: "/dashboard/settings/support", label: "Support", icon: "HelpCircle" },
 ] as const;
 
 export const DEFAULT_AI_INSTRUCTIONS =

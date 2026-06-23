@@ -1,6 +1,7 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react";
+import Link from "next/link";
+import { HelpCircle, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,17 @@ export function DashboardHeader({ title }: { title?: string }) {
       <h1 className="text-base font-semibold tracking-tight">{title}</h1>
 
       <div className="flex items-center gap-1">
+        <Button variant="ghost" size="sm" className="hidden h-8 gap-1.5 text-muted-foreground sm:inline-flex" asChild>
+          <Link href="/dashboard/settings/support">
+            <HelpCircle className="h-4 w-4" />
+            Support
+          </Link>
+        </Button>
+        <Button variant="ghost" size="icon" className="h-8 w-8 sm:hidden" asChild>
+          <Link href="/dashboard/settings/support" aria-label="Support">
+            <HelpCircle className="h-4 w-4" />
+          </Link>
+        </Button>
         <Button
           variant="ghost"
           size="icon"

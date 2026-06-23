@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   Brain,
   CreditCard,
+  HelpCircle,
   Inbox,
   Radio,
   Settings,
@@ -21,6 +22,7 @@ const iconMap = {
   Users,
   CreditCard,
   Settings,
+  HelpCircle,
 } as const;
 
 export function DashboardSidebar() {
@@ -41,7 +43,7 @@ export function DashboardSidebar() {
       <nav className="flex-1 space-y-0.5 p-3">
         {NAV_ITEMS.map((item) => {
           const Icon = iconMap[item.icon as keyof typeof iconMap];
-          const active = pathname.startsWith(item.href);
+          const active = isNavActive(pathname, item.href);
 
           return (
             <Link
@@ -68,4 +70,14 @@ export function DashboardSidebar() {
       </div>
     </aside>
   );
+}
+
+function isNavActive(pathname: string, href: string) {
+  if (href === "/dashboard/settings/support") {
+    return pathname.startsWith(href);
+  }
+  if (href === "/dashboard/settings") {
+    return pathname.startsWith(href) && !pathname.startsWith("/dashboard/settings/support");
+  }
+  return pathname.startsWith(href);
 }
