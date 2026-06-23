@@ -6,7 +6,7 @@ import type {
   WorkflowStatus,
 } from './types'
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
 
 const TOKEN_KEY = 'botflow_token'
 
