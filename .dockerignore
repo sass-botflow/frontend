@@ -1,8 +1,9 @@
 node_modules
-dist
+.next
 .git
 .env
 .env*.local
-.next
 README.md
-AGENTS.md
+ARCHITECTURE.md
+Dockerfile
+.dockerignore
