@@ -49,12 +49,41 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ## EasyPanel deployment
 
-1. Connect repo `sass-botflow/frontend` (branch: `main`)
-2. Domain: `botflow.ink` → port `3000`
-3. Build args:
-   - `NEXT_PUBLIC_APP_URL=https://botflow.ink`
-   - `NEXT_PUBLIC_API_URL=https://api.botflow.ink`
-4. Uses included `Dockerfile` (Next.js standalone)
+### Required settings
+
+| Setting | Value |
+|---------|--------|
+| Source | GitHub `sass-botflow/frontend` |
+| Branch | `main` |
+| Build method | **Dockerfile** |
+| Domain | `botflow.ink` |
+| Internal port | **3000** |
+| Health check path | `/api/health` |
+
+### Build arguments
+
+```
+NEXT_PUBLIC_APP_URL=https://botflow.ink
+NEXT_PUBLIC_API_URL=https://api.botflow.ink
+```
+
+### Verify deployment
+
+After deploy, these must return `200`:
+
+- `https://botflow.ink/`
+- `https://botflow.ink/api/health`
+
+If you see EasyPanel's green logo 404 page, the container is not running or the internal port is wrong.
+
+### Common fixes
+
+1. Set internal port to **3000** (not 80 or 8080)
+2. Use **Dockerfile** build (not custom start without Docker)
+3. Redeploy after pushing latest `main`
+4. Check deploy logs for `getaddrinfo` / `HOSTNAME` errors
+
+See [EASYPANEL.md](./EASYPANEL.md) for full troubleshooting.
 
 ## Backend
 
