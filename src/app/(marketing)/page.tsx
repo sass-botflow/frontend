@@ -1,16 +1,24 @@
 import { Hero } from "@/components/marketing/hero";
-import { Features } from "@/components/marketing/features";
+import { StatsBar } from "@/components/marketing/stats-bar";
+import { HowItWorks } from "@/components/marketing/how-it-works";
+import { ProductShowcase } from "@/components/marketing/product-showcase";
 import { Channels } from "@/components/marketing/channels";
-import { Pricing } from "@/components/marketing/pricing";
+import { ScaleStats } from "@/components/marketing/scale-stats";
+import { Testimonials } from "@/components/marketing/testimonials";
+import { FAQ } from "@/components/marketing/faq";
 import { CTA } from "@/components/marketing/cta";
 
 export default function HomePage() {
   return (
     <>
       <Hero />
-      <Features />
+      <StatsBar />
+      <HowItWorks />
+      <ProductShowcase />
       <Channels />
-      <Pricing />
+      <ScaleStats />
+      <Testimonials />
+      <FAQ />
       <CTA />
     </>
   );
