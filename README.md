@@ -39,6 +39,21 @@ The app expects the backend API at `http://localhost:3001` by default (override 
 |----------|---------|-------------|
 | `VITE_API_URL` | `http://localhost:3001` | Base URL of the backend API |
 
+## Deployment (EasyPanel)
+
+This repo ships a production `Dockerfile` that builds the SPA and serves it with nginx (with SPA fallback for client-side routes) on **port 3000**.
+
+In EasyPanel, create an **App** service for the frontend:
+
+| Setting | Value |
+|---------|-------|
+| Build method | Dockerfile |
+| Port (proxy target) | `3000` |
+| Domain | `botflow.ink` |
+| Build arg `VITE_API_URL` | `https://api.botflow.ink` (default; baked at build time) |
+
+> `VITE_API_URL` is inlined at **build time** (Vite). If you change it, you must rebuild. The Dockerfile already defaults to `https://api.botflow.ink`.
+
 ## Routes
 
 | Path | Description |
