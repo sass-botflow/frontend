@@ -1,42 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
   <defs>
-    <linearGradient id="g" x1="96" y1="416" x2="416" y2="96" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#312E81"/>
-      <stop offset="0.35" stop-color="#6D28D9"/>
-      <stop offset="0.7" stop-color="#8B5CF6"/>
-      <stop offset="1" stop-color="#E9D5FF"/>
+    <linearGradient id="g" x1="18" y1="102" x2="102" y2="18" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4C1D95"/>
+      <stop offset="0.4" stop-color="#7C3AED"/>
+      <stop offset="1" stop-color="#DDD6FE"/>
     </linearGradient>
-    <linearGradient id="shine" x1="140" y1="130" x2="340" y2="360" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFFFFF" stop-opacity="0.4"/>
-      <stop offset="1" stop-opacity="0"/>
-    </linearGradient>
-    <radialGradient id="ambient" cx="256" cy="290" r="200" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#6366F1" stop-opacity="0.28"/>
-      <stop offset="1" stop-opacity="0"/>
-    </radialGradient>
-    <filter id="shadow" x="50" y="50" width="412" height="412" filterUnits="userSpaceOnUse">
-      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#000" flood-opacity="0.5"/>
-    </filter>
   </defs>
-  <rect width="512" height="512" rx="116" fill="#08080E"/>
-  <rect width="512" height="512" rx="116" fill="url(#ambient)"/>
-  <g filter="url(#shadow)">
-    <path
-      d="M256 104 144 168v176l112 64 112-64V168L256 104Z"
-      fill="url(#g)"
-    />
-    <path
-      d="M256 104 144 168v176l112 64 112-64V168L256 104Z"
-      fill="url(#shine)"
-    />
-    <path
-      d="M286 168c34 0 54 18 54 46 0 20-9 34-26 42 20 8 32 24 32 48 0 32-26 52-62 52h-78V168h80Zm-2 84h36c16 0 24-8 24-20s-8-20-24-20h-36v40Zm0-108h34c14 0 22-7 22-18s-8-18-22-18h-34v36Z"
-      fill="#08080E"
-      fill-opacity="0.9"
-    />
-    <path
-      d="m248 188-36 104h-20l24-80h14l18 58 18-58h14l-24 80h-20l-18-58-18 58h-14l24-80h14Z"
-      fill="#F8FAFC"
-    />
-  </g>
+  <path d="M60 10 22 32v56l38 22 38-22V32L60 10Z" fill="url(#g)"/>
+  <path
+    d="M68 36c10 0 16 5.5 16 14 0 6-3 10.5-8 13 6 2.5 10 8 10 15 0 9.5-7.5 15.5-18 15.5H44V36h24Zm-1 25h11c5 0 7.5-2.5 7.5-6.5S83 48 78 48H67v13Zm0-33h10.5c4 0 6.5-2 6.5-5.5S81.5 36 77.5 36H67v12Z"
+    fill="#09090F"
+  />
+  <path d="M58 38 46 68h11l-9 20 24-32H61l8-18H58Z" fill="#FFFFFF"/>
 </svg>
