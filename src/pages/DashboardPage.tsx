@@ -52,11 +52,14 @@ export function DashboardPage() {
   }
 
   async function handleStatusChange(bot: Bot, status: BotStatus) {
+    setBots((prev) =>
+      prev.map((b) => (b.id === bot.id ? { ...b, status } : b)),
+    )
     try {
       await api.updateBot(bot.id, { status })
-      await refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update bot')
+      await refresh()
     }
   }
 

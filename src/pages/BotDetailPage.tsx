@@ -61,11 +61,14 @@ export function BotDetailPage() {
 
   async function handleStatus(wf: Workflow, status: WorkflowStatus) {
     if (!botId) return
+    setWorkflows((prev) =>
+      prev.map((w) => (w.id === wf.id ? { ...w, status } : w)),
+    )
     try {
       await api.updateWorkflow(botId, wf.id, { status })
-      await refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update workflow')
+      await refresh()
     }
   }
 
