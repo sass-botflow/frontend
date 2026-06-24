@@ -1,4 +1,4 @@
-import { DashboardSidebar } from "@/components/dashboard/sidebar";
+import { DashboardSidebar, DashboardMobileNav } from "@/components/dashboard/sidebar";
 
 export default function DashboardLayout({
   children,
@@ -8,7 +8,8 @@ export default function DashboardLayout({
   return (
     <div className="flex min-h-screen">
       <DashboardSidebar />
-      <div className="flex flex-1 flex-col">{children}</div>
+      <div className="flex flex-1 flex-col pb-20 md:pb-0">{children}</div>
+      <DashboardMobileNav />
     </div>
   );
 }

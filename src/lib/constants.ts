@@ -47,13 +47,16 @@ export const PLANS = [
 ] as const;
 
 export const NAV_ITEMS = [
-  { href: "/dashboard/channels", label: "Channels", icon: "Radio" },
-  { href: "/dashboard/brain", label: "AI Brain", icon: "Brain" },
+  { href: "/dashboard", label: "Overview", icon: "LayoutDashboard" },
   { href: "/dashboard/inbox", label: "Inbox", icon: "Inbox" },
-  { href: "/dashboard/team", label: "Team", icon: "Users" },
+  { href: "/dashboard/brain", label: "AI Agents", icon: "Bot" },
+  { href: "/dashboard/channels", label: "Channels", icon: "Radio" },
+  { href: "/dashboard/crm", label: "CRM", icon: "Contact" },
+  { href: "/dashboard/appointments", label: "Appointments", icon: "Calendar" },
+  { href: "/dashboard/analytics", label: "Analytics", icon: "BarChart3" },
+  { href: "/dashboard/settings/knowledge", label: "Knowledge", icon: "BookOpen" },
   { href: "/dashboard/billing", label: "Billing", icon: "CreditCard" },
   { href: "/dashboard/settings", label: "Settings", icon: "Settings" },
-  { href: "/dashboard/settings/support", label: "Support", icon: "HelpCircle" },
 ] as const;
 
 export const DEFAULT_AI_INSTRUCTIONS =
