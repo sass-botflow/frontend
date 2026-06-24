@@ -42,10 +42,31 @@ CMD ["sh", "-c", "HOSTNAME=0.0.0.0 PORT=${PORT:-3000} node server.js"]
 
 ### Environment / build args
 
+**Runtime env:**
+```
+PORT=3000
+NODE_ENV=production
+NEXT_PUBLIC_APP_URL=https://botflow.ink
+NEXT_PUBLIC_API_URL=https://api.botflow.ink
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/onboarding
+NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=/en
+```
+
+**Docker build args** (same `NEXT_PUBLIC_*` keys):
 ```
 NEXT_PUBLIC_APP_URL=https://botflow.ink
 NEXT_PUBLIC_API_URL=https://api.botflow.ink
-PORT=3000
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/onboarding
+NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=/en
 ```
 
 ## Verification checklist

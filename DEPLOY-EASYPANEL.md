@@ -38,14 +38,38 @@
 
 ## Étape 5 — Environment Variables
 
-F **Environment** zid had les variables:
+F **Environment** zid had les variables (**runtime**):
 
 ```
 PORT=3000
 NODE_ENV=production
 NEXT_PUBLIC_APP_URL=https://botflow.ink
 NEXT_PUBLIC_API_URL=https://api.botflow.ink
+
+# Clerk (obligatoire pour login)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/onboarding
+NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=/en
 ```
+
+F **Build Arguments** (nafs les `NEXT_PUBLIC_*` — EasyPanel → Build):
+
+```
+NEXT_PUBLIC_APP_URL=https://botflow.ink
+NEXT_PUBLIC_API_URL=https://api.botflow.ink
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/onboarding
+NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=/en
+```
+
+> ⚠️ `NEXT_PUBLIC_*` khasshom yكونو f **build ET runtime**. `CLERK_SECRET_KEY` runtime ghir.
 
 ## Étape 6 — Deploy
 
