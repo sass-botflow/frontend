@@ -42,6 +42,8 @@ export const en = {
     signInError: "Invalid email or password. Please try again.",
     signUpError: "Could not create account. Please try again.",
     googleError: "Google sign-in failed. Please try again.",
+    googleOnlyAccount:
+      "This email uses Google sign-in. Click Continue with Google instead.",
   },
   hero: {
     badge: "Trusted by 500+ businesses worldwide",
@@ -328,6 +330,8 @@ export const fr: Dictionary = {
     signInError: "E-mail ou mot de passe incorrect.",
     signUpError: "Impossible de créer le compte.",
     googleError: "Connexion Google échouée.",
+    googleOnlyAccount:
+      "Cet e-mail utilise Google. Cliquez sur Continuer avec Google.",
   },
   hero: {
     badge: "Approuvé par plus de 500 entreprises",
@@ -614,6 +618,7 @@ export const ar: Dictionary = {
     signInError: "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
     signUpError: "تعذّر إنشاء الحساب.",
     googleError: "فشل تسجيل الدخول عبر Google.",
+    googleOnlyAccount: "هذا البريد مربوط بـ Google. استخدم المتابعة عبر Google.",
   },
   hero: {
     badge: "موثوق به من أكثر من 500 شركة حول العالم",

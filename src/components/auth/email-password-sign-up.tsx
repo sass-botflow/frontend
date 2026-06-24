@@ -3,9 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useSignUp } from "@clerk/nextjs/legacy";
+import { useSignUp } from "@clerk/nextjs";
 import { useLocale } from "@/components/providers/locale-provider";
 import { GoogleAuthButton } from "@/components/auth/google-auth-button";
+import { clerkErrorMessage } from "@/lib/auth-navigate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,39 +14,59 @@ import { Label } from "@/components/ui/label";
 export function EmailPasswordSignUp() {
   const router = useRouter();
   const { t } = useLocale();
-  const { isLoaded, signUp } = useSignUp();
+  const { signUp, fetchStatus } = useSignUp();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const loading = fetchStatus === "fetching";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!isLoaded || !signUp) return;
-
-    setLoading(true);
     setError(null);
 
-    try {
-      await signUp.create({
-        emailAddress: email,
-        password,
-        firstName: name.split(" ")[0],
-        lastName: name.split(" ").slice(1).join(" ") || undefined,
+    const [firstName, ...rest] = name.trim().split(" ");
+    const lastName = rest.join(" ") || undefined;
+
+    const { error: passwordError } = await signUp.password({
+      emailAddress: email.trim(),
+      password,
+      firstName,
+      lastName,
+    });
+
+    if (passwordError) {
+      setError(clerkErrorMessage(passwordError, t.auth.signUpError));
+      return;
+    }
+
+    if (signUp.status === "complete") {
+      const { error: finalizeError } = await signUp.finalize({
+        navigate: ({ decorateUrl }) => {
+          const destination = decorateUrl("/onboarding");
+          if (destination.startsWith("http")) {
+            window.location.assign(destination);
+            return;
+          }
+          router.replace(destination);
+        },
       });
 
-      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-      router.push("/sign-up/verify-email-address");
-    } catch (err: unknown) {
-      const message =
-        err && typeof err === "object" && "errors" in err
-          ? (err as { errors: { message: string }[] }).errors[0]?.message
-          : t.auth.signUpError;
-      setError(message);
-    } finally {
-      setLoading(false);
+      if (finalizeError) {
+        setError(clerkErrorMessage(finalizeError, t.auth.signUpError));
+      }
+      return;
     }
+
+    const { error: sendCodeError } = await signUp.verifications.sendEmailCode();
+
+    if (sendCodeError) {
+      setError(clerkErrorMessage(sendCodeError, t.auth.signUpError));
+      return;
+    }
+
+    router.push("/sign-up/verify-email-address");
   }
 
   return (

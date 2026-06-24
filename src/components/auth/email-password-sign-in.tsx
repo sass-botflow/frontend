@@ -3,10 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useSignIn } from "@clerk/nextjs/legacy";
-import { useClerk } from "@clerk/nextjs";
+import { useSignIn } from "@clerk/nextjs";
 import { useLocale } from "@/components/providers/locale-provider";
 import { GoogleAuthButton } from "@/components/auth/google-auth-button";
+import { clerkErrorMessage, navigateAfterAuth } from "@/lib/auth-navigate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,52 +14,68 @@ import { Label } from "@/components/ui/label";
 export function EmailPasswordSignIn() {
   const router = useRouter();
   const { t } = useLocale();
-  const { isLoaded, signIn } = useSignIn();
-  const { setActive } = useClerk();
+  const { signIn, fetchStatus } = useSignIn();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const loading = fetchStatus === "fetching";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!isLoaded || !signIn) return;
-
-    setLoading(true);
     setError(null);
 
-    try {
-      const result = await signIn.create({
-        identifier: email,
-        password,
+    const { error: passwordError } = await signIn.password({
+      emailAddress: email.trim(),
+      password,
+    });
+
+    if (passwordError) {
+      const code =
+        "code" in passwordError
+          ? String((passwordError as { code?: string }).code)
+          : "";
+      const isGoogleOnly =
+        code === "strategy_for_user_invalid" ||
+        passwordError.message?.toLowerCase().includes("google");
+
+      setError(
+        isGoogleOnly
+          ? t.auth.googleOnlyAccount
+          : clerkErrorMessage(passwordError, t.auth.signInError),
+      );
+      return;
+    }
+
+    if (signIn.status === "complete") {
+      const { error: finalizeError } = await signIn.finalize({
+        navigate: ({ decorateUrl }) => {
+          navigateAfterAuth(router, decorateUrl, "/dashboard");
+        },
       });
 
-      if (result.status === "complete") {
-        await setActive({ session: result.createdSessionId });
-        router.push("/dashboard");
-        return;
+      if (finalizeError) {
+        setError(clerkErrorMessage(finalizeError, t.auth.signInError));
       }
-
-      if (result.status === "needs_second_factor") {
-        router.push("/sign-in/factor-one");
-        return;
-      }
-
-      if (result.status === "needs_new_password") {
-        router.push("/sign-in/reset-password");
-        return;
-      }
-
-      setError(t.auth.signInError);
-    } catch (err: unknown) {
-      const message =
-        err && typeof err === "object" && "errors" in err
-          ? (err as { errors: { message: string }[] }).errors[0]?.message
-          : t.auth.signInError;
-      setError(message);
-    } finally {
-      setLoading(false);
+      return;
     }
+
+    if (signIn.status === "needs_second_factor") {
+      router.push("/sign-in/factor-one");
+      return;
+    }
+
+    if (signIn.status === "needs_new_password") {
+      router.push("/sign-in/reset-password");
+      return;
+    }
+
+    if (signIn.status === "needs_client_trust") {
+      router.push("/sign-in/factor-two");
+      return;
+    }
+
+    setError(t.auth.signInError);
   }
 
   return (
