@@ -5,6 +5,7 @@ import { SignUp } from "@clerk/nextjs";
 import { EmailPasswordSignUp } from "@/components/auth/email-password-sign-up";
 import { OAuthCallback } from "@/components/auth/oauth-callback";
 import { clerkAuthAppearance } from "@/lib/clerk-auth-appearance";
+import { AuthRedirectIfSignedIn } from "@/components/auth/auth-redirect-if-signed-in";
 
 const SSO_PATHS = ["/sign-up/sso-callback"];
 
@@ -29,5 +30,9 @@ export function SignUpRouter() {
     );
   }
 
-  return <EmailPasswordSignUp />;
+  return (
+    <AuthRedirectIfSignedIn>
+      <EmailPasswordSignUp />
+    </AuthRedirectIfSignedIn>
+  );
 }

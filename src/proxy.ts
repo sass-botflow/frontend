@@ -68,6 +68,30 @@ async function getUserOnboardingMetadata(userId: string) {
   return user.publicMetadata as UserOnboardingMetadata;
 }
 
+async function getAuthRedirectUrl(
+  userId: string,
+  request: NextRequest,
+): Promise<URL> {
+  try {
+    const metadata = await getUserOnboardingMetadata(userId);
+    if (!isOnboardingComplete(metadata)) {
+      return new URL("/onboarding", request.url);
+    }
+  } catch {
+    // Fall through to dashboard if metadata is unavailable.
+  }
+
+  return new URL("/dashboard", request.url);
+}
+
+function isOAuthCallbackPath(pathname: string) {
+  return (
+    pathname === "/sso-callback" ||
+    pathname === "/sign-in/sso-callback" ||
+    pathname === "/sign-up/sso-callback"
+  );
+}
+
 export default clerkMiddleware(async (auth, request) => {
   const localeResponse = handleLocaleRedirect(request);
   if (localeResponse) {
@@ -75,6 +99,16 @@ export default clerkMiddleware(async (auth, request) => {
   }
 
   const { userId } = await auth();
+  const { pathname } = request.nextUrl;
+
+  if (
+    userId &&
+    isAuthRoute(request) &&
+    !isOAuthCallbackPath(pathname)
+  ) {
+    const destination = await getAuthRedirectUrl(userId, request);
+    return NextResponse.redirect(destination);
+  }
 
   if (isOnboardingRoute(request)) {
     if (!userId) {
