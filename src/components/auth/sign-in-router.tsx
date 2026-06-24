@@ -1,13 +1,26 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import { SignIn } from "@clerk/nextjs";
+import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { EmailPasswordSignIn } from "@/components/auth/email-password-sign-in";
 import { OAuthCallback } from "@/components/auth/oauth-callback";
 import { AuthRedirectIfSignedIn } from "@/components/auth/auth-redirect-if-signed-in";
-import { clerkAuthAppearance } from "@/lib/clerk-auth-appearance";
 
 const SSO_PATHS = ["/sign-in/sso-callback"];
+
+function SignInSubpathRedirect() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace("/sign-in");
+  }, [router]);
+
+  return (
+    <div className="flex min-h-[200px] items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+    </div>
+  );
+}
 
 export function SignInRouter() {
   const pathname = usePathname();
@@ -16,21 +29,17 @@ export function SignInRouter() {
     return <OAuthCallback />;
   }
 
-  const isMain = pathname === "/sign-in";
+  if (pathname !== "/sign-in") {
+    return (
+      <AuthRedirectIfSignedIn>
+        <SignInSubpathRedirect />
+      </AuthRedirectIfSignedIn>
+    );
+  }
 
   return (
     <AuthRedirectIfSignedIn>
-      {isMain ? (
-        <EmailPasswordSignIn />
-      ) : (
-        <SignIn
-          routing="path"
-          path="/sign-in"
-          signUpUrl="/sign-up"
-          forceRedirectUrl="/dashboard"
-          appearance={clerkAuthAppearance}
-        />
-      )}
+      <EmailPasswordSignIn />
     </AuthRedirectIfSignedIn>
   );
 }
