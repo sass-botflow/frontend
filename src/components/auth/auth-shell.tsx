@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { BotFlowLogo } from "@/components/brand/botflow-logo";
 import { LanguageSwitcher } from "@/components/marketing/language-switcher";
-import { AuthTabs } from "@/components/auth/auth-tabs";
+import { AuthCard } from "@/components/auth/auth-card";
 import { useLocale } from "@/components/providers/locale-provider";
 
 export function AuthShell({ children }: { children: React.ReactNode }) {
@@ -18,21 +18,19 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
         <LanguageSwitcher />
       </div>
 
-      <div className="relative z-10 flex w-full max-w-[420px] flex-col items-center">
+      <div className="relative z-10 flex w-full max-w-[440px] flex-col items-center">
         <Link
           href="/en"
-          className="mb-6 transition-transform hover:scale-[1.02]"
+          className="mb-3 flex flex-col items-center transition-transform hover:scale-[1.02]"
         >
           <BotFlowLogo size="2xl" />
         </Link>
 
-        <p className="mb-6 text-center text-sm font-medium tracking-wide text-muted-foreground">
+        <p className="mb-8 text-center text-sm text-muted-foreground">
           {t.auth.tagline}
         </p>
 
-        <AuthTabs />
-
-        <div className="w-full">{children}</div>
+        <AuthCard>{children}</AuthCard>
 
         <p className="mt-8 text-center text-xs text-muted-foreground">
           {t.auth.copyright}

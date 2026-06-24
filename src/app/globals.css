@@ -133,48 +133,54 @@ body {
   background-size: 64px 64px;
 }
 
-/* Auth page layout (structure) — uses BotFlow primary colors */
+/* Auth page — unified card structure (tabs inside card) */
 .auth-page .cl-rootBox {
   width: 100%;
 }
 
 .auth-page .cl-card {
-  padding: 1.75rem 1.5rem 1.5rem;
+  padding: 0 !important;
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
+  gap: 1.25rem !important;
 }
 
-.auth-page .auth-clerk-card {
+.auth-page .auth-card {
   backdrop-filter: blur(12px);
 }
 
+.auth-page .auth-card-body .cl-header {
+  margin-bottom: 0.25rem;
+}
+
 .auth-page .auth-clerk-primary {
-  box-shadow: 0 4px 14px oklch(0.55 0.22 286 / 0.35);
-  transition: box-shadow 0.2s ease, background-color 0.2s ease;
+  box-shadow: 0 4px 14px oklch(0.55 0.22 286 / 0.3);
 }
 
 .auth-page .auth-clerk-primary:hover {
-  box-shadow: 0 6px 20px oklch(0.55 0.22 286 / 0.45);
+  box-shadow: 0 6px 18px oklch(0.55 0.22 286 / 0.4);
 }
 
 .auth-page .cl-formFieldInput:focus {
-  box-shadow: 0 0 0 1px oklch(0.55 0.22 286 / 0.35);
+  box-shadow: 0 0 0 1px oklch(0.55 0.22 286 / 0.3);
+}
+
+.auth-page .cl-footer {
+  border-top: none;
+}
+
+.auth-page .cl-footerPages {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--muted-foreground);
 }
 
 .auth-page .cl-footerPagesLink {
   color: var(--primary);
-}
-
-.auth-page .cl-footerPagesLink:hover {
-  opacity: 0.9;
-}
-
-.auth-page .cl-internal-b3fm6y {
-  color: var(--muted-foreground);
-}
-
-.auth-page .cl-internal-b3fm6y a {
-  color: var(--primary);
   font-weight: 500;
+}
+
+.auth-page .cl-formFieldAction {
+  font-size: 0.8125rem;
 }
