@@ -238,6 +238,23 @@ export const en = {
       { name: "Lina K.", preview: "Thanks! The AI answered perfectly.", time: "1h" },
     ],
   },
+  onboarding: {
+    welcome: "Welcome to BotFlow",
+    title: "Set up your business",
+    subtitle: "Tell us about your business so we can personalize your AI assistant.",
+    businessType: "Business type",
+    businessName: "Business name",
+    businessNamePlaceholder: "Acme Dental Clinic",
+    website: "Website",
+    websiteOptional: "(optional)",
+    websitePlaceholder: "https://yourbusiness.com",
+    whatsapp: "WhatsApp number",
+    whatsappPlaceholder: "+212 6XX XXX XXX",
+    whatsappHint: "We'll use this to connect your WhatsApp bot later.",
+    continue: "Continue to dashboard",
+    saving: "Saving...",
+    selectType: "Please select a business type.",
+  },
 };
 
 export const fr: Dictionary = {
@@ -476,6 +493,23 @@ export const fr: Dictionary = {
       { name: "Lina K.", preview: "Merci ! L'IA a parfaitement répondu.", time: "1h" },
     ],
   },
+  onboarding: {
+    welcome: "Bienvenue sur BotFlow",
+    title: "Configurez votre entreprise",
+    subtitle: "Parlez-nous de votre activité pour personnaliser votre assistant IA.",
+    businessType: "Type d'activité",
+    businessName: "Nom de l'entreprise",
+    businessNamePlaceholder: "Clinique Dentaire Acme",
+    website: "Site web",
+    websiteOptional: "(optionnel)",
+    websitePlaceholder: "https://votreentreprise.com",
+    whatsapp: "Numéro WhatsApp",
+    whatsappPlaceholder: "+212 6XX XXX XXX",
+    whatsappHint: "Nous l'utiliserons pour connecter votre bot WhatsApp plus tard.",
+    continue: "Continuer vers le tableau de bord",
+    saving: "Enregistrement...",
+    selectType: "Veuillez sélectionner un type d'activité.",
+  },
 };
 
 export const ar: Dictionary = {
@@ -713,6 +747,23 @@ export const ar: Dictionary = {
       { name: "يوسف م.", preview: "هل توصّلون إلى الدار البيضاء؟", time: "8 د" },
       { name: "لينا ك.", preview: "شكراً! أجاب الذكاء الاصطناعي بشكل ممتاز.", time: "1 س" },
     ],
+  },
+  onboarding: {
+    welcome: "مرحباً بك في BotFlow",
+    title: "إعداد نشاطك التجاري",
+    subtitle: "أخبرنا عن نشاطك التجاري لنخصص مساعدك الذكي.",
+    businessType: "نوع النشاط",
+    businessName: "اسم النشاط التجاري",
+    businessNamePlaceholder: "عيادة الأسنان أكمي",
+    website: "الموقع الإلكتروني",
+    websiteOptional: "(اختياري)",
+    websitePlaceholder: "https://yourbusiness.com",
+    whatsapp: "رقم واتساب",
+    whatsappPlaceholder: "+212 6XX XXX XXX",
+    whatsappHint: "سنستخدمه لربط بوت واتساب لاحقاً.",
+    continue: "المتابعة إلى لوحة التحكم",
+    saving: "جارٍ الحفظ...",
+    selectType: "يرجى اختيار نوع النشاط.",
   },
 };
 

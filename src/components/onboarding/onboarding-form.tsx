@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, Building2, Globe, MessageCircle, Phone } from "lucide-react";
+import { useLocale } from "@/components/providers/locale-provider";
 import { BUSINESS_TYPES } from "@/lib/ai-brain";
 import type { BusinessTypeId } from "@/lib/ai-brain";
 import { completeOnboarding } from "@/app/onboarding/actions";
@@ -14,6 +15,7 @@ import { cn } from "@/lib/utils";
 
 export function OnboardingForm() {
   const router = useRouter();
+  const { t } = useLocale();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [businessType, setBusinessType] = useState<BusinessTypeId | null>(null);
@@ -26,7 +28,7 @@ export function OnboardingForm() {
     setError(null);
 
     if (!businessType) {
-      setError("Please select a business type.");
+      setError(t.onboarding.selectType);
       return;
     }
 
@@ -54,19 +56,17 @@ export function OnboardingForm() {
       className="w-full max-w-2xl space-y-8 rounded-2xl border border-border/60 bg-card/80 p-6 shadow-xl backdrop-blur-sm sm:p-8"
     >
       <div className="space-y-2 text-center">
-        <p className="text-sm font-medium text-primary">Welcome to BotFlow</p>
+        <p className="text-sm font-medium text-primary">{t.onboarding.welcome}</p>
         <h1 className="text-2xl font-semibold tracking-tight">
-          Set up your business
+          {t.onboarding.title}
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Tell us about your business so we can personalize your AI assistant.
-        </p>
+        <p className="text-sm text-muted-foreground">{t.onboarding.subtitle}</p>
       </div>
 
       <div className="space-y-3">
         <Label className="flex items-center gap-2">
           <Building2 className="h-4 w-4 text-muted-foreground" />
-          Business type
+          {t.onboarding.businessType}
         </Label>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {BUSINESS_TYPES.map((type) => {
@@ -96,13 +96,13 @@ export function OnboardingForm() {
       <div className="space-y-2">
         <Label htmlFor="businessName" className="flex items-center gap-2">
           <Building2 className="h-4 w-4 text-muted-foreground" />
-          Business name
+          {t.onboarding.businessName}
         </Label>
         <Input
           id="businessName"
           value={businessName}
           onChange={(event) => setBusinessName(event.target.value)}
-          placeholder="Acme Dental Clinic"
+          placeholder={t.onboarding.businessNamePlaceholder}
           required
         />
       </div>
@@ -110,9 +110,9 @@ export function OnboardingForm() {
       <div className="space-y-2">
         <Label htmlFor="website" className="flex items-center gap-2">
           <Globe className="h-4 w-4 text-muted-foreground" />
-          Website
+          {t.onboarding.website}
           <span className="text-xs font-normal text-muted-foreground">
-            (optional)
+            {t.onboarding.websiteOptional}
           </span>
         </Label>
         <Input
@@ -120,33 +120,33 @@ export function OnboardingForm() {
           type="url"
           value={website}
           onChange={(event) => setWebsite(event.target.value)}
-          placeholder="https://yourbusiness.com"
+          placeholder={t.onboarding.websitePlaceholder}
         />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="whatsapp" className="flex items-center gap-2">
           <Phone className="h-4 w-4 text-muted-foreground" />
-          WhatsApp number
+          {t.onboarding.whatsapp}
         </Label>
         <Input
           id="whatsapp"
           type="tel"
           value={whatsapp}
           onChange={(event) => setWhatsapp(event.target.value)}
-          placeholder="+212 6XX XXX XXX"
+          placeholder={t.onboarding.whatsappPlaceholder}
           required
         />
         <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <MessageCircle className="h-3.5 w-3.5" />
-          We&apos;ll use this to connect your WhatsApp bot later.
+          {t.onboarding.whatsappHint}
         </p>
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       <Button type="submit" className="w-full gap-2" disabled={isPending}>
-        {isPending ? "Saving..." : "Continue to dashboard"}
+        {isPending ? t.onboarding.saving : t.onboarding.continue}
         {!isPending && <ArrowRight className="h-4 w-4" />}
       </Button>
     </motion.form>
