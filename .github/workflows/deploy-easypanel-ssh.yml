@@ -1,13 +1,21 @@
 name: Deploy to EasyPanel server
 
-# Manual deploy — run from GitHub Actions when EasyPanel UI is blocked.
-# Required secrets: DEPLOY_SSH_HOST, DEPLOY_SSH_USER, DEPLOY_SSH_KEY
+# Deploy bla EasyPanel UI — run from GitHub Actions tab.
+# Required secrets (repo Settings → Secrets → Actions):
+#   DEPLOY_SSH_HOST   e.g. 187.124.12.89
+#   DEPLOY_SSH_USER   e.g. root
+#   DEPLOY_SSH_KEY    private SSH key (full PEM, including BEGIN/END lines)
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows: ["Publish Docker image"]
+    types: [completed]
+    branches: [main]
 
 jobs:
   deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - name: Pull latest image and restart frontend
@@ -16,17 +24,26 @@ jobs:
           host: ${{ secrets.DEPLOY_SSH_HOST }}
           username: ${{ secrets.DEPLOY_SSH_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script_stop: true
           script: |
             set -e
-            echo "Pulling latest BotFlow frontend image..."
+            echo "=== BotFlow deploy $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
+            echo "Pulling ghcr.io/sass-botflow/frontend:latest ..."
             docker pull ghcr.io/sass-botflow/frontend:latest
-            CONTAINER=$(docker ps --format '{{.Names}}' | grep -E 'frontend|botflow' | head -1)
+
+            CONTAINER=$(docker ps --format '{{.Names}}' | grep -iE 'frontend|botflow' | head -1 || true)
             if [ -z "$CONTAINER" ]; then
-              echo "No running frontend container found. List:"
+              echo "No running frontend container. All containers:"
               docker ps -a
+              echo ""
+              echo "EasyPanel should recreate the service. Try Restart in EasyPanel or recreate the app."
               exit 1
             fi
-            echo "Recreating container: $CONTAINER"
-            docker stop "$CONTAINER" || true
-            docker rm "$CONTAINER" || true
-            echo "Done. Re-create the service in EasyPanel if it does not auto-start."
+
+            echo "Restarting container: $CONTAINER"
+            docker restart "$CONTAINER"
+
+            echo "Waiting for app to start..."
+            sleep 8
+            docker logs "$CONTAINER" --tail 15 2>&1 || true
+            echo "=== Deploy finished ==="
