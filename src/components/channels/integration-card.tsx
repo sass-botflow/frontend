@@ -3,16 +3,17 @@
 import { motion } from "framer-motion";
 import {
   CalendarClock,
-  Link2,
   Loader2,
   MessageCircle,
   TrendingUp,
   Unlink,
   UserRound,
 } from "lucide-react";
+import { ChannelConnectForm } from "@/components/channels/channel-connect-form";
 import { ChannelLogo } from "@/components/channels/channel-logo";
 import { Button } from "@/components/ui/button";
 import { CHANNEL_MAP } from "@/lib/channels";
+import type { ConnectCredentialsInput } from "@/lib/integrations/connect-credentials";
 import type { IntegrationPlatform, IntegrationRecord } from "@/lib/integrations/types";
 import { cn, formatRelativeTime } from "@/lib/utils";
 
@@ -20,30 +21,25 @@ interface IntegrationCardProps {
   integration: IntegrationRecord;
   index: number;
   loading: boolean;
-  onConnectRequest: (platform: IntegrationPlatform) => void;
+  onConnect: (credentials: ConnectCredentialsInput) => Promise<void>;
   onDisconnectRequest: (integration: IntegrationRecord) => void;
 }
 
 const PLATFORM_ACCENTS: Record<
   IntegrationPlatform,
-  { ring: string; glow: string; button: string }
+  { ring: string; glow: string }
 > = {
   whatsapp: {
     ring: "group-hover:ring-[#25D366]/30",
     glow: "from-[#25D366]/20",
-    button: "bg-[#25D366] hover:bg-[#1fb855] text-white shadow-[0_0_24px_-6px_#25D366]",
   },
   instagram: {
     ring: "group-hover:ring-[#DD2A7B]/30",
     glow: "from-[#DD2A7B]/20",
-    button:
-      "bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] hover:opacity-90 text-white border-0 shadow-[0_0_24px_-6px_#DD2A7B]",
   },
   tiktok: {
     ring: "group-hover:ring-white/20",
     glow: "from-white/10",
-    button:
-      "bg-foreground text-background hover:bg-foreground/90 shadow-[0_0_24px_-6px_rgba(255,255,255,0.15)]",
   },
 };
 
@@ -57,7 +53,7 @@ export function IntegrationCard({
   integration,
   index,
   loading,
-  onConnectRequest,
+  onConnect,
   onDisconnectRequest,
 }: IntegrationCardProps) {
   const platform = integration.platform;
@@ -122,37 +118,33 @@ export function IntegrationCard({
             </div>
           </div>
 
-          <Button
-            size="lg"
-            variant={connected ? "outline" : "default"}
-            disabled={loading}
-            className={cn(
-              "h-11 w-full shrink-0 rounded-xl font-semibold transition-all lg:w-auto",
-              !connected && accent.button,
-              connected &&
-                "border-border/70 bg-background/40 backdrop-blur hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive",
-            )}
-            onClick={() =>
-              connected
-                ? onDisconnectRequest(integration)
-                : onConnectRequest(platform)
-            }
-          >
-            {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : connected ? (
-              <>
-                <Unlink className="h-4 w-4" />
-                Disconnect
-              </>
-            ) : (
-              <>
-                <Link2 className="h-4 w-4" />
-                Connect
-              </>
-            )}
-          </Button>
+          {connected && (
+            <Button
+              size="lg"
+              variant="outline"
+              disabled={loading}
+              className="h-11 w-full shrink-0 rounded-xl border-border/70 bg-background/40 font-semibold backdrop-blur hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive lg:w-auto"
+              onClick={() => onDisconnectRequest(integration)}
+            >
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Unlink className="h-4 w-4" />
+                  Disconnect
+                </>
+              )}
+            </Button>
+          )}
         </div>
+
+        {!connected && (
+          <ChannelConnectForm
+            platform={platform}
+            loading={loading}
+            onSubmit={onConnect}
+          />
+        )}
 
         {connected && integration.stats && (
           <div className="grid gap-3 sm:grid-cols-2">

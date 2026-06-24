@@ -1,4 +1,4 @@
-import { Sparkles } from "lucide-react";
+import { ArrowDown, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
 export function ChannelsEmptyState() {
@@ -16,13 +16,19 @@ export function ChannelsEmptyState() {
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/15 ring-1 ring-primary/25">
           <Sparkles className="h-6 w-6 text-primary" />
         </div>
-        <div className="space-y-1">
+        <div className="space-y-2">
           <h3 className="text-lg font-semibold tracking-tight">
             Connect your first channel
           </h3>
           <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
-            When you connect your channels, BotFlow can automatically answer
-            customers, capture leads and book appointments.
+            Scroll down to WhatsApp, Instagram, or TikTok. Each card has a form
+            where you enter your credentials — phone number, @username, API
+            IDs, and access token — then press{" "}
+            <span className="font-medium text-foreground">Save &amp; connect</span>.
+          </p>
+          <p className="inline-flex items-center gap-1.5 text-xs font-medium text-primary">
+            <ArrowDown className="h-3.5 w-3.5" />
+            Forms are directly on each channel card below
           </p>
         </div>
       </div>

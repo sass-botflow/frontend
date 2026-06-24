@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { PlugZap, Radio, Sparkles } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { ChannelsEmptyState } from "@/components/channels/channels-empty-state";
-import { ConnectChannelDialog } from "@/components/channels/connect-channel-dialog";
 import { DisconnectChannelDialog } from "@/components/channels/disconnect-channel-dialog";
 import { IntegrationCard } from "@/components/channels/integration-card";
 import {
@@ -13,7 +12,6 @@ import {
   ChannelsPageSkeleton,
 } from "@/components/channels/channels-skeleton";
 import { useIntegrations } from "@/hooks/use-integrations";
-import type { ConnectCredentialsInput } from "@/lib/integrations/connect-credentials";
 import type { IntegrationPlatform, IntegrationRecord } from "@/lib/integrations/types";
 import { cn } from "@/lib/utils";
 
@@ -28,17 +26,10 @@ export function ChannelsDashboard() {
     disconnect,
   } = useIntegrations();
 
-  const [connectPlatform, setConnectPlatform] =
-    useState<IntegrationPlatform | null>(null);
   const [disconnectTarget, setDisconnectTarget] =
     useState<IntegrationRecord | null>(null);
 
   const showEmptyState = !loading && connectedCount === 0;
-
-  async function handleConnect(credentials: ConnectCredentialsInput) {
-    await connect(credentials);
-    setConnectPlatform(null);
-  }
 
   async function handleDisconnect(platform: IntegrationPlatform) {
     await disconnect(platform);
@@ -48,16 +39,6 @@ export function ChannelsDashboard() {
   return (
     <>
       <DashboardHeader title="Channels" />
-
-      <ConnectChannelDialog
-        platform={connectPlatform}
-        open={connectPlatform !== null}
-        loading={actionPlatform === connectPlatform}
-        onOpenChange={(open) => {
-          if (!open) setConnectPlatform(null);
-        }}
-        onSubmit={handleConnect}
-      />
 
       <DisconnectChannelDialog
         integration={disconnectTarget}
@@ -88,8 +69,9 @@ export function ChannelsDashboard() {
               Connect your customer channels
             </h2>
             <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-              Add your WhatsApp, Instagram or TikTok credentials. BotFlow stores
-              them securely and starts automating once connected.
+              Fill in the connection form on each channel card below. Paste your
+              phone number, username, IDs, and access tokens — then click Save
+              &amp; connect.
             </p>
           </motion.div>
 
@@ -140,7 +122,7 @@ export function ChannelsDashboard() {
                   integration={integration}
                   index={index}
                   loading={actionPlatform === integration.platform}
-                  onConnectRequest={setConnectPlatform}
+                  onConnect={connect}
                   onDisconnectRequest={setDisconnectTarget}
                 />
               ))}
