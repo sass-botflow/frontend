@@ -132,3 +132,53 @@ body {
     linear-gradient(to bottom, oklch(0.5 0.02 286 / 0.06) 1px, transparent 1px);
   background-size: 64px 64px;
 }
+
+/* AdSkull-style neon auth (Clerk sign-in / sign-up) */
+.auth-neon-page .cl-rootBox {
+  width: 100%;
+}
+
+.auth-neon-page .cl-card {
+  padding: 1.75rem 1.5rem 1.5rem;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.auth-neon-page .auth-clerk-card {
+  backdrop-filter: blur(12px);
+}
+
+.auth-neon-page .auth-clerk-primary {
+  box-shadow:
+    0 0 24px rgba(57, 255, 20, 0.42),
+    0 0 48px rgba(57, 255, 20, 0.16) !important;
+  transition: box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.auth-neon-page .auth-clerk-primary:hover {
+  box-shadow:
+    0 0 32px rgba(57, 255, 20, 0.55),
+    0 0 64px rgba(57, 255, 20, 0.22) !important;
+}
+
+.auth-neon-page .cl-formFieldInput:focus {
+  box-shadow: 0 0 0 1px rgba(57, 255, 20, 0.35);
+}
+
+.auth-neon-page .cl-footerPagesLink {
+  color: #39ff14;
+}
+
+.auth-neon-page .cl-footerPagesLink:hover {
+  color: #5dff3f;
+}
+
+.auth-neon-page .cl-internal-b3fm6y {
+  color: #9ca3af;
+}
+
+.auth-neon-page .cl-internal-b3fm6y a {
+  color: #39ff14;
+  font-weight: 500;
+}

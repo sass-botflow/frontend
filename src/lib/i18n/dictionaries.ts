@@ -12,6 +12,12 @@ export const en = {
     signIn: "Sign in",
     startFree: "Start free",
   },
+  auth: {
+    tagline: "AI Customer Automation Platform",
+    signInTab: "Sign In",
+    signUpTab: "Create an account",
+    copyright: "© 2026 BotFlow. All rights reserved.",
+  },
   hero: {
     badge: "Trusted by 500+ businesses worldwide",
     title: "Your AI customer assistant for",
@@ -267,6 +273,12 @@ export const fr: Dictionary = {
     signIn: "Connexion",
     startFree: "Essai gratuit",
   },
+  auth: {
+    tagline: "Plateforme d'automatisation client IA",
+    signInTab: "Connexion",
+    signUpTab: "Créer un compte",
+    copyright: "© 2026 BotFlow. Tous droits réservés.",
+  },
   hero: {
     badge: "Approuvé par plus de 500 entreprises",
     title: "Votre assistant client IA pour",
@@ -521,6 +533,12 @@ export const ar: Dictionary = {
     pricing: "الأسعار",
     signIn: "تسجيل الدخول",
     startFree: "ابدأ مجاناً",
+  },
+  auth: {
+    tagline: "منصة أتمتة العملاء بالذكاء الاصطناعي",
+    signInTab: "تسجيل الدخول",
+    signUpTab: "إنشاء حساب",
+    copyright: "© 2026 BotFlow. جميع الحقوق محفوظة.",
   },
   hero: {
     badge: "موثوق به من أكثر من 500 شركة حول العالم",
