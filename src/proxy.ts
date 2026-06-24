@@ -93,9 +93,13 @@ export default clerkMiddleware(async (auth, request) => {
     await auth.protect({ unauthenticatedUrl: "/sign-in" });
 
     if (userId) {
-      const metadata = await getUserOnboardingMetadata(userId);
-      if (!isOnboardingComplete(metadata)) {
-        return NextResponse.redirect(new URL("/onboarding", request.url));
+      try {
+        const metadata = await getUserOnboardingMetadata(userId);
+        if (!isOnboardingComplete(metadata)) {
+          return NextResponse.redirect(new URL("/onboarding", request.url));
+        }
+      } catch {
+        // Avoid blocking access if Clerk metadata is temporarily unavailable.
       }
     }
   }

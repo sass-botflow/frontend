@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useSignIn, useSignUp } from "@clerk/nextjs/legacy";
+import { useSignIn, useSignUp } from "@clerk/nextjs";
 import { useLocale } from "@/components/providers/locale-provider";
 import { Button } from "@/components/ui/button";
-import { getOAuthCallbackUrl, SSO_CALLBACK } from "@/lib/auth-oauth";
+import { SSO_CALLBACK } from "@/lib/auth-oauth";
 
 function GoogleIcon() {
   return (
@@ -35,53 +35,43 @@ interface GoogleAuthButtonProps {
 
 export function GoogleAuthButton({ mode }: GoogleAuthButtonProps) {
   const { t } = useLocale();
-  const { isLoaded, signIn } = useSignIn();
-  const { isLoaded: signUpLoaded, signUp } = useSignUp();
-  const [loading, setLoading] = useState(false);
+  const { signIn, fetchStatus: signInStatus } = useSignIn();
+  const { signUp, fetchStatus: signUpStatus } = useSignUp();
   const [error, setError] = useState<string | null>(null);
+
+  const loading =
+    mode === "sign-in" ? signInStatus === "fetching" : signUpStatus === "fetching";
 
   async function handleGoogle() {
     setError(null);
-    setLoading(true);
-
-    const callbackUrl = getOAuthCallbackUrl(SSO_CALLBACK);
 
     try {
       if (mode === "sign-in") {
-        if (!isLoaded || !signIn) {
-          setLoading(false);
-          return;
-        }
-
-        await signIn.authenticateWithRedirect({
+        const { error: ssoError } = await signIn.sso({
           strategy: "oauth_google",
-          redirectUrl: callbackUrl,
-          redirectUrlComplete: "/dashboard",
+          redirectCallbackUrl: SSO_CALLBACK,
+          redirectUrl: "/dashboard",
           oidcPrompt: "select_account",
         });
+
+        if (ssoError) {
+          setError(ssoError.longMessage ?? ssoError.message ?? t.auth.googleError);
+        }
         return;
       }
 
-      if (!signUpLoaded || !signUp) {
-        setLoading(false);
-        return;
-      }
-
-      await signUp.authenticateWithRedirect({
+      const { error: ssoError } = await signUp.sso({
         strategy: "oauth_google",
-        redirectUrl: callbackUrl,
-        redirectUrlComplete: "/onboarding",
+        redirectCallbackUrl: SSO_CALLBACK,
+        redirectUrl: "/onboarding",
         oidcPrompt: "select_account",
       });
-    } catch (err: unknown) {
-      const message =
-        err && typeof err === "object" && "errors" in err
-          ? (err as { errors: { longMessage?: string; message: string }[] }).errors[0]
-              ?.longMessage ||
-            (err as { errors: { message: string }[] }).errors[0]?.message
-          : t.auth.googleError;
-      setError(message ?? t.auth.googleError);
-      setLoading(false);
+
+      if (ssoError) {
+        setError(ssoError.longMessage ?? ssoError.message ?? t.auth.googleError);
+      }
+    } catch {
+      setError(t.auth.googleError);
     }
   }
 
