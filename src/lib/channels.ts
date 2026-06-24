@@ -13,7 +13,7 @@ export interface ChannelMeta {
 export const CHANNEL_MAP: Record<ChannelId, ChannelMeta> = {
   whatsapp: {
     id: "whatsapp",
-    name: "WhatsApp",
+    name: "WhatsApp Business",
     color: "#25D366",
     dotColor: "bg-[#25D366]",
     dotLabel: "🟢 WhatsApp",
@@ -22,7 +22,7 @@ export const CHANNEL_MAP: Record<ChannelId, ChannelMeta> = {
   },
   instagram: {
     id: "instagram",
-    name: "Instagram",
+    name: "Instagram Business",
     color: "#E4405F",
     dotColor: "bg-gradient-to-br from-[#F58529] via-[#DD2A7B] to-[#8134AF]",
     dotLabel: "🟣 Instagram",
@@ -31,7 +31,7 @@ export const CHANNEL_MAP: Record<ChannelId, ChannelMeta> = {
   },
   tiktok: {
     id: "tiktok",
-    name: "TikTok",
+    name: "TikTok Business",
     color: "#010101",
     dotColor: "bg-[#010101] dark:bg-white",
     dotLabel: "⚫ TikTok",

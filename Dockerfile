@@ -32,8 +32,9 @@ ENV NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=$NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL
 ENV NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=$NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL
 ENV NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=$NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL
 ENV NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=$NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL
+ENV DATABASE_URL="file:./build.db"
 
-RUN npm run build
+RUN npx prisma generate && npm run build
 
 FROM node:20-alpine AS runner
 RUN apk add --no-cache libc6-compat curl
@@ -48,6 +49,14 @@ RUN addgroup --system --gid 1001 nodejs && \
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
+
+RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data
+
+ENV DATABASE_URL="file:/app/data/botflow.db"
 
 USER nextjs
 
@@ -58,4 +67,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
 
 # Docker injects HOSTNAME=container-id at runtime, which breaks Next.js binding.
 # Force 0.0.0.0 so EasyPanel's reverse proxy can reach the app.
-CMD ["sh", "-c", "HOSTNAME=0.0.0.0 PORT=${PORT:-3000} node server.js"]
+CMD ["sh", "-c", "npx prisma db push --skip-generate && HOSTNAME=0.0.0.0 PORT=${PORT:-3000} node server.js"]
