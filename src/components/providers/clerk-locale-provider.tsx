@@ -17,9 +17,9 @@ export function ClerkLocaleProvider({
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
       signInFallbackRedirectUrl="/dashboard"
-      signUpFallbackRedirectUrl="/onboarding"
+      signUpFallbackRedirectUrl="/dashboard"
       signInForceRedirectUrl="/dashboard"
-      signUpForceRedirectUrl="/onboarding"
+      signUpForceRedirectUrl="/dashboard"
       appearance={clerkAppearance}
       localization={getClerkLocalization(locale)}
     >

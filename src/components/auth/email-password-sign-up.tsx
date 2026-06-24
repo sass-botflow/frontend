@@ -2,18 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useSignUp } from "@clerk/nextjs";
-import { autoVerifyUserEmail } from "@/app/auth/actions";
 import { useLocale } from "@/components/providers/locale-provider";
 import { GoogleAuthButton } from "@/components/auth/google-auth-button";
-import { clerkErrorMessage } from "@/lib/auth-navigate";
+import { clerkErrorMessage, finishAuthAndRedirect } from "@/lib/auth-navigate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export function EmailPasswordSignUp() {
-  const router = useRouter();
   const { t } = useLocale();
   const { signUp, fetchStatus } = useSignUp();
   const [name, setName] = useState("");
@@ -42,23 +39,14 @@ export function EmailPasswordSignUp() {
       return;
     }
 
-    const { error: finalizeError } = await signUp.finalize({
-      navigate: async ({ decorateUrl }) => {
-        await autoVerifyUserEmail();
-        const destination = decorateUrl("/onboarding");
-
-        if (destination.startsWith("http")) {
-          window.location.assign(destination);
-          return;
-        }
-
-        router.replace(destination);
-      },
-    });
+    const { error: finalizeError } = await signUp.finalize();
 
     if (finalizeError) {
       setError(clerkErrorMessage(finalizeError, t.auth.signUpError));
+      return;
     }
+
+    await finishAuthAndRedirect("/dashboard");
   }
 
   return (

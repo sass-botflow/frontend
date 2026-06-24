@@ -68,22 +68,6 @@ async function getUserOnboardingMetadata(userId: string) {
   return user.publicMetadata as UserOnboardingMetadata;
 }
 
-async function getAuthRedirectUrl(
-  userId: string,
-  request: NextRequest,
-): Promise<URL> {
-  try {
-    const metadata = await getUserOnboardingMetadata(userId);
-    if (!isOnboardingComplete(metadata)) {
-      return new URL("/onboarding", request.url);
-    }
-  } catch {
-    // Fall through to dashboard if metadata is unavailable.
-  }
-
-  return new URL("/dashboard", request.url);
-}
-
 function isOAuthCallbackPath(pathname: string) {
   return (
     pathname === "/sso-callback" ||
@@ -101,13 +85,8 @@ export default clerkMiddleware(async (auth, request) => {
   const { userId } = await auth();
   const { pathname } = request.nextUrl;
 
-  if (
-    userId &&
-    isAuthRoute(request) &&
-    !isOAuthCallbackPath(pathname)
-  ) {
-    const destination = await getAuthRedirectUrl(userId, request);
-    return NextResponse.redirect(destination);
+  if (userId && isAuthRoute(request) && !isOAuthCallbackPath(pathname)) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   if (isOnboardingRoute(request)) {
@@ -125,17 +104,6 @@ export default clerkMiddleware(async (auth, request) => {
 
   if (isProtectedRoute(request)) {
     await auth.protect({ unauthenticatedUrl: "/sign-in" });
-
-    if (userId) {
-      try {
-        const metadata = await getUserOnboardingMetadata(userId);
-        if (!isOnboardingComplete(metadata)) {
-          return NextResponse.redirect(new URL("/onboarding", request.url));
-        }
-      } catch {
-        // Avoid blocking access if Clerk metadata is temporarily unavailable.
-      }
-    }
   }
 
   return NextResponse.next();

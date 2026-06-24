@@ -4,10 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSignIn } from "@clerk/nextjs";
-import { autoVerifyUserEmail } from "@/app/auth/actions";
 import { useLocale } from "@/components/providers/locale-provider";
 import { GoogleAuthButton } from "@/components/auth/google-auth-button";
-import { clerkErrorMessage, navigateAfterAuth } from "@/lib/auth-navigate";
+import { clerkErrorMessage, finishAuthAndRedirect } from "@/lib/auth-navigate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -48,20 +47,6 @@ export function EmailPasswordSignIn() {
       return;
     }
 
-    if (signIn.status === "complete") {
-      const { error: finalizeError } = await signIn.finalize({
-        navigate: async ({ decorateUrl }) => {
-          await autoVerifyUserEmail();
-          navigateAfterAuth(router, decorateUrl, "/dashboard");
-        },
-      });
-
-      if (finalizeError) {
-        setError(clerkErrorMessage(finalizeError, t.auth.signInError));
-      }
-      return;
-    }
-
     if (signIn.status === "needs_second_factor") {
       router.push("/sign-in/factor-one");
       return;
@@ -77,7 +62,19 @@ export function EmailPasswordSignIn() {
       return;
     }
 
-    setError(t.auth.signInError);
+    if (signIn.status !== "complete") {
+      setError(t.auth.signInError);
+      return;
+    }
+
+    const { error: finalizeError } = await signIn.finalize();
+
+    if (finalizeError) {
+      setError(clerkErrorMessage(finalizeError, t.auth.signInError));
+      return;
+    }
+
+    await finishAuthAndRedirect("/dashboard");
   }
 
   return (

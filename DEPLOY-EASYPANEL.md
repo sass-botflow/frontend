@@ -151,6 +151,8 @@ F [dashboard.clerk.com](https://dashboard.clerk.com) → **User & Authentication
 | **Email** | Enabled |
 | **Password** | Enabled |
 | **Verify at sign-up** | **OFF** (ma khassch code f email) |
+| **Client Trust** | **OFF** (ma yb9ach yطلب verify kol mara) |
+| **Session lifetime** | **7 days** wla ktar (Sessions → max lifetime) |
 | **Google** | Enabled |
 | **Domains** | `https://www.botflow.ink` + `https://botflow.ink` |
 

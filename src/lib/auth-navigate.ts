@@ -1,18 +1,8 @@
-import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { autoVerifyUserEmail, bootstrapUserAccess } from "@/app/auth/actions";
 
-export function navigateAfterAuth(
-  router: AppRouterInstance,
-  decorateUrl: (url: string) => string,
-  path: string,
-) {
-  const destination = decorateUrl(path);
-
-  if (destination.startsWith("http")) {
-    window.location.assign(destination);
-    return;
-  }
-
-  router.replace(destination);
+/** Full page navigation — required for Clerk session cookies to persist. */
+export function hardRedirect(path: string) {
+  window.location.href = path;
 }
 
 export function clerkErrorMessage(
@@ -20,4 +10,11 @@ export function clerkErrorMessage(
   fallback: string,
 ) {
   return error?.longMessage ?? error?.message ?? fallback;
+}
+
+/** Verify email, ensure dashboard access, then hard-redirect (keeps session). */
+export async function finishAuthAndRedirect(path: string) {
+  await autoVerifyUserEmail();
+  await bootstrapUserAccess();
+  hardRedirect(path);
 }

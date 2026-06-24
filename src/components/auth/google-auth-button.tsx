@@ -63,7 +63,7 @@ export function GoogleAuthButton({ mode }: GoogleAuthButtonProps) {
       const { error: ssoError } = await signUp.sso({
         strategy: "oauth_google",
         redirectCallbackUrl: SSO_CALLBACK,
-        redirectUrl: "/onboarding",
+        redirectUrl: "/dashboard",
         oidcPrompt: "select_account",
       });
 
