@@ -11,14 +11,14 @@ export function AuthTabs() {
   const isSignIn = pathname.startsWith("/sign-in");
 
   return (
-    <div className="auth-tabs mb-6 grid w-full grid-cols-2 gap-1 rounded-2xl border border-white/[0.08] bg-[#0d0d0d] p-1">
+    <div className="auth-tabs mb-6 grid w-full grid-cols-2 gap-1 rounded-2xl border border-border/60 bg-muted/30 p-1">
       <Link
         href="/sign-in"
         className={cn(
           "rounded-xl px-4 py-2.5 text-center text-sm font-semibold transition-all",
           isSignIn
-            ? "auth-tab-active bg-[#39ff14] text-black shadow-[0_0_28px_rgba(57,255,20,0.45)]"
-            : "text-gray-400 hover:text-white",
+            ? "auth-tab-active bg-primary text-primary-foreground shadow-md"
+            : "text-muted-foreground hover:text-foreground",
         )}
       >
         {t.auth.signInTab}
@@ -28,8 +28,8 @@ export function AuthTabs() {
         className={cn(
           "rounded-xl px-4 py-2.5 text-center text-sm font-semibold transition-all",
           !isSignIn
-            ? "auth-tab-active bg-[#39ff14] text-black shadow-[0_0_28px_rgba(57,255,20,0.45)]"
-            : "text-gray-400 hover:text-white",
+            ? "auth-tab-active bg-primary text-primary-foreground shadow-md"
+            : "text-muted-foreground hover:text-foreground",
         )}
       >
         {t.auth.signUpTab}

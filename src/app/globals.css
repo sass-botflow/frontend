@@ -133,52 +133,48 @@ body {
   background-size: 64px 64px;
 }
 
-/* AdSkull-style neon auth (Clerk sign-in / sign-up) */
-.auth-neon-page .cl-rootBox {
+/* Auth page layout (structure) — uses BotFlow primary colors */
+.auth-page .cl-rootBox {
   width: 100%;
 }
 
-.auth-neon-page .cl-card {
+.auth-page .cl-card {
   padding: 1.75rem 1.5rem 1.5rem;
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
 }
 
-.auth-neon-page .auth-clerk-card {
+.auth-page .auth-clerk-card {
   backdrop-filter: blur(12px);
 }
 
-.auth-neon-page .auth-clerk-primary {
-  box-shadow:
-    0 0 24px rgba(57, 255, 20, 0.42),
-    0 0 48px rgba(57, 255, 20, 0.16) !important;
+.auth-page .auth-clerk-primary {
+  box-shadow: 0 4px 14px oklch(0.55 0.22 286 / 0.35);
   transition: box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
-.auth-neon-page .auth-clerk-primary:hover {
-  box-shadow:
-    0 0 32px rgba(57, 255, 20, 0.55),
-    0 0 64px rgba(57, 255, 20, 0.22) !important;
+.auth-page .auth-clerk-primary:hover {
+  box-shadow: 0 6px 20px oklch(0.55 0.22 286 / 0.45);
 }
 
-.auth-neon-page .cl-formFieldInput:focus {
-  box-shadow: 0 0 0 1px rgba(57, 255, 20, 0.35);
+.auth-page .cl-formFieldInput:focus {
+  box-shadow: 0 0 0 1px oklch(0.55 0.22 286 / 0.35);
 }
 
-.auth-neon-page .cl-footerPagesLink {
-  color: #39ff14;
+.auth-page .cl-footerPagesLink {
+  color: var(--primary);
 }
 
-.auth-neon-page .cl-footerPagesLink:hover {
-  color: #5dff3f;
+.auth-page .cl-footerPagesLink:hover {
+  opacity: 0.9;
 }
 
-.auth-neon-page .cl-internal-b3fm6y {
-  color: #9ca3af;
+.auth-page .cl-internal-b3fm6y {
+  color: var(--muted-foreground);
 }
 
-.auth-neon-page .cl-internal-b3fm6y a {
-  color: #39ff14;
+.auth-page .cl-internal-b3fm6y a {
+  color: var(--primary);
   font-weight: 500;
 }
