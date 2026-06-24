@@ -1,31 +1,27 @@
 import { prisma } from "@/lib/prisma";
+import {
+  getDisplayName,
+  validateConnectCredentials,
+  type ConnectCredentialsInput,
+} from "@/lib/integrations/connect-credentials";
 import type {
   IntegrationPlatform,
   IntegrationRecord,
   PlatformStats,
 } from "@/lib/integrations/types";
 
-const PLATFORM_DISPLAY: Record<
-  IntegrationPlatform,
-  { label: string; mockAccount: string }
-> = {
-  whatsapp: { label: "WhatsApp Business", mockAccount: "+212 612 345 678" },
-  instagram: { label: "Instagram Business", mockAccount: "@botflow.studio" },
-  tiktok: { label: "TikTok Business", mockAccount: "@botflow.official" },
-};
-
 const PLATFORM_STATS: Record<IntegrationPlatform, PlatformStats> = {
   whatsapp: {
-    primaryMetric: { label: "Conversations today", value: 47 },
-    leadsCaptured: { label: "Leads captured", value: 12 },
+    primaryMetric: { label: "Conversations today", value: 0 },
+    leadsCaptured: { label: "Leads captured", value: 0 },
   },
   instagram: {
-    primaryMetric: { label: "DMs today", value: 23 },
-    leadsCaptured: { label: "Leads captured", value: 8 },
+    primaryMetric: { label: "DMs today", value: 0 },
+    leadsCaptured: { label: "Leads captured", value: 0 },
   },
   tiktok: {
-    primaryMetric: { label: "Messages today", value: 15 },
-    leadsCaptured: { label: "Leads captured", value: 5 },
+    primaryMetric: { label: "Messages today", value: 0 },
+    leadsCaptured: { label: "Leads captured", value: 0 },
   },
 };
 
@@ -81,28 +77,46 @@ export async function getIntegrationsForUser(
   return rows.map(toRecord);
 }
 
+function mapCredentialsToDb(credentials: ConnectCredentialsInput) {
+  switch (credentials.platform) {
+    case "whatsapp":
+      return {
+        externalId: getDisplayName(credentials),
+        accessToken: credentials.accessToken,
+        refreshToken: credentials.phoneNumberId,
+      };
+    case "instagram":
+      return {
+        externalId: getDisplayName(credentials),
+        accessToken: credentials.accessToken,
+        refreshToken: credentials.pageId,
+      };
+    case "tiktok":
+      return {
+        externalId: getDisplayName(credentials),
+        accessToken: credentials.accessToken,
+        refreshToken: credentials.businessId,
+      };
+  }
+}
+
 export async function connectPlatform(
   userId: string,
-  platform: IntegrationPlatform,
+  rawInput: Record<string, string> & { platform: IntegrationPlatform },
 ): Promise<IntegrationRecord> {
-  const mock = PLATFORM_DISPLAY[platform];
-  const externalId = mock.mockAccount;
-  const tokenSuffix = crypto.randomUUID().slice(0, 12);
+  const credentials = validateConnectCredentials(rawInput);
+  const mapped = mapCredentialsToDb(credentials);
 
   const row = await prisma.integration.upsert({
-    where: { userId_platform: { userId, platform } },
+    where: { userId_platform: { userId, platform: credentials.platform } },
     create: {
       userId,
-      platform,
-      externalId,
-      accessToken: `bf_${platform}_access_${tokenSuffix}`,
-      refreshToken: `bf_${platform}_refresh_${tokenSuffix}`,
+      platform: credentials.platform,
+      ...mapped,
       isConnected: true,
     },
     update: {
-      externalId,
-      accessToken: `bf_${platform}_access_${tokenSuffix}`,
-      refreshToken: `bf_${platform}_refresh_${tokenSuffix}`,
+      ...mapped,
       isConnected: true,
     },
   });

@@ -4,6 +4,7 @@ import type {
   IntegrationsResponse,
   IntegrationPlatform,
 } from "@/lib/integrations/types";
+import type { ConnectCredentialsInput } from "@/lib/integrations/connect-credentials";
 
 async function parseJson<T>(response: Response): Promise<T> {
   if (!response.ok) {
@@ -21,10 +22,13 @@ export async function fetchIntegrations(): Promise<IntegrationsResponse> {
 }
 
 export async function connectIntegration(
-  platform: IntegrationPlatform,
+  credentials: ConnectCredentialsInput,
 ): Promise<ConnectIntegrationResponse> {
+  const { platform, ...body } = credentials;
   const response = await fetch(`/api/integrations/${platform}/connect`, {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
   });
   return parseJson<ConnectIntegrationResponse>(response);
 }

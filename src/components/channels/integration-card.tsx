@@ -20,8 +20,8 @@ interface IntegrationCardProps {
   integration: IntegrationRecord;
   index: number;
   loading: boolean;
-  onConnect: (platform: IntegrationPlatform) => void;
-  onDisconnect: (platform: IntegrationPlatform) => void;
+  onConnectRequest: (platform: IntegrationPlatform) => void;
+  onDisconnectRequest: (integration: IntegrationRecord) => void;
 }
 
 const PLATFORM_ACCENTS: Record<
@@ -57,8 +57,8 @@ export function IntegrationCard({
   integration,
   index,
   loading,
-  onConnect,
-  onDisconnect,
+  onConnectRequest,
+  onDisconnectRequest,
 }: IntegrationCardProps) {
   const platform = integration.platform;
   const channel = CHANNEL_MAP[platform];
@@ -133,7 +133,9 @@ export function IntegrationCard({
                 "border-border/70 bg-background/40 backdrop-blur hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive",
             )}
             onClick={() =>
-              connected ? onDisconnect(platform) : onConnect(platform)
+              connected
+                ? onDisconnectRequest(integration)
+                : onConnectRequest(platform)
             }
           >
             {loading ? (

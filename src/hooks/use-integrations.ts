@@ -6,6 +6,7 @@ import {
   disconnectIntegration,
   fetchIntegrations,
 } from "@/lib/integrations/client";
+import type { ConnectCredentialsInput } from "@/lib/integrations/connect-credentials";
 import type {
   IntegrationPlatform,
   IntegrationRecord,
@@ -37,14 +38,15 @@ export function useIntegrations() {
   }, [load]);
 
   const connect = useCallback(
-    async (platform: IntegrationPlatform) => {
-      setActionPlatform(platform);
+    async (credentials: ConnectCredentialsInput) => {
+      setActionPlatform(credentials.platform);
       setError(null);
       try {
-        await connectIntegration(platform);
+        await connectIntegration(credentials);
         await load();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Connect failed");
+        throw err;
       } finally {
         setActionPlatform(null);
       }
@@ -61,6 +63,7 @@ export function useIntegrations() {
         await load();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Disconnect failed");
+        throw err;
       } finally {
         setActionPlatform(null);
       }
