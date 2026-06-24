@@ -26,6 +26,8 @@ Open [http://localhost:3000](http://localhost:3000)
 |----------|-------------|
 | `NEXT_PUBLIC_APP_URL` | Frontend URL (`https://botflow.ink`) |
 | `NEXT_PUBLIC_API_URL` | Backend API (`https://api.botflow.ink`) |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable key |
+| `CLERK_SECRET_KEY` | Clerk secret key (server only) |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe public key |
 
 ## Routes

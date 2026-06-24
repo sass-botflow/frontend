@@ -6,6 +6,7 @@ import { Menu, Moon, Sun, X } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "next-themes";
 import { BotFlowLogo } from "@/components/brand/botflow-logo";
+import { AuthNavActions } from "@/components/auth/auth-nav-actions";
 import { LanguageSwitcher } from "@/components/marketing/language-switcher";
 import { useLocale, useLocalizedPath } from "@/components/providers/locale-provider";
 import { Button } from "@/components/ui/button";
@@ -59,12 +60,10 @@ export function MarketingNavbar() {
             <Sun className="h-4 w-4 rotate-0 scale-100 dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-4 w-4 rotate-90 scale-0 dark:rotate-0 dark:scale-100" />
           </Button>
-          <Button variant="ghost" size="sm" className="hidden sm:inline-flex" asChild>
-            <Link href="/login">{t.nav.signIn}</Link>
-          </Button>
-          <Button size="sm" className="hidden sm:inline-flex" asChild>
-            <Link href="/register">{t.nav.startFree}</Link>
-          </Button>
+          <AuthNavActions
+            signInLabel={t.nav.signIn}
+            signUpLabel={t.nav.startFree}
+          />
           <Button
             variant="ghost"
             size="icon"
@@ -97,14 +96,12 @@ export function MarketingNavbar() {
             <span className="px-3 text-xs text-muted-foreground">Language</span>
             <LanguageSwitcher />
           </div>
-          <div className="mt-2 flex flex-col gap-2">
-            <Button variant="outline" asChild>
-              <Link href="/login">{t.nav.signIn}</Link>
-            </Button>
-            <Button asChild>
-              <Link href="/register">{t.nav.startFree}</Link>
-            </Button>
-          </div>
+          <AuthNavActions
+            layout="mobile"
+            signInLabel={t.nav.signIn}
+            signUpLabel={t.nav.startFree}
+            className="mt-2 flex flex-col gap-2"
+          />
         </nav>
       </div>
     </motion.header>

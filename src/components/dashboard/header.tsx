@@ -1,18 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { UserButton } from "@clerk/nextjs";
 import { HelpCircle, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { LanguageSwitcher } from "@/components/marketing/language-switcher";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 export function DashboardHeader({ title }: { title?: string }) {
   const { theme, setTheme } = useTheme();
@@ -44,20 +37,13 @@ export function DashboardHeader({ title }: { title?: string }) {
           <Moon className="absolute h-4 w-4 rotate-90 scale-0 dark:rotate-0 dark:scale-100" />
         </Button>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 rounded-full p-0">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="text-xs">BF</AvatarFallback>
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Sign out</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <UserButton
+          appearance={{
+            elements: {
+              avatarBox: "h-8 w-8",
+            },
+          }}
+        />
       </div>
     </header>
   );
