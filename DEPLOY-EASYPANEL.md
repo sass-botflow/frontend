@@ -98,6 +98,35 @@ Sift screenshot dyal EasyPanel (service frontend) w nqolk **fin tkliki b daba**.
 | 502 | Internal port = **3000** |
 
 ### Test après restart
+
+F browser: **Ctrl+Shift+R** (hard refresh) on https://www.botflow.ink/dashboard/channels
+
+Vérifier version déployée:
+```bash
+curl https://www.botflow.ink/api/health
+```
+
+Khassk tchouf:
+```json
+{
+  "version": "6987428...",
+  "features": { "premiumChannels": true, "integrationsApi": true }
+}
+```
+
+Ila `version` ma kaynach wla `premiumChannels: false` → **server mazal 3la version qdima**. Khass **Deploy** (pull image), mashi ghir Restart.
+
+### Deploy mn GitHub (ila EasyPanel ma kheddamch)
+
+1. GitHub → repo → **Settings** → **Secrets** → zid:
+   - `DEPLOY_SSH_HOST` = `187.124.12.89`
+   - `DEPLOY_SSH_USER` = `root`
+   - `DEPLOY_SSH_KEY` = clé SSH privée
+2. **Actions** → **Deploy to EasyPanel server** → **Run workflow**
+
+---
+
+### Ancien test health
    ```bash
    curl https://www.botflow.ink/api/health
    ```

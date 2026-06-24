@@ -1,0 +1,32 @@
+name: Deploy to EasyPanel server
+
+# Manual deploy — run from GitHub Actions when EasyPanel UI is blocked.
+# Required secrets: DEPLOY_SSH_HOST, DEPLOY_SSH_USER, DEPLOY_SSH_KEY
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull latest image and restart frontend
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_SSH_HOST }}
+          username: ${{ secrets.DEPLOY_SSH_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            set -e
+            echo "Pulling latest BotFlow frontend image..."
+            docker pull ghcr.io/sass-botflow/frontend:latest
+            CONTAINER=$(docker ps --format '{{.Names}}' | grep -E 'frontend|botflow' | head -1)
+            if [ -z "$CONTAINER" ]; then
+              echo "No running frontend container found. List:"
+              docker ps -a
+              exit 1
+            fi
+            echo "Recreating container: $CONTAINER"
+            docker stop "$CONTAINER" || true
+            docker rm "$CONTAINER" || true
+            echo "Done. Re-create the service in EasyPanel if it does not auto-start."

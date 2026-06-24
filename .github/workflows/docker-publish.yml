@@ -43,3 +43,5 @@ jobs:
             NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
             NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/onboarding
             NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=/en
+            APP_VERSION=${{ github.sha }}
+            BUILD_TIME=${{ github.event.head_commit.timestamp }}
