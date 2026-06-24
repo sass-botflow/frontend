@@ -142,6 +142,20 @@ NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=/en
 
 ---
 
+## Clerk Dashboard (obligatoire)
+
+F [dashboard.clerk.com](https://dashboard.clerk.com) → **User & Authentication**:
+
+| Setting | Valeur |
+|---------|--------|
+| **Email** | Enabled |
+| **Password** | Enabled |
+| **Verify at sign-up** | **OFF** (ma khassch code f email) |
+| **Google** | Enabled |
+| **Domains** | `https://www.botflow.ink` + `https://botflow.ink` |
+
+---
+
 ## Checklist rapide
 
 - [ ] GitHub secret `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` zedtih
