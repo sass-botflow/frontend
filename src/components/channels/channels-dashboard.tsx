@@ -105,8 +105,12 @@ export function ChannelsDashboard() {
           )}
 
           {error && (
-            <div className="mb-6 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-              {error}
+            <div className="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+              <p className="font-medium">Could not sync saved channels</p>
+              <p className="mt-1 text-amber-200/80">
+                {error}. Scroll down — WhatsApp, Instagram and TikTok forms are
+                still available below.
+              </p>
             </div>
           )}
 

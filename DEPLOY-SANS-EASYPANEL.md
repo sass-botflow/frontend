@@ -46,9 +46,16 @@ Khassk tchouf:
 ```json
 {
   "status": "ok",
+  "database": "connected",
   "features": { "premiumChannels": true, "integrationsApi": true }
 }
 ```
+
+Ila `"database": "error"` → zid f EasyPanel env vars (wla server env):
+```
+DATABASE_URL=file:/app/data/botflow.db
+```
+w redeploy.
 
 F browser: **Ctrl+Shift+R** on https://www.botflow.ink/dashboard/channels
 
