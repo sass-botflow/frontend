@@ -1,0 +1,45 @@
+name: Publish Docker image
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,prefix=
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          build-args: |
+            NEXT_PUBLIC_APP_URL=https://botflow.ink
+            NEXT_PUBLIC_API_URL=https://api.botflow.ink
+            NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+            NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+            NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+            NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+            NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/onboarding
+            NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=/en

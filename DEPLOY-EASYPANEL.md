@@ -1,52 +1,50 @@
-# Deploy BotFlow f EasyPanel — Guide étape par étape
+# Deploy BotFlow f EasyPanel — Guide simple (Darija + FR)
 
-> **Problème actuel:** `botflow.ink` kay affichi 404 (logo vert dyal EasyPanel) = l'app ma kaynach déployée wla l'container ma kaykhdemch.
+> **Daba `botflow.ink` kay affichi 404** = l'app ma deployéch wla l'container ma kaykhdemch.
+> Hadi l'guide b jouj tari9a — **Tari9a 1 (Docker Image) hiya l'as7al**.
 
-## Étape 1 — Dkhol l EasyPanel
+---
 
-1. Fta7 EasyPanel f navigateur (ex: `http://187.124.12.89:3000` wla l'URL li 3tak)
-2. Connecté b username/password dyalek
+## Tari9a 1 — Docker Image (MA7BOUS ✅)
 
-## Étape 2 — Créer le projet (ila ma kaynach)
+Ma khassk **tbuildi** f EasyPanel. GitHub kaybni l'image automatiquement, w nta ghir kat-pulliha.
 
-1. **Create Project** → smiya: `sass-botflow`
-2. Dkhol f le projet
+### 1) GitHub Secrets (marra wa7da)
 
-## Étape 3 — Ajouter le service Frontend
+F GitHub → `sass-botflow/frontend` → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**:
 
-1. **+ Service** → **App**
-2. **Source:** GitHub
-3. Connecté GitHub (ila ma connectitch):
-   - Install EasyPanel GitHub App
-   - Authorize `sass-botflow/frontend`
-4. Config:
+| Secret | Valeur |
+|--------|--------|
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | `pk_test_...` (mn Clerk Dashboard) |
 
-| Champ | Valeur |
-|-------|--------|
-| Repository | `sass-botflow/frontend` |
-| Branch | `main` |
-| Build method | **Dockerfile** |
-| Dockerfile path | `Dockerfile` |
-| Port | `3000` |
+B3d ma tzid had secret, dir **push** l `main` wla f **Actions** → **Publish Docker image** → **Run workflow**.
 
-## Étape 4 — Domain
+### 2) Khalli l'image public (marra wa7da)
 
-1. F service → **Domains**
-2. Zid: `botflow.ink`
-3. Enable **HTTPS** (Let's Encrypt)
-4. **Internal port:** `3000`
+Men ba3d awwal build:
+- GitHub → **Packages** → `frontend` → **Package settings** → **Change visibility** → **Public**
 
-## Étape 5 — Environment Variables
+(Ila b9at private, khass credentials f EasyPanel.)
 
-F **Environment** zid had les variables (**runtime**):
+### 3) EasyPanel — créer / configurer service
+
+1. Dkhol EasyPanel (`http://187.124.12.89:3000` wla URL dyalek)
+2. Projet: `sass-botflow` → Service: `frontend` (wla créer jdid)
+3. **Source** → **`Docker Image`** (mashi GitHub!)
+4. Image:
+   ```
+   ghcr.io/sass-botflow/frontend:latest
+   ```
+5. **Port:** `3000`
+6. **Domains** → `botflow.ink` + HTTPS ON + Internal port `3000`
+
+### 4) Environment Variables (runtime)
 
 ```
 PORT=3000
 NODE_ENV=production
 NEXT_PUBLIC_APP_URL=https://botflow.ink
 NEXT_PUBLIC_API_URL=https://api.botflow.ink
-
-# Clerk (obligatoire pour login)
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
@@ -56,7 +54,34 @@ NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/onboarding
 NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=/en
 ```
 
-F **Build Arguments** (nafs les `NEXT_PUBLIC_*` — EasyPanel → Build):
+### 5) Deploy
+
+1. Click **Deploy**
+2. Chouf **Logs** — khass:
+   ```
+   Ready on http://0.0.0.0:3000
+   ```
+3. Test:
+   ```bash
+   curl https://botflow.ink/api/health
+   ```
+
+---
+
+## Tari9a 2 — GitHub + Dockerfile
+
+Ila bghiti EasyPanel ybuildi mn code:
+
+| Champ | Valeur |
+|-------|--------|
+| Source | GitHub |
+| Repository | `sass-botflow/frontend` |
+| Branch | `main` |
+| Build method | **Dockerfile** |
+| Dockerfile path | `Dockerfile` |
+| Port | `3000` |
+
+**Build Arguments** (obligatoire):
 
 ```
 NEXT_PUBLIC_APP_URL=https://botflow.ink
@@ -69,52 +94,39 @@ NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/onboarding
 NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=/en
 ```
 
-> ⚠️ `NEXT_PUBLIC_*` khasshom yكونو f **build ET runtime**. `CLERK_SECRET_KEY` runtime ghir.
-
-## Étape 6 — Deploy
-
-1. Click **Deploy** (wla **Rebuild**)
-2. Sber 3-5 minutes (build kayakhod wa9t)
-3. Chouf **Logs** — khass tchouf:
-   ```
-   ✓ Ready on http://0.0.0.0:3000
-   ```
-
-## Étape 7 — Vérification
-
-```bash
-curl https://botflow.ink/api/health
-```
-
-Khass trj3:
-```json
-{"status":"ok","service":"botflow-frontend",...}
-```
+**Runtime env:** nafs variables + `CLERK_SECRET_KEY` + `PORT=3000`.
 
 ---
 
-## Erreurs communes
+## Ma9dertch ndir Deploy? — Solutions
 
-### 1. 404 (logo vert EasyPanel)
-**Cause:** Container ma kaykhdemch
-**Solution:**
-- Chouf **Logs** f EasyPanel
-- Ila kayn `getaddrinfo EAI_AGAIN` → pull latest `main` (déjà fixé)
+### "Ma kaynach Deploy button" / ma 3reftch fin
+- Khass tkoun f **Project** → **Service** (mashi ghir l'accueil)
+- Service type = **App**
+- Ila ma kaynach service: **+ Service** → **App**
+
+### "Build failed" (Tari9a 2)
+- Vérifier **Build Arguments** — `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` khasso yكون
+- Branch = `main`
+- GitHub connecté (EasyPanel GitHub App)
+- **Solution as7al:** st3mel **Tari9a 1** (Docker Image)
+
+### "Pull image failed" (Tari9a 1)
+- Image public f GitHub Packages (voir étape 2)
+- Wla zid Registry credentials f EasyPanel:
+  - Username: ton GitHub username
+  - Password: GitHub Personal Access Token (`read:packages`)
+
+### 404 (logo vert EasyPanel)
+- Container ma kaykhdemch — chouf **Logs**
+- Port = `3000` (machi 80)
 - Redeploy
 
-### 2. Build failed
-**Cause:** GitHub ma connectich wla branch ghalat
-**Solution:**
-- Vérifier Repository = `sass-botflow/frontend`
-- Branch = `main`
-- Reconnect GitHub
+### 502 Bad Gateway
+- Internal port ghalat → `3000`
 
-### 3. 502 Bad Gateway
-**Cause:** Port ghalat
-**Solution:** Port = `3000` (mach 80 wla 8000)
-
-### 4. SSL error (Cloudflare)
-**Solution:** F Cloudflare → SSL/TLS → **Full** (mach Flexible)
+### SSL / Cloudflare
+- Cloudflare → SSL/TLS → **Full** (machi Flexible)
 
 ---
 
@@ -122,17 +134,28 @@ Khass trj3:
 
 | Type | Name | Value | Proxy |
 |------|------|-------|-------|
-| A | `@` (botflow.ink) | `187.124.12.89` | Proxied ☁️ |
+| A | `@` | `187.124.12.89` | Proxied ☁️ |
 | CNAME | `www` | `botflow.ink` | Proxied ☁️ |
 | A | `api` | `187.124.12.89` | Proxied ☁️ |
 
-⚠️ **www** ma tkounch pointée l `parkingpage.namecheap.com`
+⚠️ `www` ma tkounch `parkingpage.namecheap.com`
+
+---
+
+## Checklist rapide
+
+- [ ] GitHub secret `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` zedtih
+- [ ] Workflow **Publish Docker image** kheddam (Actions tab)
+- [ ] Package GHCR public
+- [ ] EasyPanel source = **Docker Image** `ghcr.io/sass-botflow/frontend:latest`
+- [ ] Port 3000 + domain `botflow.ink`
+- [ ] Env vars (Clerk keys)
+- [ ] Deploy → Logs "Ready on 0.0.0.0:3000"
+- [ ] `curl https://botflow.ink/api/health` → ok
 
 ---
 
 ## Backend (API) — service jdid
-
-Ila bghiti `api.botflow.ink` ykhdem, khass service jdid:
 
 | Champ | Valeur |
 |-------|--------|
@@ -140,18 +163,3 @@ Ila bghiti `api.botflow.ink` ykhdem, khass service jdid:
 | Branch | `main` |
 | Port | `8000` |
 | Domain | `api.botflow.ink` |
-
----
-
-## Checklist rapide
-
-- [ ] GitHub connecté f EasyPanel
-- [ ] Repo: `sass-botflow/frontend`
-- [ ] Branch: `main`
-- [ ] Builder: Dockerfile
-- [ ] Port: 3000
-- [ ] Domain: botflow.ink + HTTPS
-- [ ] Env vars zedthom
-- [ ] Deploy / Rebuild
-- [ ] Logs: "Ready on 0.0.0.0:3000"
-- [ ] `curl https://botflow.ink/api/health` → ok
