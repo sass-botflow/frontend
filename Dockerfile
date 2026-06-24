@@ -42,7 +42,7 @@ ENV BUILD_TIME=$BUILD_TIME
 RUN npm run build
 
 FROM node:20-alpine AS runner
-RUN apk add --no-cache libc6-compat curl
+RUN apk add --no-cache libc6-compat curl openssl
 WORKDIR /app
 
 ARG APP_VERSION=dev
@@ -63,8 +63,11 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder /app/package.json ./package.json
+COPY scripts/docker-start.sh ./docker-start.sh
 
-RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data
+RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data /app/docker-start.sh && \
+    chmod +x /app/docker-start.sh
 
 ENV DATABASE_URL="file:/app/data/botflow.db"
 
@@ -77,4 +80,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
 
 # Docker injects HOSTNAME=container-id at runtime, which breaks Next.js binding.
 # Force 0.0.0.0 so EasyPanel's reverse proxy can reach the app.
-CMD ["sh", "-c", "npx prisma db push --skip-generate && HOSTNAME=0.0.0.0 PORT=${PORT:-3000} node server.js"]
+CMD ["./docker-start.sh"]

@@ -91,11 +91,32 @@ Sift screenshot dyal EasyPanel (service frontend) w nqolk **fin tkliki b daba**.
 
 | Problème | Solution |
 |----------|----------|
+| **Deploy → Cancel** | Chouf **Logs** (tab Logs). 7alabat: image ma tpullatch, build failed, wla container crash f startup |
+| Cancel + "pull access denied" | GHCR image private → dirha **Public** wla zid registry token |
+| Cancel + build timeout | St3mel **Docker Image** (Tari9a 1), mashi GitHub build f EasyPanel |
+| Cancel + container exit 1 | Zid `DATABASE_URL=file:/app/data/botflow.db` f env vars |
 | Ma kaynach Deploy button | Khass tkoun f **Project → Service** (mashi accueil) |
 | Build failed | St3mel **Docker Image** (Tari9a 1), mashi GitHub build |
 | Pull image failed | GHCR public wla credentials |
 | 404 / logo vert | Port = **3000**, chouf Logs |
 | 502 | Internal port = **3000** |
+
+### 3lach EasyPanel kaytl3 "Cancel"?
+
+EasyPanel ma kay "cancel" bla sabab. Hadi l-asbab l-mumkin:
+
+1. **Nta klit Cancel** 7da deploy (normal)
+2. **Image ma tpullatch** — `ghcr.io/sass-botflow/frontend:latest` private wla ghalat
+3. **Container kaycrash** — app ma tbdaech (chouf Logs: prisma, CLERK_SECRET_KEY, port)
+4. **Build f EasyPanel failed** — ila source = GitHub mashi Docker Image
+5. **Timeout** — build khddam bzaf w EasyPanel 7bas
+
+**Chno dir:**
+1. Service → **Logs** (awel 20 lines)
+2. Ila kayban `prisma` wla `Error` → zid `DATABASE_URL=file:/app/data/botflow.db`
+3. Source = **Docker Image** (mashi GitHub)
+4. Image = `ghcr.io/sass-botflow/frontend:latest`
+5. **Deploy** mn jdid — **ma tklikch Cancel**
 
 ### Test après restart
 
