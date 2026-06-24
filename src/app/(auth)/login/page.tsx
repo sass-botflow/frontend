@@ -1,16 +1,5 @@
-import { SignIn } from "@clerk/nextjs";
+import { redirect } from "next/navigation";
 
-export const metadata = { title: "Sign in" };
-
-export default function LoginPage() {
-  return (
-    <div className="flex w-full justify-center">
-      <SignIn
-        routing="path"
-        path="/login"
-        signUpUrl="/register"
-        forceRedirectUrl="/dashboard/channels"
-      />
-    </div>
-  );
+export default function LoginRedirectPage() {
+  redirect("/sign-in");
 }

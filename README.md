@@ -36,7 +36,9 @@ Open [http://localhost:3000](http://localhost:3000)
 |------|-------------|
 | `/` | Marketing landing page |
 | `/pricing` | Pricing plans |
-| `/login`, `/register` | Authentication |
+| `/sign-in`, `/sign-up` | Clerk authentication (email + Google) |
+| `/onboarding` | Post-signup business setup |
+| `/login`, `/register` | Redirect to `/sign-in` and `/sign-up` |
 | `/dashboard` | Overview with KPIs |
 | `/dashboard/inbox` | Unified multi-channel inbox |
 | `/dashboard/bots` | AI agent list |

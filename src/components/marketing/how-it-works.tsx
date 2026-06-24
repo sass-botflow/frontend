@@ -46,7 +46,7 @@ export function HowItWorks() {
                   {step.description}
                 </p>
                 <Link
-                  href="/register"
+                  href="/sign-up"
                   className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100"
                 >
                   {step.link}

@@ -1,12 +1,23 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { clerkMiddleware, createRouteMatcher, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { defaultLocale, isValidLocale } from "@/lib/i18n/config";
+import {
+  isOnboardingComplete,
+  type UserOnboardingMetadata,
+} from "@/lib/onboarding";
 
 const COOKIE_NAME = "botflow_locale";
 const PUBLIC_PATHS = ["/pricing"];
 
 const isProtectedRoute = createRouteMatcher(["/dashboard(.*)"]);
+const isOnboardingRoute = createRouteMatcher(["/onboarding(.*)"]);
+const isAuthRoute = createRouteMatcher([
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  "/login(.*)",
+  "/register(.*)",
+]);
 
 function handleLocaleRedirect(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -14,8 +25,8 @@ function handleLocaleRedirect(request: NextRequest) {
   if (
     pathname.startsWith("/api") ||
     pathname.startsWith("/dashboard") ||
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/register") ||
+    pathname.startsWith("/onboarding") ||
+    isAuthRoute(request) ||
     pathname.startsWith("/_next") ||
     pathname.includes(".")
   ) {
@@ -50,15 +61,45 @@ function handleLocaleRedirect(request: NextRequest) {
   return null;
 }
 
+async function getUserOnboardingMetadata(userId: string) {
+  const client = await clerkClient();
+  const user = await client.users.getUser(userId);
+  return user.publicMetadata as UserOnboardingMetadata;
+}
+
 export default clerkMiddleware(async (auth, request) => {
   const localeResponse = handleLocaleRedirect(request);
   if (localeResponse) {
     return localeResponse;
   }
 
-  if (isProtectedRoute(request)) {
-    await auth.protect();
+  const { userId } = await auth();
+
+  if (isOnboardingRoute(request)) {
+    if (!userId) {
+      return NextResponse.redirect(new URL("/sign-in", request.url));
+    }
+
+    const metadata = await getUserOnboardingMetadata(userId);
+    if (isOnboardingComplete(metadata)) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+
+    return NextResponse.next();
   }
+
+  if (isProtectedRoute(request)) {
+    await auth.protect({ unauthenticatedUrl: "/sign-in" });
+
+    if (userId) {
+      const metadata = await getUserOnboardingMetadata(userId);
+      if (!isOnboardingComplete(metadata)) {
+        return NextResponse.redirect(new URL("/onboarding", request.url));
+      }
+    }
+  }
+
+  return NextResponse.next();
 });
 
 export const config = {

@@ -24,7 +24,7 @@ export function AuthNavActions({
   return (
     <div className={className}>
       <Show when="signed-out">
-        <SignInButton mode="redirect" forceRedirectUrl="/dashboard/channels">
+        <SignInButton mode="redirect" forceRedirectUrl="/dashboard">
           <Button
             variant={isMobile ? "outline" : "ghost"}
             size="sm"
@@ -33,7 +33,7 @@ export function AuthNavActions({
             {signInLabel}
           </Button>
         </SignInButton>
-        <SignUpButton mode="redirect" forceRedirectUrl="/dashboard/channels">
+        <SignUpButton mode="redirect" forceRedirectUrl="/onboarding">
           <Button
             size="sm"
             className={isMobile ? "w-full" : "hidden sm:inline-flex"}
@@ -56,10 +56,12 @@ export function AuthNavActions({
             className={isMobile ? "w-full" : undefined}
             asChild
           >
-            <Link href="/dashboard/channels">{dashboardLabel}</Link>
+            <Link href="/dashboard">{dashboardLabel}</Link>
           </Button>
           <div className={isMobile ? "flex justify-center" : undefined}>
             <UserButton
+              userProfileMode="navigation"
+              userProfileUrl="/dashboard/settings/profile"
               appearance={{
                 elements: {
                   avatarBox: "h-8 w-8",

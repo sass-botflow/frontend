@@ -17,8 +17,8 @@ export function Footer() {
       { href: lp("/pricing"), label: t.nav.pricing },
     ],
     [t.footer.company]: [
-      { href: "/login", label: t.nav.signIn },
-      { href: "/register", label: t.nav.startFree },
+      { href: "/sign-in", label: t.nav.signIn },
+      { href: "/sign-up", label: t.nav.startFree },
       { href: "#faq", label: t.nav.faq },
     ],
     [t.footer.support]: [

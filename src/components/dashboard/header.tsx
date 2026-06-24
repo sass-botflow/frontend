@@ -38,6 +38,8 @@ export function DashboardHeader({ title }: { title?: string }) {
         </Button>
 
         <UserButton
+          userProfileMode="navigation"
+          userProfileUrl="/dashboard/settings/profile"
           appearance={{
             elements: {
               avatarBox: "h-8 w-8",

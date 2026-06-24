@@ -29,6 +29,9 @@ export function localizedPath(path: string, locale: Locale): string {
     path.startsWith("#") ||
     path.startsWith("http") ||
     path.startsWith("/dashboard") ||
+    path.startsWith("/onboarding") ||
+    path.startsWith("/sign-in") ||
+    path.startsWith("/sign-up") ||
     path.startsWith("/login") ||
     path.startsWith("/register") ||
     path.startsWith("/api")

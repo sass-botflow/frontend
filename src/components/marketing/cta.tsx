@@ -24,7 +24,7 @@ export function CTA() {
         <p className="mt-4 text-lg text-muted-foreground">{t.cta.subtitle}</p>
 
         <Button size="lg" className="mt-10 h-12 px-10 text-base" asChild>
-          <Link href="/register">
+          <Link href="/sign-up">
             {t.cta.button}
             <ArrowRight className="h-4 w-4" />
           </Link>

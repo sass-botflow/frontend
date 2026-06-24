@@ -46,7 +46,7 @@ export function Hero() {
 
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button size="lg" className="h-12 px-8 text-base" asChild>
-              <Link href="/register">
+              <Link href="/sign-up">
                 {t.hero.ctaPrimary}
                 <ArrowRight className="h-4 w-4" />
               </Link>
