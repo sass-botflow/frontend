@@ -12,7 +12,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ARG NEXT_PUBLIC_APP_URL=https://botflow.ink
+ARG NEXT_PUBLIC_APP_URL=https://www.botflow.ink
 ARG NEXT_PUBLIC_API_URL=https://api.botflow.ink
 ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 ARG NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in

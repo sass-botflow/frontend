@@ -43,7 +43,7 @@ Men ba3d awwal build:
 ```
 PORT=3000
 NODE_ENV=production
-NEXT_PUBLIC_APP_URL=https://botflow.ink
+NEXT_PUBLIC_APP_URL=https://www.botflow.ink
 NEXT_PUBLIC_API_URL=https://api.botflow.ink
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
@@ -63,7 +63,7 @@ NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=/en
    ```
 3. Test:
    ```bash
-   curl https://botflow.ink/api/health
+   curl https://www.botflow.ink/api/health
    ```
 
 ---
@@ -84,7 +84,7 @@ Ila bghiti EasyPanel ybuildi mn code:
 **Build Arguments** (obligatoire):
 
 ```
-NEXT_PUBLIC_APP_URL=https://botflow.ink
+NEXT_PUBLIC_APP_URL=https://www.botflow.ink
 NEXT_PUBLIC_API_URL=https://api.botflow.ink
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
@@ -151,7 +151,7 @@ NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=/en
 - [ ] Port 3000 + domain `botflow.ink`
 - [ ] Env vars (Clerk keys)
 - [ ] Deploy → Logs "Ready on 0.0.0.0:3000"
-- [ ] `curl https://botflow.ink/api/health` → ok
+- [ ] `curl https://www.botflow.ink/api/health` → ok
 
 ---
 

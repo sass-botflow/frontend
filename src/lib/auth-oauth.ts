@@ -3,10 +3,10 @@ export function getOAuthCallbackUrl(path: string): string {
   const base =
     typeof window !== "undefined"
       ? window.location.origin
-      : (process.env.NEXT_PUBLIC_APP_URL ?? "https://botflow.ink");
+      : (process.env.NEXT_PUBLIC_APP_URL ?? "https://www.botflow.ink");
 
   return `${base.replace(/\/$/, "")}${path}`;
 }
 
-export const SIGN_IN_SSO_CALLBACK = "/sign-in/sso-callback";
-export const SIGN_UP_SSO_CALLBACK = "/sign-up/sso-callback";
+/** Single callback route — avoids sign-in catch-all swallowing nested paths. */
+export const SSO_CALLBACK = "/sso-callback";

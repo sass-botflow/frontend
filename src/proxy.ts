@@ -15,6 +15,7 @@ const isOnboardingRoute = createRouteMatcher(["/onboarding(.*)"]);
 const isAuthRoute = createRouteMatcher([
   "/sign-in(.*)",
   "/sign-up(.*)",
+  "/sso-callback(.*)",
   "/login(.*)",
   "/register(.*)",
 ]);

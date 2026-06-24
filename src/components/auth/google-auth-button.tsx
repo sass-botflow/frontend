@@ -4,11 +4,7 @@ import { useState } from "react";
 import { useSignIn, useSignUp } from "@clerk/nextjs/legacy";
 import { useLocale } from "@/components/providers/locale-provider";
 import { Button } from "@/components/ui/button";
-import {
-  getOAuthCallbackUrl,
-  SIGN_IN_SSO_CALLBACK,
-  SIGN_UP_SSO_CALLBACK,
-} from "@/lib/auth-oauth";
+import { getOAuthCallbackUrl, SSO_CALLBACK } from "@/lib/auth-oauth";
 
 function GoogleIcon() {
   return (
@@ -48,24 +44,34 @@ export function GoogleAuthButton({ mode }: GoogleAuthButtonProps) {
     setError(null);
     setLoading(true);
 
+    const callbackUrl = getOAuthCallbackUrl(SSO_CALLBACK);
+
     try {
       if (mode === "sign-in") {
-        if (!isLoaded || !signIn) return;
+        if (!isLoaded || !signIn) {
+          setLoading(false);
+          return;
+        }
 
         await signIn.authenticateWithRedirect({
           strategy: "oauth_google",
-          redirectUrl: getOAuthCallbackUrl(SIGN_IN_SSO_CALLBACK),
+          redirectUrl: callbackUrl,
           redirectUrlComplete: "/dashboard",
+          oidcPrompt: "select_account",
         });
         return;
       }
 
-      if (!signUpLoaded || !signUp) return;
+      if (!signUpLoaded || !signUp) {
+        setLoading(false);
+        return;
+      }
 
       await signUp.authenticateWithRedirect({
         strategy: "oauth_google",
-        redirectUrl: getOAuthCallbackUrl(SIGN_UP_SSO_CALLBACK),
+        redirectUrl: callbackUrl,
         redirectUrlComplete: "/onboarding",
+        oidcPrompt: "select_account",
       });
     } catch (err: unknown) {
       const message =

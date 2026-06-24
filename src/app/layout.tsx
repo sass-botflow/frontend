@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   description:
     "Automate customer communication across WhatsApp, Instagram, TikTok and Messenger from one premium dashboard.",
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://botflow.ink",
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://www.botflow.ink",
   ),
   icons: {
     icon: [

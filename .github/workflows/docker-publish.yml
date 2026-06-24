@@ -35,7 +35,7 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           build-args: |
-            NEXT_PUBLIC_APP_URL=https://botflow.ink
+            NEXT_PUBLIC_APP_URL=https://www.botflow.ink
             NEXT_PUBLIC_API_URL=https://api.botflow.ink
             NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
             NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
