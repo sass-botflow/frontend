@@ -102,11 +102,11 @@ export default clerkMiddleware(async (auth, request) => {
     return NextResponse.next();
   }
 
-  if (isProtectedRoute(request)) {
-    // Middleware redirects must use absolute URLs (Next.js 15+).
-    await auth.protect({
-      unauthenticatedUrl: new URL("/sign-in", request.url).href,
-    });
+  // Match sign-in page: pending Clerk sessions still count as signed in.
+  // auth.protect() defaults treatPendingAsSignedOut=true and caused a loop
+  // (sign-in → dashboard → sign-in) with "You're already signed in".
+  if (isProtectedRoute(request) && !userId) {
+    return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
   return NextResponse.next();
