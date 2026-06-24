@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSignUp } from "@clerk/nextjs";
+import { autoVerifyUserEmail } from "@/app/auth/actions";
 import { useLocale } from "@/components/providers/locale-provider";
 import { GoogleAuthButton } from "@/components/auth/google-auth-button";
 import { clerkErrorMessage } from "@/lib/auth-navigate";
@@ -41,32 +42,23 @@ export function EmailPasswordSignUp() {
       return;
     }
 
-    if (signUp.status === "complete") {
-      const { error: finalizeError } = await signUp.finalize({
-        navigate: ({ decorateUrl }) => {
-          const destination = decorateUrl("/onboarding");
-          if (destination.startsWith("http")) {
-            window.location.assign(destination);
-            return;
-          }
-          router.replace(destination);
-        },
-      });
+    const { error: finalizeError } = await signUp.finalize({
+      navigate: async ({ decorateUrl }) => {
+        await autoVerifyUserEmail();
+        const destination = decorateUrl("/onboarding");
 
-      if (finalizeError) {
-        setError(clerkErrorMessage(finalizeError, t.auth.signUpError));
-      }
-      return;
+        if (destination.startsWith("http")) {
+          window.location.assign(destination);
+          return;
+        }
+
+        router.replace(destination);
+      },
+    });
+
+    if (finalizeError) {
+      setError(clerkErrorMessage(finalizeError, t.auth.signUpError));
     }
-
-    const { error: sendCodeError } = await signUp.verifications.sendEmailCode();
-
-    if (sendCodeError) {
-      setError(clerkErrorMessage(sendCodeError, t.auth.signUpError));
-      return;
-    }
-
-    router.push("/sign-up/verify-email-address");
   }
 
   return (

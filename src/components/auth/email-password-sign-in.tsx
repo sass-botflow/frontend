@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSignIn } from "@clerk/nextjs";
+import { autoVerifyUserEmail } from "@/app/auth/actions";
 import { useLocale } from "@/components/providers/locale-provider";
 import { GoogleAuthButton } from "@/components/auth/google-auth-button";
 import { clerkErrorMessage, navigateAfterAuth } from "@/lib/auth-navigate";
@@ -49,7 +50,8 @@ export function EmailPasswordSignIn() {
 
     if (signIn.status === "complete") {
       const { error: finalizeError } = await signIn.finalize({
-        navigate: ({ decorateUrl }) => {
+        navigate: async ({ decorateUrl }) => {
+          await autoVerifyUserEmail();
           navigateAfterAuth(router, decorateUrl, "/dashboard");
         },
       });

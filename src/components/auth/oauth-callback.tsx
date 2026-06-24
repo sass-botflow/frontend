@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { HandleSSOCallback } from "@clerk/react";
+import { autoVerifyUserEmail } from "@/app/auth/actions";
 
 function navigate(router: ReturnType<typeof useRouter>, to: string) {
   if (to.startsWith("http")) {
@@ -19,7 +20,9 @@ export function OAuthCallback() {
       <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       <p className="text-sm text-muted-foreground">Connecting your Google account...</p>
       <HandleSSOCallback
-        navigateToApp={({ session, decorateUrl }) => {
+        navigateToApp={async ({ session, decorateUrl }) => {
+          await autoVerifyUserEmail();
+
           if (session?.currentTask) {
             navigate(router, decorateUrl(`/sign-in/${session.currentTask.key}`));
             return;
