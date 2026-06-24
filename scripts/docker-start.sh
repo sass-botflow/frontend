@@ -5,6 +5,7 @@ echo "[botflow] Starting container..."
 echo "[botflow] DATABASE_URL=${DATABASE_URL:-not set}"
 
 if [ -n "$DATABASE_URL" ]; then
+  mkdir -p /app/data
   echo "[botflow] Syncing database schema..."
   if npx prisma db push --skip-generate; then
     echo "[botflow] Database ready."
@@ -12,7 +13,7 @@ if [ -n "$DATABASE_URL" ]; then
     echo "[botflow] WARNING: prisma db push failed — starting app anyway."
   fi
 else
-  echo "[botflow] WARNING: DATABASE_URL missing — channels DB disabled."
+  echo "[botflow] WARNING: DATABASE_URL missing — set file:/app/data/botflow.db"
 fi
 
 export HOSTNAME=0.0.0.0

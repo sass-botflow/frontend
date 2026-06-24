@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { checkDatabase } from "@/lib/integrations/db";
 import {
   getDisplayName,
   validateConnectCredentials,
@@ -51,6 +52,15 @@ function toRecord(
   };
 }
 
+async function ensureDb() {
+  const db = await checkDatabase();
+  if (!db.ok) {
+    throw new Error(
+      "Database not ready. Server admin must set DATABASE_URL=file:/app/data/botflow.db and redeploy.",
+    );
+  }
+}
+
 export async function ensurePlatformRows(userId: string) {
   await Promise.all(
     (["whatsapp", "instagram", "tiktok"] as IntegrationPlatform[]).map(
@@ -67,6 +77,7 @@ export async function ensurePlatformRows(userId: string) {
 export async function getIntegrationsForUser(
   userId: string,
 ): Promise<IntegrationRecord[]> {
+  await ensureDb();
   await ensurePlatformRows(userId);
 
   const rows = await prisma.integration.findMany({
@@ -104,6 +115,7 @@ export async function connectPlatform(
   userId: string,
   rawInput: Record<string, string> & { platform: IntegrationPlatform },
 ): Promise<IntegrationRecord> {
+  await ensureDb();
   const credentials = validateConnectCredentials(rawInput);
   const mapped = mapCredentialsToDb(credentials);
 
@@ -128,6 +140,7 @@ export async function disconnectPlatform(
   userId: string,
   platform: IntegrationPlatform,
 ): Promise<IntegrationRecord> {
+  await ensureDb();
   const row = await prisma.integration.upsert({
     where: { userId_platform: { userId, platform } },
     create: { userId, platform, isConnected: false },

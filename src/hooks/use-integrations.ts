@@ -6,6 +6,7 @@ import {
   disconnectIntegration,
   fetchIntegrations,
 } from "@/lib/integrations/client";
+import { DEFAULT_INTEGRATIONS } from "@/lib/integrations/defaults";
 import type { ConnectCredentialsInput } from "@/lib/integrations/connect-credentials";
 import type {
   IntegrationPlatform,
@@ -27,7 +28,13 @@ export function useIntegrations() {
       setIntegrations(data.integrations);
       setConnectedCount(data.connectedCount);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load channels");
+      setIntegrations(DEFAULT_INTEGRATIONS);
+      setConnectedCount(0);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Could not load saved channels — you can still connect below",
+      );
     } finally {
       setLoading(false);
     }
