@@ -103,7 +103,10 @@ export default clerkMiddleware(async (auth, request) => {
   }
 
   if (isProtectedRoute(request)) {
-    await auth.protect({ unauthenticatedUrl: "/sign-in" });
+    // Middleware redirects must use absolute URLs (Next.js 15+).
+    await auth.protect({
+      unauthenticatedUrl: new URL("/sign-in", request.url).href,
+    });
   }
 
   return NextResponse.next();
