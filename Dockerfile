@@ -4,6 +4,7 @@ FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY package.json package-lock.json ./
+COPY prisma ./prisma
 RUN npm ci
 
 FROM node:20-alpine AS builder
@@ -34,7 +35,7 @@ ENV NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=$NEXT_PUBLIC_CLERK_SIGN_IN_FORC
 ENV NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=$NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL
 ENV DATABASE_URL="file:./build.db"
 
-RUN npx prisma generate && npm run build
+RUN npm run build
 
 FROM node:20-alpine AS runner
 RUN apk add --no-cache libc6-compat curl

@@ -52,16 +52,52 @@ NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
 NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/onboarding
 NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=/en
+DATABASE_URL=file:/app/data/botflow.db
 ```
 
-### 5) Deploy
+### 5) Deploy — **ma khasskch rebuild!**
 
-1. Click **Deploy**
-2. Chouf **Logs** — khass:
-   ```
-   Ready on http://0.0.0.0:3000
-   ```
-3. Test:
+GitHub kaybni `ghcr.io/sass-botflow/frontend:latest` automatiquement men `main`.
+
+| Ila 3andek | Dir hadchi |
+|------------|------------|
+| Service deja kaykhdem | **Restart** ghir (mashi Deploy/Rebuild) |
+| Ma kaynach Restart | **Deploy** — ghadi ypulli image jdid |
+| Ma t9derch tdkhol EasyPanel | Chouf **Option B** lta7t |
+
+---
+
+## ⚡ Ma qdertch ndir Deploy? — 3 options
+
+### Option A — Restart (1 click)
+1. EasyPanel → `sass-botflow` → `frontend`
+2. Klik **Restart** (icon ↻)
+3. Chouf Logs: `Ready on http://0.0.0.0:3000`
+
+### Option B — SSH (ila 3andek accès l server)
+```bash
+ssh root@187.124.12.89
+docker pull ghcr.io/sass-botflow/frontend:latest
+docker restart $(docker ps -q --filter name=frontend)
+```
+*(smiya dyal container yemken tkoun mختلفة — chouf `docker ps`)*
+
+### Option C — 3tini screenshot
+Sift screenshot dyal EasyPanel (service frontend) w nqolk **fin tkliki b daba**.
+
+---
+
+### Erreurs communes
+
+| Problème | Solution |
+|----------|----------|
+| Ma kaynach Deploy button | Khass tkoun f **Project → Service** (mashi accueil) |
+| Build failed | St3mel **Docker Image** (Tari9a 1), mashi GitHub build |
+| Pull image failed | GHCR public wla credentials |
+| 404 / logo vert | Port = **3000**, chouf Logs |
+| 502 | Internal port = **3000** |
+
+### Test après restart
    ```bash
    curl https://www.botflow.ink/api/health
    ```
