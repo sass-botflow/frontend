@@ -4,8 +4,8 @@ import { usePathname } from "next/navigation";
 import { SignUp } from "@clerk/nextjs";
 import { EmailPasswordSignUp } from "@/components/auth/email-password-sign-up";
 import { OAuthCallback } from "@/components/auth/oauth-callback";
-import { clerkAuthAppearance } from "@/lib/clerk-auth-appearance";
 import { AuthRedirectIfSignedIn } from "@/components/auth/auth-redirect-if-signed-in";
+import { clerkAuthAppearance } from "@/lib/clerk-auth-appearance";
 
 const SSO_PATHS = ["/sign-up/sso-callback"];
 
@@ -18,21 +18,19 @@ export function SignUpRouter() {
 
   const isMain = pathname === "/sign-up";
 
-  if (!isMain) {
-    return (
-      <SignUp
-        routing="path"
-        path="/sign-up"
-        signInUrl="/sign-in"
-        forceRedirectUrl="/onboarding"
-        appearance={clerkAuthAppearance}
-      />
-    );
-  }
-
   return (
     <AuthRedirectIfSignedIn>
-      <EmailPasswordSignUp />
+      {isMain ? (
+        <EmailPasswordSignUp />
+      ) : (
+        <SignUp
+          routing="path"
+          path="/sign-up"
+          signInUrl="/sign-in"
+          forceRedirectUrl="/dashboard"
+          appearance={clerkAuthAppearance}
+        />
+      )}
     </AuthRedirectIfSignedIn>
   );
 }

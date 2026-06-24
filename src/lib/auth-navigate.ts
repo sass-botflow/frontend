@@ -14,7 +14,12 @@ export function clerkErrorMessage(
 
 /** Verify email, ensure dashboard access, then hard-redirect (keeps session). */
 export async function finishAuthAndRedirect(path: string) {
-  await autoVerifyUserEmail();
-  await bootstrapUserAccess();
-  hardRedirect(path);
+  try {
+    await autoVerifyUserEmail();
+    await bootstrapUserAccess();
+  } catch {
+    // Still redirect — user is signed in even if bootstrap fails.
+  } finally {
+    hardRedirect(path);
+  }
 }

@@ -18,21 +18,19 @@ export function SignInRouter() {
 
   const isMain = pathname === "/sign-in";
 
-  if (!isMain) {
-    return (
-      <SignIn
-        routing="path"
-        path="/sign-in"
-        signUpUrl="/sign-up"
-        forceRedirectUrl="/dashboard"
-        appearance={clerkAuthAppearance}
-      />
-    );
-  }
-
   return (
     <AuthRedirectIfSignedIn>
-      <EmailPasswordSignIn />
+      {isMain ? (
+        <EmailPasswordSignIn />
+      ) : (
+        <SignIn
+          routing="path"
+          path="/sign-in"
+          signUpUrl="/sign-up"
+          forceRedirectUrl="/dashboard"
+          appearance={clerkAuthAppearance}
+        />
+      )}
     </AuthRedirectIfSignedIn>
   );
 }

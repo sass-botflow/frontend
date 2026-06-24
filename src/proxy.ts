@@ -82,7 +82,7 @@ export default clerkMiddleware(async (auth, request) => {
     return localeResponse;
   }
 
-  const { userId } = await auth();
+  const { userId } = await auth({ treatPendingAsSignedOut: false });
   const { pathname } = request.nextUrl;
 
   if (userId && isAuthRoute(request) && !isOAuthCallbackPath(pathname)) {
