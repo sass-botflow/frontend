@@ -1,6 +1,8 @@
 # Deploy `main` — 3 dakika (Darija)
 
-> **Push l `main` = GitHub kaybni l'image.** Bach yban f `botflow.ink`, khass **Restart** f EasyPanel (wla webhook marra wa7da).
+> **Ma t9derch tdeployi?** Chouf **[DEPLOY-FACILE.md](./DEPLOY-FACILE.md)** — webhook GitHub (5 min, marra wa7da).
+
+> **Push l `main` = GitHub kaybni l'image.** Bach yban f `botflow.ink`, khass **webhook** wla **Restart** f EasyPanel.
 
 ---
 
@@ -30,13 +32,22 @@ GitHub Actions ghadi ybni `ghcr.io/sass-botflow/frontend:latest` automatiquement
 
 ## Auto deploy (marra wa7da) — webhook
 
-Hadi hiya **l'as7al** — ma khasskch tdkhol EasyPanel kol marra.
+**Guide kamil:** [DEPLOY-FACILE.md](./DEPLOY-FACILE.md)
 
-1. EasyPanel → `frontend` → tab **Deployments** → copier **Webhook URL**
-2. GitHub → [Secrets](https://github.com/sass-botflow/frontend/settings/secrets/actions) → **New secret**:
-   - Name: `EASYPANEL_DEPLOY_WEBHOOK`
-   - Value: URL li copiti
-3. Men daba, kol **push l main** = build + deploy automatique ✅
+### As7al — GitHub Webhook (ma khassch Actions secrets)
+
+1. EasyPanel → `frontend` → **Deployments** → copier **Deployment Trigger** URL
+   (`http://187.124.12.89:3000/api/deploy/xxxxxxxx`)
+2. GitHub → [Webhooks](https://github.com/sass-botflow/frontend/settings/hooks) → **Add webhook**
+   - Payload URL = URL li copiti
+   - SSL verification = **Disable**
+   - Events = **push**
+3. Men daba kol push l `main` = deploy automatique ✅
+
+### Wla — GitHub Actions secret
+
+1. Nfs URL → GitHub [Secrets](https://github.com/sass-botflow/frontend/settings/secrets/actions)
+2. Name: `EASYPANEL_DEPLOY_WEBHOOK`
 
 ---
 

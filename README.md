@@ -53,7 +53,7 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ## EasyPanel deployment
 
-**Quick guide (Darija):** [DEPLOY-MAIN.md](./DEPLOY-MAIN.md) — push `main` + Restart f EasyPanel.
+**Quick guide (Darija):** [DEPLOY-FACILE.md](./DEPLOY-FACILE.md) — webhook GitHub (auto deploy marra wa7da).
 
 ### Required settings
 
