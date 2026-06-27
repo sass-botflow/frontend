@@ -46,16 +46,38 @@ export const PLANS = [
   },
 ] as const;
 
-/** Simple dashboard navigation */
-export const NAV_ITEMS = [
-  { href: "/dashboard", label: "Overview", icon: "LayoutDashboard" },
-  { href: "/dashboard/billing", label: "Billing", icon: "CreditCard" },
+export type NavIcon =
+  | "LayoutDashboard"
+  | "Inbox"
+  | "Bot"
+  | "PlugZap"
+  | "Gift"
+  | "Settings"
+  | "CreditCard";
+
+export interface NavItem {
+  href: string;
+  label: string;
+  icon: NavIcon;
+}
+
+/** Core product navigation */
+export const MAIN_NAV_ITEMS: NavItem[] = [
+  { href: "/dashboard", label: "Home", icon: "LayoutDashboard" },
   { href: "/dashboard/inbox", label: "Inbox", icon: "Inbox" },
   { href: "/dashboard/brain", label: "My Bot", icon: "Bot" },
   { href: "/dashboard/channels", label: "Connect", icon: "PlugZap" },
   { href: "/dashboard/affiliate", label: "Affiliate", icon: "Gift" },
   { href: "/dashboard/settings", label: "Settings", icon: "Settings" },
-] as const;
+];
+
+/** Billing sits alone at the bottom of the sidebar */
+export const BOTTOM_NAV_ITEMS: NavItem[] = [
+  { href: "/dashboard/billing", label: "Billing", icon: "CreditCard" },
+];
+
+/** @deprecated Use MAIN_NAV_ITEMS + BOTTOM_NAV_ITEMS */
+export const NAV_ITEMS = [...MAIN_NAV_ITEMS, ...BOTTOM_NAV_ITEMS];
 
 export const DEFAULT_AI_INSTRUCTIONS =
   "You are a helpful assistant for this business. Be friendly, concise, and professional. Answer questions about services, hours, and pricing. If you don't know something, offer to connect the customer with a human.";

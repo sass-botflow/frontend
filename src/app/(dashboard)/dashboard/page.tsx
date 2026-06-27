@@ -1,186 +1,216 @@
 import Link from "next/link";
-import { CreditCard, MessageSquare, Sparkles, User } from "lucide-react";
+import {
+  ArrowRight,
+  Bot,
+  Inbox,
+  MessageSquare,
+  PlugZap,
+  Sparkles,
+} from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { ChannelLogo } from "@/components/channels/channel-logo";
-import { ChannelBadge } from "@/components/channels/channel-badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { CHANNELS, type ChannelId } from "@/lib/channels";
 import { cn } from "@/lib/utils";
 
-export const metadata = { title: "Overview" };
+export const metadata = { title: "Home" };
 
-const stats = [
-  { label: "Total conversations", value: "1,284", icon: MessageSquare },
-  { label: "AI handled", value: "78%", icon: Sparkles, accent: "text-violet-500" },
-  { label: "Human handled", value: "22%", icon: User, accent: "text-blue-500" },
-  { label: "Connected apps", value: "2 / 3", icon: null },
+const metrics = [
+  { label: "Messages today", value: "47", trend: "+12%" },
+  { label: "AI reply rate", value: "98%", trend: "Live" },
+  { label: "Avg. response", value: "2s", trend: "Fast" },
+  { label: "Apps connected", value: "2/3", trend: "1 left" },
 ];
 
-const channelStatus: Record<ChannelId, boolean> = {
+const quickActions = [
+  {
+    href: "/dashboard/channels",
+    label: "Connect apps",
+    description: "WhatsApp, Instagram, TikTok",
+    icon: PlugZap,
+    accent: "from-emerald-500/15 to-emerald-500/5 text-emerald-500",
+  },
+  {
+    href: "/dashboard/brain",
+    label: "Train your bot",
+    description: "5-minute setup wizard",
+    icon: Bot,
+    accent: "from-violet-500/15 to-violet-500/5 text-primary",
+  },
+  {
+    href: "/dashboard/inbox",
+    label: "Open inbox",
+    description: "3 unread conversations",
+    icon: Inbox,
+    accent: "from-blue-500/15 to-blue-500/5 text-blue-500",
+  },
+];
+
+const recentMessages: {
+  name: string;
+  preview: string;
+  channel: ChannelId;
+  time: string;
+  ai: boolean;
+}[] = [
+  {
+    name: "Fatima B.",
+    preview: "What are your prices?",
+    channel: "whatsapp",
+    time: "2m",
+    ai: true,
+  },
+  {
+    name: "Youssef K.",
+    preview: "What are your opening hours?",
+    channel: "instagram",
+    time: "18m",
+    ai: true,
+  },
+  {
+    name: "Lina M.",
+    preview: "Do you ship to Rabat?",
+    channel: "tiktok",
+    time: "1h",
+    ai: false,
+  },
+];
+
+const appStatus: Record<ChannelId, boolean> = {
   whatsapp: true,
   instagram: true,
   tiktok: false,
 };
 
-const recentConversations = [
-  {
-    name: "Fatima B.",
-    preview: "What are your prices?",
-    channel: "whatsapp" as ChannelId,
-    time: "2m",
-  },
-  {
-    name: "Youssef K.",
-    preview: "What are your opening hours?",
-    channel: "instagram" as ChannelId,
-    time: "18m",
-  },
-  {
-    name: "Lina M.",
-    preview: "How much is a cleaning?",
-    channel: "tiktok" as ChannelId,
-    time: "1h",
-  },
-];
-
-const channelStats = [
-  { channel: "whatsapp" as ChannelId, count: 842, pct: 66 },
-  { channel: "instagram" as ChannelId, count: 312, pct: 24 },
-  { channel: "tiktok" as ChannelId, count: 130, pct: 10 },
-];
-
 export default function DashboardPage() {
   return (
     <>
-      <DashboardHeader title="Overview" />
-      <div className="mx-auto max-w-4xl flex-1 p-4 sm:p-6">
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
-            Good morning 👋
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Here&apos;s how your bot is performing today.
-          </p>
-        </div>
+      <DashboardHeader title="Home" />
+      <div className="relative flex-1 overflow-hidden">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(ellipse_at_top,rgba(139,92,246,0.12),transparent_70%)]" />
 
-        <div className="mb-6 grid gap-3 sm:grid-cols-2">
-          {stats.map((stat) => (
-            <Card key={stat.label} className="border-border/60 shadow-none">
-              <CardContent className="flex items-center gap-4 p-4 sm:p-5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
-                  {stat.icon ? (
-                    <stat.icon className={cn("h-5 w-5", stat.accent ?? "text-muted-foreground")} />
-                  ) : (
-                    <div className="flex -space-x-1">
-                      {CHANNELS.slice(0, 2).map((ch) => (
-                        <ChannelLogo key={ch.id} channel={ch.id} size="sm" className="!h-6 !w-6 rounded-lg ring-2 ring-background" />
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
-                  <p className="text-2xl font-semibold tracking-tight">{stat.value}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <div className="relative mx-auto max-w-4xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
+          <div className="mb-8">
+            <p className="text-sm font-medium text-primary">Dashboard</p>
+            <h2 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
+              Welcome back
+            </h2>
+            <p className="mt-2 max-w-lg text-sm text-muted-foreground sm:text-base">
+              Your bot is live on 2 apps. Everything you need is one click away.
+            </p>
+          </div>
 
-        <div className="mb-6 grid gap-4 lg:grid-cols-2">
-          <Card className="border-border/60 shadow-none">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Connected apps</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {CHANNELS.map((ch) => (
-                <Link
-                  key={ch.id}
-                  href="/dashboard/channels"
-                  className="flex items-center justify-between rounded-xl border border-border/60 p-3 transition-colors hover:bg-muted/40"
-                >
-                  <div className="flex items-center gap-3">
-                    <ChannelLogo channel={ch.id} size="sm" />
-                    <div>
-                      <p className="text-sm font-medium">{ch.name}</p>
-                      <ChannelBadge channel={ch.id} className="mt-1" />
-                    </div>
-                  </div>
-                  <span
-                    className={cn(
-                      "text-xs font-medium",
-                      channelStatus[ch.id]
-                        ? "text-emerald-600 dark:text-emerald-400"
-                        : "text-muted-foreground",
-                    )}
-                  >
-                    {channelStatus[ch.id] ? "Connected" : "Not connected"}
-                  </span>
-                </Link>
-              ))}
-            </CardContent>
-          </Card>
-
-          <Card className="border-border/60 shadow-none">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Messages by app</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {channelStats.map((item) => (
-                <div key={item.channel} className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                      <ChannelLogo channel={item.channel} size="sm" className="!h-6 !w-6 rounded-lg" />
-                      <span className="font-medium">{CHANNELS.find((c) => c.id === item.channel)?.name}</span>
-                    </div>
-                    <span className="text-muted-foreground">{item.count} · {item.pct}%</span>
-                  </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-muted">
-                    <div
-                      className={cn(
-                        "h-full rounded-full",
-                        item.channel === "whatsapp" && "bg-[#25D366]",
-                        item.channel === "instagram" && "bg-gradient-to-r from-[#F58529] to-[#DD2A7B]",
-                        item.channel === "tiktok" && "bg-black dark:bg-white",
-                      )}
-                      style={{ width: `${item.pct}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card className="border-border/60 shadow-none">
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <CardTitle className="text-base">Recent conversations</CardTitle>
-            <Link href="/dashboard/inbox" className="text-xs text-primary hover:underline">
-              View inbox →
-            </Link>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {recentConversations.map((convo) => (
+          <div className="mb-8 grid gap-3 sm:grid-cols-3">
+            {quickActions.map((action) => (
               <Link
-                key={convo.name}
-                href="/dashboard/inbox"
-                className="flex items-center justify-between rounded-xl border border-border/60 p-3 transition-colors hover:bg-muted/40"
+                key={action.href}
+                href={action.href}
+                className="group rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur-sm transition-all hover:border-primary/25 hover:shadow-sm"
               >
-                <div className="flex min-w-0 items-center gap-3">
-                  <ChannelLogo channel={convo.channel} size="sm" className="!h-9 !w-9 rounded-xl" />
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{convo.name}</p>
-                    <p className="truncate text-xs text-muted-foreground">{convo.preview}</p>
-                  </div>
+                <div
+                  className={cn(
+                    "mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br",
+                    action.accent,
+                  )}
+                >
+                  <action.icon className="h-5 w-5" />
                 </div>
-                <div className="flex shrink-0 flex-col items-end gap-1">
-                  <ChannelBadge channel={convo.channel} showDot showLogo={false} />
-                  <span className="text-[10px] text-muted-foreground">{convo.time}</span>
-                </div>
+                <p className="font-medium">{action.label}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{action.description}</p>
+                <span className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
+                  Open <ArrowRight className="h-3 w-3" />
+                </span>
               </Link>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+
+          <div className="mb-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {metrics.map((m) => (
+              <div
+                key={m.label}
+                className="rounded-2xl border border-border/50 bg-card/40 px-4 py-3.5"
+              >
+                <p className="text-xs text-muted-foreground">{m.label}</p>
+                <p className="mt-1 text-2xl font-semibold tracking-tight">{m.value}</p>
+                <p className="mt-0.5 text-[11px] font-medium text-emerald-500">{m.trend}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-5">
+            <div className="rounded-2xl border border-border/60 bg-card/50 lg:col-span-3">
+              <div className="flex items-center justify-between border-b border-border/50 px-5 py-4">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                  <h3 className="font-semibold">Recent messages</h3>
+                </div>
+                <Button variant="ghost" size="sm" className="h-8 text-xs" asChild>
+                  <Link href="/dashboard/inbox">View all</Link>
+                </Button>
+              </div>
+              <div className="divide-y divide-border/40">
+                {recentMessages.map((msg) => (
+                  <Link
+                    key={msg.name}
+                    href="/dashboard/inbox"
+                    className="flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-muted/30"
+                  >
+                    <ChannelLogo channel={msg.channel} size="sm" className="!h-9 !w-9 rounded-xl" />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="truncate text-sm font-medium">{msg.name}</p>
+                        {msg.ai && (
+                          <span className="inline-flex items-center gap-0.5 rounded-full bg-violet-500/10 px-1.5 py-0.5 text-[10px] font-medium text-violet-500">
+                            <Sparkles className="h-2.5 w-2.5" />
+                            AI
+                          </span>
+                        )}
+                      </div>
+                      <p className="truncate text-xs text-muted-foreground">{msg.preview}</p>
+                    </div>
+                    <span className="shrink-0 text-[11px] text-muted-foreground">{msg.time}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-border/60 bg-card/50 lg:col-span-2">
+              <div className="border-b border-border/50 px-5 py-4">
+                <h3 className="font-semibold">Your apps</h3>
+                <p className="mt-0.5 text-xs text-muted-foreground">Connection status</p>
+              </div>
+              <div className="space-y-1 p-3">
+                {CHANNELS.map((ch) => (
+                  <Link
+                    key={ch.id}
+                    href="/dashboard/channels"
+                    className="flex items-center justify-between rounded-xl px-3 py-2.5 transition-colors hover:bg-muted/30"
+                  >
+                    <div className="flex items-center gap-3">
+                      <ChannelLogo channel={ch.id} size="sm" />
+                      <span className="text-sm font-medium">{ch.name}</span>
+                    </div>
+                    <span
+                      className={cn(
+                        "text-xs font-medium",
+                        appStatus[ch.id]
+                          ? "text-emerald-500"
+                          : "text-muted-foreground",
+                      )}
+                    >
+                      {appStatus[ch.id] ? "Live" : "Setup"}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+              <div className="border-t border-border/50 p-3">
+                <Button variant="outline" size="sm" className="w-full rounded-xl" asChild>
+                  <Link href="/dashboard/channels">Manage connections</Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </>
   );
