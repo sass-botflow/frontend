@@ -9,6 +9,7 @@ import type {
   AffiliateDashboardResponse,
   AffiliateRecord,
   AffiliateStats,
+  EarningRecord,
   ReferralRecord,
 } from "@/lib/affiliate/types";
 
@@ -125,16 +126,45 @@ export async function getAffiliateDashboard(
       isEnrolled: false,
       stats: emptyStats(),
       referrals: [],
+      earnings: [],
     };
   }
 
-  const stats = await computeStats(affiliate.id);
+  const [stats, earnings] = await Promise.all([
+    computeStats(affiliate.id),
+    prisma.affiliateEarning.findMany({
+      where: { affiliateId: affiliate.id },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    }),
+  ]);
 
   return {
     affiliate: toAffiliateRecord(affiliate),
     isEnrolled: true,
     stats,
     referrals: affiliate.referrals.map(toReferralRecord),
+    earnings: earnings.map(toEarningRecord),
+  };
+}
+
+function toEarningRecord(row: {
+  id: string;
+  amount: number;
+  type: string;
+  status: string;
+  period: string | null;
+  description: string | null;
+  createdAt: Date;
+}): EarningRecord {
+  return {
+    id: row.id,
+    amount: row.amount,
+    type: row.type,
+    status: row.status as EarningRecord["status"],
+    period: row.period,
+    description: row.description,
+    createdAt: row.createdAt.toISOString(),
   };
 }
 
