@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Bot,
-  CreditCard,
   Gift,
   Inbox,
   LayoutDashboard,
@@ -20,7 +19,6 @@ const iconMap = {
   Inbox,
   Bot,
   PlugZap,
-  CreditCard,
   Gift,
   Settings,
 } as const;

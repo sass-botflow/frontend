@@ -46,13 +46,12 @@ export const PLANS = [
   },
 ] as const;
 
-/** Simple dashboard navigation — no CRM, appointments, or analytics. */
+/** Simple dashboard navigation */
 export const NAV_ITEMS = [
   { href: "/dashboard", label: "Overview", icon: "LayoutDashboard" },
   { href: "/dashboard/inbox", label: "Inbox", icon: "Inbox" },
   { href: "/dashboard/brain", label: "My Bot", icon: "Bot" },
   { href: "/dashboard/channels", label: "Connect", icon: "PlugZap" },
-  { href: "/dashboard/billing", label: "Billing", icon: "CreditCard" },
   { href: "/dashboard/affiliate", label: "Affiliate", icon: "Gift" },
   { href: "/dashboard/settings", label: "Settings", icon: "Settings" },
 ] as const;
