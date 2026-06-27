@@ -63,7 +63,7 @@ export interface NavItem {
 
 /** Core product navigation */
 export const MAIN_NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "Home", icon: "LayoutDashboard" },
+  { href: "/dashboard", label: "Dashboard", icon: "LayoutDashboard" },
   { href: "/dashboard/inbox", label: "Inbox", icon: "Inbox" },
   { href: "/dashboard/brain", label: "My Bot", icon: "Bot" },
   { href: "/dashboard/channels", label: "Connect", icon: "PlugZap" },
