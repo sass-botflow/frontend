@@ -1,21 +1,25 @@
 name: Deploy to EasyPanel server
 
-# Deploy bla EasyPanel UI — run from GitHub Actions tab.
-# Required secrets (repo Settings → Secrets → Actions):
-#   DEPLOY_SSH_HOST   e.g. 187.124.12.89
-#   DEPLOY_SSH_USER   e.g. root
-#   DEPLOY_SSH_KEY    private SSH key (full PEM, including BEGIN/END lines)
+# Manual deploy only. Push-to-main auto-deploy runs in "Publish Docker image".
+# Secrets (pick one method):
+#   EASYPANEL_DEPLOY_WEBHOOK — easiest: EasyPanel → service → Deployments → Webhook URL
+#   DEPLOY_SSH_HOST + DEPLOY_SSH_USER + DEPLOY_SSH_KEY — SSH pull + restart
 
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows: ["Publish Docker image"]
-    types: [completed]
-    branches: [main]
 
 jobs:
-  deploy:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+  deploy-webhook:
+    if: ${{ secrets.EASYPANEL_DEPLOY_WEBHOOK != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger EasyPanel deploy
+        run: |
+          curl -fsS -X POST "${{ secrets.EASYPANEL_DEPLOY_WEBHOOK }}"
+          echo "EasyPanel deploy triggered."
+
+  deploy-ssh:
+    if: ${{ secrets.EASYPANEL_DEPLOY_WEBHOOK == '' && secrets.DEPLOY_SSH_HOST != '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Pull latest image and restart frontend
@@ -28,22 +32,41 @@ jobs:
           script: |
             set -e
             echo "=== BotFlow deploy $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
-            echo "Pulling ghcr.io/sass-botflow/frontend:latest ..."
             docker pull ghcr.io/sass-botflow/frontend:latest
-
             CONTAINER=$(docker ps --format '{{.Names}}' | grep -iE 'frontend|botflow' | head -1 || true)
             if [ -z "$CONTAINER" ]; then
               echo "No running frontend container. All containers:"
               docker ps -a
-              echo ""
-              echo "EasyPanel should recreate the service. Try Restart in EasyPanel or recreate the app."
               exit 1
             fi
-
             echo "Restarting container: $CONTAINER"
             docker restart "$CONTAINER"
-
-            echo "Waiting for app to start..."
             sleep 8
             docker logs "$CONTAINER" --tail 15 2>&1 || true
             echo "=== Deploy finished ==="
+
+  deploy-missing-secrets:
+    if: ${{ secrets.EASYPANEL_DEPLOY_WEBHOOK == '' && secrets.DEPLOY_SSH_HOST == '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Explain how to enable auto deploy
+        run: |
+          echo "::error::No deploy secrets configured."
+          {
+            echo "## Deploy secrets missing"
+            echo ""
+            echo "Add **one** of these in GitHub → Settings → Secrets → Actions:"
+            echo ""
+            echo "### Easiest — EasyPanel webhook"
+            echo "1. EasyPanel → \`sass-botflow\` → \`frontend\` → **Deployments** → copy **Webhook** URL"
+            echo "2. GitHub secret name: \`EASYPANEL_DEPLOY_WEBHOOK\`"
+            echo ""
+            echo "### Or — SSH"
+            echo "- \`DEPLOY_SSH_HOST\` = \`187.124.12.89\`"
+            echo "- \`DEPLOY_SSH_USER\` = \`root\`"
+            echo "- \`DEPLOY_SSH_KEY\` = private SSH key"
+            echo ""
+            echo "### Manual deploy (no secrets)"
+            echo "EasyPanel → \`frontend\` → **Restart** (source = Docker Image \`ghcr.io/sass-botflow/frontend:latest\`)"
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
