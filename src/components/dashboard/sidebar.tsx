@@ -9,6 +9,7 @@ import {
   Calendar,
   Contact,
   CreditCard,
+  Gift,
   Inbox,
   LayoutDashboard,
   Radio,
@@ -28,6 +29,7 @@ const iconMap = {
   BarChart3,
   BookOpen,
   CreditCard,
+  Gift,
   Settings,
 } as const;
 

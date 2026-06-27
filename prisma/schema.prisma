@@ -21,3 +21,49 @@ model Integration {
   @@unique([userId, platform])
   @@index([userId])
 }
+
+model Affiliate {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  code        String   @unique
+  status      String   @default("active")
+  payoutEmail String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  referrals Referral[]
+  earnings  AffiliateEarning[]
+
+  @@index([code])
+}
+
+model Referral {
+  id             String    @id @default(cuid())
+  affiliateId    String
+  affiliate      Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  referredUserId String?   @unique
+  status         String    @default("pending")
+  planId         String?
+  planName       String?
+  monthlyValue   Float     @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([affiliateId])
+  @@index([status])
+}
+
+model AffiliateEarning {
+  id          String    @id @default(cuid())
+  affiliateId String
+  affiliate   Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  amount      Float
+  type        String    @default("commission")
+  status      String    @default("pending")
+  period      String?
+  description String?
+  createdAt   DateTime  @default(now())
+
+  @@index([affiliateId])
+  @@index([status])
+}
