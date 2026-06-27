@@ -107,6 +107,9 @@ jobs:
             echo "Or add GitHub Actions secret \`EASYPANEL_DEPLOY_WEBHOOK\` with the same URL."
             echo ""
             echo "Verify after deploy: \`curl https://www.botflow.ink/api/health\` — version must not be \`dev\`"
+            echo ""
+            echo "### Deploy daba (bla secrets)"
+            echo "Actions → **Deploy now (paste webhook)** → paste Deployment Trigger URL → **Run workflow**"
           } >> "$GITHUB_STEP_SUMMARY"
-          echo "::warning::Manual deploy required — configure EasyPanel webhook (see DEPLOY-FACILE.md)"
-          exit 1
+          echo "::warning::Image ready — run 'Deploy now (paste webhook)' or configure webhook (DEPLOY-FACILE.md)"
+          exit 0

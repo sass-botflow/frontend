@@ -1,0 +1,58 @@
+name: Deploy now (paste webhook)
+
+# Deploy bla secrets — paste EasyPanel Deployment Trigger URL w klik Run.
+# EasyPanel → sass-botflow → frontend → Deployments → Deployment Trigger
+
+on:
+  workflow_dispatch:
+    inputs:
+      easypanel_webhook:
+        description: "Deployment Trigger URL (http://187.124.12.89:3000/api/deploy/xxxxxxxx)"
+        required: true
+        type: string
+      pull_latest:
+        description: "Pull ghcr.io/sass-botflow/frontend:latest before deploy"
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate webhook URL
+        run: |
+          WEBHOOK="${{ inputs.easypanel_webhook }}"
+          if ! echo "$WEBHOOK" | grep -qE '^https?://.+/api/deploy/'; then
+            echo "::error::URL ghalat. Khassha tkoun b7al: http://187.124.12.89:3000/api/deploy/xxxxxxxx"
+            exit 1
+          fi
+
+      - name: Trigger EasyPanel deploy
+        run: |
+          echo "Triggering EasyPanel deploy..."
+          curl -fsS -X POST "${{ inputs.easypanel_webhook }}"
+          echo "EasyPanel deploy triggered."
+
+      - name: Wait for rollout
+        run: sleep 25
+
+      - name: Verify production health
+        run: |
+          HEALTH=$(curl -fsS https://www.botflow.ink/api/health || echo '{"version":"error"}')
+          echo "$HEALTH"
+          VERSION=$(echo "$HEALTH" | grep -o '"version":"[^"]*"' | cut -d'"' -f4 || echo "unknown")
+          {
+            echo "## Deploy result"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| Health | \`$HEALTH\` |"
+            echo "| version | \`$VERSION\` |"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$VERSION" = "dev" ]; then
+            echo "::warning::Server mazal 3la version 'dev'. T2akked EasyPanel Source = Docker Image ghcr.io/sass-botflow/frontend:latest"
+          else
+            echo "Deploy success — version: $VERSION"
+          fi
