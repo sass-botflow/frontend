@@ -1,14 +1,5 @@
-import { Calendar } from "lucide-react";
-import { DashboardPlaceholder } from "@/components/dashboard/placeholder-page";
+import { redirect } from "next/navigation";
 
-export const metadata = { title: "Appointments" };
-
-export default function AppointmentsPage() {
-  return (
-    <DashboardPlaceholder
-      title="Appointments"
-      description="Let BotFlow book meetings from WhatsApp, Instagram and TikTok conversations. Scheduling tools are coming next."
-      icon={Calendar}
-    />
-  );
+export default function AppointmentsRedirectPage() {
+  redirect("/dashboard");
 }

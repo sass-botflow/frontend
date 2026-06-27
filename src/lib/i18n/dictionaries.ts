@@ -6,7 +6,7 @@ export const en = {
   nav: {
     howItWorks: "How it works",
     features: "Features",
-    channels: "Channels",
+    channels: "Connect",
     faq: "FAQ",
     pricing: "Pricing",
     signIn: "Sign in",
@@ -58,7 +58,7 @@ export const en = {
     trust3: "Official WhatsApp API",
     floatNewMessage: "New message",
     floatAiReplied: "AI replied in 2s",
-    floatBrainActive: "AI Brain active",
+    floatBrainActive: "Bot actif",
     floatAccuracy: "98% accuracy",
   },
   stats: {
@@ -68,7 +68,7 @@ export const en = {
     satisfaction: "Customer satisfaction",
     repliesToday: "AI replies today",
     activeNow: "Active users now",
-    channelsConnected: "Channels connected",
+    channelsConnected: "Apps connected",
   },
   howItWorks: {
     label: "How BotFlow Works",
@@ -79,12 +79,12 @@ export const en = {
       {
         title: "Connect",
         description: "Link WhatsApp, Instagram, or TikTok in under 30 seconds.",
-        link: "Connect channels",
+        link: "Connect apps",
       },
       {
         title: "Teach",
         description: "Tell the AI about your business — name, services, hours, and FAQs.",
-        link: "Set up AI Brain",
+        link: "Set up my bot",
       },
       {
         title: "Automate",
@@ -103,8 +103,8 @@ export const en = {
     subtitle: "Everything you need to run customer communication on autopilot.",
     tabs: {
       inbox: "Unified Inbox",
-      brain: "AI Brain",
-      channels: "Channels",
+      brain: "My Bot",
+      channels: "Connect",
       team: "Team",
     },
     inbox: {
@@ -133,7 +133,7 @@ export const en = {
     },
     connected: "Connected",
     inProgress: "In progress",
-    wizardSteps: ["Business type", "Goals", "Knowledge", "Generate AI"],
+    wizardSteps: ["Business type", "Goals", "Train bot", "Generate AI"],
     inboxPreviews: [
       "AI: Our clinic is open Mon-Sat 9am-6pm",
       "AI: Yes, we deliver to Casablanca!",
@@ -201,11 +201,11 @@ export const en = {
       },
       {
         q: "How long does setup take?",
-        a: "Most businesses are live in under 5 minutes. Connect a channel, complete the AI Brain wizard, and your AI starts replying immediately.",
+        a: "Most businesses are live in under 5 minutes. Connect an app, complete the My Bot wizard, and your AI starts replying immediately.",
       },
       {
         q: "Do I need to write AI prompts?",
-        a: "No. BotFlow's 5-step AI Brain wizard asks about your business type, goals, and knowledge sources — then generates optimized instructions automatically.",
+        a: "No. BotFlow's 5-step wizard asks about your business type, goals, and training sources — then generates optimized instructions automatically.",
       },
       {
         q: "Can my team jump in when needed?",
@@ -294,7 +294,7 @@ export const fr: Dictionary = {
   nav: {
     howItWorks: "Comment ça marche",
     features: "Fonctionnalités",
-    channels: "Canaux",
+    channels: "Connecter",
     faq: "FAQ",
     pricing: "Tarifs",
     signIn: "Connexion",
@@ -346,7 +346,7 @@ export const fr: Dictionary = {
     trust3: "API WhatsApp officielle",
     floatNewMessage: "Nouveau message",
     floatAiReplied: "IA a répondu en 2s",
-    floatBrainActive: "AI Brain actif",
+    floatBrainActive: "Bot actif",
     floatAccuracy: "98% de précision",
   },
   stats: {
@@ -356,7 +356,7 @@ export const fr: Dictionary = {
     satisfaction: "Satisfaction client",
     repliesToday: "Réponses IA aujourd'hui",
     activeNow: "Utilisateurs actifs",
-    channelsConnected: "Canaux connectés",
+    channelsConnected: "Apps connectées",
   },
   howItWorks: {
     label: "Comment BotFlow fonctionne",
@@ -367,12 +367,12 @@ export const fr: Dictionary = {
       {
         title: "Connecter",
         description: "Liez WhatsApp, Instagram ou TikTok en moins de 30 secondes.",
-        link: "Connecter les canaux",
+        link: "Connecter les apps",
       },
       {
         title: "Former",
         description: "Présentez votre activité à l'IA — nom, services, horaires et FAQ.",
-        link: "Configurer AI Brain",
+        link: "Configurer mon bot",
       },
       {
         title: "Automatiser",
@@ -391,8 +391,8 @@ export const fr: Dictionary = {
     subtitle: "Tout ce dont vous avez besoin pour gérer la communication client en autopilote.",
     tabs: {
       inbox: "Boîte unifiée",
-      brain: "AI Brain",
-      channels: "Canaux",
+      brain: "My Bot",
+      channels: "Connecter",
       team: "Équipe",
     },
     inbox: {
@@ -489,11 +489,11 @@ export const fr: Dictionary = {
       },
       {
         q: "Combien de temps prend la configuration ?",
-        a: "La plupart des entreprises sont opérationnelles en moins de 5 minutes. Connectez un canal, complétez l'assistant AI Brain, et l'IA commence à répondre.",
+        a: "La plupart des entreprises sont opérationnelles en moins de 5 minutes. Connectez une app, complétez l'assistant Mon Bot, et l'IA commence à répondre.",
       },
       {
         q: "Dois-je écrire des prompts IA ?",
-        a: "Non. L'assistant AI Brain en 5 étapes pose des questions sur votre activité et génère les instructions automatiquement.",
+        a: "Non. L'assistant Mon Bot en 5 étapes pose des questions sur votre activité et génère les instructions automatiquement.",
       },
       {
         q: "Mon équipe peut-elle intervenir ?",
@@ -582,7 +582,7 @@ export const ar: Dictionary = {
   nav: {
     howItWorks: "كيف يعمل",
     features: "الميزات",
-    channels: "القنوات",
+    channels: "ربط",
     faq: "الأسئلة الشائعة",
     pricing: "الأسعار",
     signIn: "تسجيل الدخول",
@@ -654,7 +654,7 @@ export const ar: Dictionary = {
       {
         title: "الربط",
         description: "اربط واتساب أو إنستغرام أو تيك توك في أقل من 30 ثانية.",
-        link: "ربط القنوات",
+        link: "ربط التطبيقات",
       },
       {
         title: "التدريب",
@@ -679,7 +679,7 @@ export const ar: Dictionary = {
     tabs: {
       inbox: "صندوق وارد موحَّد",
       brain: "العقل الاصطناعي",
-      channels: "القنوات",
+      channels: "ربط",
       team: "الفريق",
     },
     inbox: {

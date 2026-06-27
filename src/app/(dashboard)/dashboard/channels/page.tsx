@@ -1,9 +1,9 @@
 import { ChannelsDashboard } from "@/components/channels/channels-dashboard";
 
 export const metadata = {
-  title: "Channels",
+  title: "Connect",
   description:
-    "Connect WhatsApp Business, Instagram Business and TikTok Business to BotFlow.",
+    "Connect WhatsApp, Instagram, and TikTok to BotFlow.",
 };
 
 export default function ChannelsPage() {

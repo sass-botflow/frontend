@@ -3,8 +3,8 @@ import { cn } from "@/lib/utils";
 const STEPS = [
   "Business type",
   "Business info",
-  "AI goals",
-  "Knowledge",
+  "Bot goals",
+  "Train bot",
   "Generate",
 ];
 

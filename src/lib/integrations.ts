@@ -19,7 +19,7 @@ export interface Integration {
 }
 
 export const INTEGRATION_CATEGORIES: { id: IntegrationCategory; label: string }[] = [
-  { id: "channels", label: "Channels" },
+  { id: "channels", label: "Connect" },
   { id: "payments", label: "Payments" },
   { id: "productivity", label: "Productivity" },
   { id: "ecommerce", label: "E-commerce" },

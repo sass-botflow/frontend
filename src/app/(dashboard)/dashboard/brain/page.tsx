@@ -96,7 +96,7 @@ export default function BrainPage() {
 
   return (
     <>
-      <DashboardHeader title="AI Brain" />
+      <DashboardHeader title="My Bot" />
       <div className="mx-auto max-w-3xl flex-1 p-4 sm:p-6">
         <div className="mb-6 text-center sm:mb-8">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
@@ -290,12 +290,12 @@ export default function BrainPage() {
               </div>
             )}
 
-            {/* Step 4: Knowledge source */}
+            {/* Step 4: Train bot */}
             {step === 4 && (
               <div>
-                <h3 className="mb-1 text-lg font-semibold">How should the AI learn?</h3>
+                <h3 className="mb-1 text-lg font-semibold">Train your bot</h3>
                 <p className="mb-6 text-sm text-muted-foreground">
-                  Choose how we teach your assistant about your business.
+                  Choose how your bot learns about your business.
                 </p>
                 <div className="space-y-3">
                   {KNOWLEDGE_SOURCES.map((source) => {

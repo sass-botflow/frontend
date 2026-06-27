@@ -19,7 +19,7 @@ const HIGHLIGHTS = [
   },
   {
     value: String(AFFILIATE_CONFIG.channels.length),
-    label: "Channels",
+    label: "Messaging apps",
     detail: AFFILIATE_CONFIG.channels.join(", "),
   },
 ] as const;

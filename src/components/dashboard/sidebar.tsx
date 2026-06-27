@@ -3,16 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  BarChart3,
-  BookOpen,
   Bot,
-  Calendar,
-  Contact,
   CreditCard,
   Gift,
   Inbox,
   LayoutDashboard,
-  Radio,
+  PlugZap,
   Settings,
 } from "lucide-react";
 import { BotFlowLogo } from "@/components/brand/botflow-logo";
@@ -23,11 +19,7 @@ const iconMap = {
   LayoutDashboard,
   Inbox,
   Bot,
-  Radio,
-  Contact,
-  Calendar,
-  BarChart3,
-  BookOpen,
+  PlugZap,
   CreditCard,
   Gift,
   Settings,
@@ -70,7 +62,7 @@ export function DashboardSidebar() {
 
       <div className="border-t border-border/60 p-4">
         <p className="text-xs leading-relaxed text-muted-foreground">
-          Connect channels, deploy AI agents, and automate every customer touchpoint.
+          Connect your apps, train your bot, and reply to customers automatically.
         </p>
       </div>
     </aside>
@@ -120,10 +112,7 @@ function isNavActive(pathname: string, href: string) {
     return pathname === "/dashboard";
   }
   if (href === "/dashboard/settings") {
-    return pathname.startsWith("/dashboard/settings") && !pathname.startsWith("/dashboard/settings/knowledge");
-  }
-  if (href === "/dashboard/settings/knowledge") {
-    return pathname.startsWith(href);
+    return pathname.startsWith("/dashboard/settings");
   }
   return pathname.startsWith(href);
 }

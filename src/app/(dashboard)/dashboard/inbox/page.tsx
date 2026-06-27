@@ -20,7 +20,7 @@ const conversations: {
   {
     id: "1",
     name: "Fatima B.",
-    preview: "Do you have appointments available tomorrow?",
+    preview: "Do you ship to Casablanca?",
     channel: "whatsapp",
     time: "2m",
     active: true,
@@ -44,10 +44,10 @@ const conversations: {
 ];
 
 const messages = [
-  { from: "customer", text: "Hi! Do you have appointments available tomorrow?", time: "10:32" },
-  { from: "ai", text: "Hello Fatima! Yes, we have openings tomorrow at 10am, 2pm, and 4pm. Which time works best for you?", time: "10:32" },
-  { from: "customer", text: "2pm please!", time: "10:33" },
-  { from: "ai", text: "Perfect! I've noted your appointment for tomorrow at 2pm. We'll send you a reminder. See you then! 😊", time: "10:33" },
+  { from: "customer", text: "Hi! Do you ship to Casablanca?", time: "10:32" },
+  { from: "ai", text: "Hello Fatima! Yes, we deliver to Casablanca. Standard shipping is 2–3 business days. Would you like to place an order?", time: "10:32" },
+  { from: "customer", text: "Yes, how much is delivery?", time: "10:33" },
+  { from: "ai", text: "Delivery to Casablanca is 29 MAD — free on orders over 299 MAD. Want me to help you find a product?", time: "10:33" },
 ];
 
 export const metadata = { title: "Inbox" };

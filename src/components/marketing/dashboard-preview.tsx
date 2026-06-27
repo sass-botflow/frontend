@@ -7,7 +7,7 @@ import { ChannelLogo } from "@/components/channels/channel-logo";
 import { cn } from "@/lib/utils";
 
 const navIcons = [Radio, Brain, Inbox, Settings];
-const navKeys = ["Channels", "AI Brain", "Inbox", "Settings"] as const;
+const navKeys = ["Connect", "My Bot", "Inbox", "Settings"] as const;
 
 const messageChannels = ["whatsapp", "instagram", "tiktok"] as const;
 
