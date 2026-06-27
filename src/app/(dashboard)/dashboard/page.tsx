@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MessageSquare, Sparkles, User } from "lucide-react";
+import { CreditCard, MessageSquare, Sparkles, User } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { ChannelLogo } from "@/components/channels/channel-logo";
 import { ChannelBadge } from "@/components/channels/channel-badge";

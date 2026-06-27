@@ -49,6 +49,7 @@ export const PLANS = [
 /** Simple dashboard navigation */
 export const NAV_ITEMS = [
   { href: "/dashboard", label: "Overview", icon: "LayoutDashboard" },
+  { href: "/dashboard/billing", label: "Billing", icon: "CreditCard" },
   { href: "/dashboard/inbox", label: "Inbox", icon: "Inbox" },
   { href: "/dashboard/brain", label: "My Bot", icon: "Bot" },
   { href: "/dashboard/channels", label: "Connect", icon: "PlugZap" },

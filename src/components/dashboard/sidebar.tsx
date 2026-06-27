@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Bot,
+  CreditCard,
   Gift,
   Inbox,
   LayoutDashboard,
@@ -16,6 +17,7 @@ import { NAV_ITEMS } from "@/lib/constants";
 
 const iconMap = {
   LayoutDashboard,
+  CreditCard,
   Inbox,
   Bot,
   PlugZap,
