@@ -1,5 +1,7 @@
 # Deploy BotFlow f EasyPanel — Guide simple (Darija + FR)
 
+> **Guide sari3:** [DEPLOY-MAIN.md](./DEPLOY-MAIN.md) — push `main` + Restart (wla webhook auto-deploy).
+
 > **Daba `botflow.ink` kay affichi 404** = l'app ma deployéch wla l'container ma kaykhdemch.
 > Hadi l'guide b jouj tari9a — **Tari9a 1 (Docker Image) hiya l'as7al**.
 
@@ -139,6 +141,12 @@ Ila `version` ma kaynach wla `premiumChannels: false` → **server mazal 3la ver
 
 ### Deploy mn GitHub (ila EasyPanel ma kheddamch)
 
+**As7al — webhook (marra wa7da):**
+1. EasyPanel → `frontend` → **Deployments** → copier **Webhook URL**
+2. GitHub → **Secrets** → `EASYPANEL_DEPLOY_WEBHOOK` = had URL
+3. Kol push l `main` = deploy automatique
+
+**Wla SSH:**
 1. GitHub → repo → **Settings** → **Secrets** → zid:
    - `DEPLOY_SSH_HOST` = `187.124.12.89`
    - `DEPLOY_SSH_USER` = `root`

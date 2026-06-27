@@ -45,3 +45,59 @@ jobs:
             NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=/en
             APP_VERSION=${{ github.sha }}
             BUILD_TIME=${{ github.event.head_commit.timestamp }}
+
+  deploy:
+    needs: publish
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Deploy via EasyPanel webhook
+        if: ${{ secrets.EASYPANEL_DEPLOY_WEBHOOK != '' }}
+        run: |
+          echo "Triggering EasyPanel deploy webhook..."
+          curl -fsS -X POST "${{ secrets.EASYPANEL_DEPLOY_WEBHOOK }}"
+          echo "EasyPanel deploy triggered."
+
+      - name: Deploy via SSH (pull image + restart)
+        if: ${{ secrets.EASYPANEL_DEPLOY_WEBHOOK == '' && secrets.DEPLOY_SSH_HOST != '' }}
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_SSH_HOST }}
+          username: ${{ secrets.DEPLOY_SSH_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -e
+            echo "=== BotFlow deploy $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
+            docker pull ghcr.io/sass-botflow/frontend:latest
+            CONTAINER=$(docker ps --format '{{.Names}}' | grep -iE 'frontend|botflow' | head -1 || true)
+            if [ -z "$CONTAINER" ]; then
+              echo "No running frontend container."
+              docker ps -a
+              exit 1
+            fi
+            docker restart "$CONTAINER"
+            sleep 8
+            docker logs "$CONTAINER" --tail 15 2>&1 || true
+            echo "=== Deploy finished ==="
+
+      - name: Post manual deploy steps
+        if: ${{ secrets.EASYPANEL_DEPLOY_WEBHOOK == '' && secrets.DEPLOY_SSH_HOST == '' }}
+        run: |
+          {
+            echo "## Image published — manual deploy required"
+            echo ""
+            echo "Docker image \`ghcr.io/sass-botflow/frontend:latest\` is ready."
+            echo ""
+            echo "### Option A — EasyPanel (1 click)"
+            echo "1. Open EasyPanel → project \`sass-botflow\` → service \`frontend\`"
+            echo "2. Source must be **Docker Image**: \`ghcr.io/sass-botflow/frontend:latest\`"
+            echo "3. Click **Restart** (or **Deploy**)"
+            echo ""
+            echo "### Option B — Auto deploy next time"
+            echo "Add one secret in GitHub → Settings → Secrets → Actions:"
+            echo "- \`EASYPANEL_DEPLOY_WEBHOOK\` — copy from EasyPanel → service → Deployments → Webhook"
+            echo "- OR SSH secrets: \`DEPLOY_SSH_HOST\`, \`DEPLOY_SSH_USER\`, \`DEPLOY_SSH_KEY\`"
+            echo ""
+            echo "Verify: \`curl https://www.botflow.ink/api/health\`"
+          } >> "$GITHUB_STEP_SUMMARY"

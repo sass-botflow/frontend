@@ -53,6 +53,8 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ## EasyPanel deployment
 
+**Quick guide (Darija):** [DEPLOY-MAIN.md](./DEPLOY-MAIN.md) — push `main` + Restart f EasyPanel.
+
 ### Required settings
 
 | Setting | Value |
