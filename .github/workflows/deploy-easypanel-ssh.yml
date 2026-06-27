@@ -1,72 +1,71 @@
 name: Deploy to EasyPanel server
 
-# Manual deploy only. Push-to-main auto-deploy runs in "Publish Docker image".
-# Secrets (pick one method):
-#   EASYPANEL_DEPLOY_WEBHOOK — easiest: EasyPanel → service → Deployments → Webhook URL
-#   DEPLOY_SSH_HOST + DEPLOY_SSH_USER + DEPLOY_SSH_KEY — SSH pull + restart
+# Manual deploy. Push-to-main auto-deploy runs in "Publish Docker image".
+# Secrets (pick one):
+#   EASYPANEL_DEPLOY_WEBHOOK — EasyPanel → service → Deployments → Webhook URL
+#   DEPLOY_SSH_HOST + DEPLOY_SSH_USER + DEPLOY_SSH_KEY
 
 on:
   workflow_dispatch:
 
 jobs:
-  deploy-webhook:
-    if: ${{ secrets.EASYPANEL_DEPLOY_WEBHOOK != '' }}
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger EasyPanel deploy
+      - name: Deploy to EasyPanel
+        env:
+          WEBHOOK: ${{ secrets.EASYPANEL_DEPLOY_WEBHOOK }}
+          SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
         run: |
-          curl -fsS -X POST "${{ secrets.EASYPANEL_DEPLOY_WEBHOOK }}"
-          echo "EasyPanel deploy triggered."
+          set -e
 
-  deploy-ssh:
-    if: ${{ secrets.EASYPANEL_DEPLOY_WEBHOOK == '' && secrets.DEPLOY_SSH_HOST != '' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Pull latest image and restart frontend
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.DEPLOY_SSH_HOST }}
-          username: ${{ secrets.DEPLOY_SSH_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          script_stop: true
-          script: |
-            set -e
-            echo "=== BotFlow deploy $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
-            docker pull ghcr.io/sass-botflow/frontend:latest
-            CONTAINER=$(docker ps --format '{{.Names}}' | grep -iE 'frontend|botflow' | head -1 || true)
-            if [ -z "$CONTAINER" ]; then
-              echo "No running frontend container. All containers:"
-              docker ps -a
-              exit 1
-            fi
-            echo "Restarting container: $CONTAINER"
-            docker restart "$CONTAINER"
-            sleep 8
-            docker logs "$CONTAINER" --tail 15 2>&1 || true
-            echo "=== Deploy finished ==="
+          if [ -n "$WEBHOOK" ]; then
+            echo "Triggering EasyPanel deploy webhook..."
+            curl -fsS -X POST "$WEBHOOK"
+            echo "EasyPanel deploy triggered."
+            exit 0
+          fi
 
-  deploy-missing-secrets:
-    if: ${{ secrets.EASYPANEL_DEPLOY_WEBHOOK == '' && secrets.DEPLOY_SSH_HOST == '' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Explain how to enable auto deploy
-        run: |
+          if [ -n "$SSH_HOST" ] && [ -n "$SSH_USER" ] && [ -n "$SSH_KEY" ]; then
+            echo "Deploying via SSH to $SSH_HOST ..."
+            mkdir -p ~/.ssh
+            printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+            chmod 600 ~/.ssh/deploy_key
+            ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "$SSH_USER@$SSH_HOST" <<'REMOTE'
+          set -e
+          echo "=== BotFlow deploy $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
+          docker pull ghcr.io/sass-botflow/frontend:latest
+          CONTAINER=$(docker ps --format '{{.Names}}' | grep -iE 'frontend|botflow' | head -1 || true)
+          if [ -z "$CONTAINER" ]; then
+            echo "No running frontend container."
+            docker ps -a
+            exit 1
+          fi
+          echo "Restarting container: $CONTAINER"
+          docker restart "$CONTAINER"
+          sleep 8
+          docker logs "$CONTAINER" --tail 15 2>&1 || true
+          echo "=== Deploy finished ==="
+          REMOTE
+            exit 0
+          fi
+
           echo "::error::No deploy secrets configured."
           {
             echo "## Deploy secrets missing"
             echo ""
-            echo "Add **one** of these in GitHub → Settings → Secrets → Actions:"
-            echo ""
             echo "### Easiest — EasyPanel webhook"
-            echo "1. EasyPanel → \`sass-botflow\` → \`frontend\` → **Deployments** → copy **Webhook** URL"
-            echo "2. GitHub secret name: \`EASYPANEL_DEPLOY_WEBHOOK\`"
+            echo "1. EasyPanel → \`sass-botflow\` → \`frontend\` → **Deployments** → copy **Webhook**"
+            echo "2. GitHub secret: \`EASYPANEL_DEPLOY_WEBHOOK\`"
             echo ""
             echo "### Or — SSH"
             echo "- \`DEPLOY_SSH_HOST\` = \`187.124.12.89\`"
             echo "- \`DEPLOY_SSH_USER\` = \`root\`"
             echo "- \`DEPLOY_SSH_KEY\` = private SSH key"
             echo ""
-            echo "### Manual deploy (no secrets)"
-            echo "EasyPanel → \`frontend\` → **Restart** (source = Docker Image \`ghcr.io/sass-botflow/frontend:latest\`)"
+            echo "### Manual (no secrets)"
+            echo "EasyPanel → \`frontend\` → **Restart**"
           } >> "$GITHUB_STEP_SUMMARY"
           exit 1
