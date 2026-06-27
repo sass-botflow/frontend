@@ -54,9 +54,11 @@ Khass `version` ma tkounch `"dev"` — ila b9at `dev`, server mazal 3la image qd
 
 | Mochkil | Solution |
 |---------|----------|
+| GitHub Actions failed (workflow file issue) | Merge latest `main` — fixed in PR workflow hotfix |
 | Deploy kaytl3 Cancel | Source = **Docker Image**, mashi GitHub build |
 | 404 logo vert | Port = **3000**, chouf Logs |
 | version = "dev" | Restart f EasyPanel (pull image jdid) |
 | Workflow failed "missing server host" | Zid `EASYPANEL_DEPLOY_WEBHOOK` wla SSH secrets |
+| Ma 3andekch accès EasyPanel | Sift l'admin: "Restart container frontend" |
 
 Guide kamil: [DEPLOY-EASYPANEL.md](./DEPLOY-EASYPANEL.md)

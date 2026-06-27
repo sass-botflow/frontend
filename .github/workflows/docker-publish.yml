@@ -49,55 +49,59 @@ jobs:
   deploy:
     needs: publish
     runs-on: ubuntu-latest
-    if: success()
     steps:
-      - name: Deploy via EasyPanel webhook
-        if: ${{ secrets.EASYPANEL_DEPLOY_WEBHOOK != '' }}
+      - name: Deploy to EasyPanel
+        env:
+          WEBHOOK: ${{ secrets.EASYPANEL_DEPLOY_WEBHOOK }}
+          SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
         run: |
-          echo "Triggering EasyPanel deploy webhook..."
-          curl -fsS -X POST "${{ secrets.EASYPANEL_DEPLOY_WEBHOOK }}"
-          echo "EasyPanel deploy triggered."
+          set -e
 
-      - name: Deploy via SSH (pull image + restart)
-        if: ${{ secrets.EASYPANEL_DEPLOY_WEBHOOK == '' && secrets.DEPLOY_SSH_HOST != '' }}
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.DEPLOY_SSH_HOST }}
-          username: ${{ secrets.DEPLOY_SSH_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          script_stop: true
-          script: |
-            set -e
-            echo "=== BotFlow deploy $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
-            docker pull ghcr.io/sass-botflow/frontend:latest
-            CONTAINER=$(docker ps --format '{{.Names}}' | grep -iE 'frontend|botflow' | head -1 || true)
-            if [ -z "$CONTAINER" ]; then
-              echo "No running frontend container."
-              docker ps -a
-              exit 1
-            fi
-            docker restart "$CONTAINER"
-            sleep 8
-            docker logs "$CONTAINER" --tail 15 2>&1 || true
-            echo "=== Deploy finished ==="
+          if [ -n "$WEBHOOK" ]; then
+            echo "Triggering EasyPanel deploy webhook..."
+            curl -fsS -X POST "$WEBHOOK"
+            echo "EasyPanel deploy triggered."
+            exit 0
+          fi
 
-      - name: Post manual deploy steps
-        if: ${{ secrets.EASYPANEL_DEPLOY_WEBHOOK == '' && secrets.DEPLOY_SSH_HOST == '' }}
-        run: |
+          if [ -n "$SSH_HOST" ] && [ -n "$SSH_USER" ] && [ -n "$SSH_KEY" ]; then
+            echo "Deploying via SSH to $SSH_HOST ..."
+            mkdir -p ~/.ssh
+            printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+            chmod 600 ~/.ssh/deploy_key
+            ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "$SSH_USER@$SSH_HOST" <<'REMOTE'
+          set -e
+          echo "=== BotFlow deploy $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
+          docker pull ghcr.io/sass-botflow/frontend:latest
+          CONTAINER=$(docker ps --format '{{.Names}}' | grep -iE 'frontend|botflow' | head -1 || true)
+          if [ -z "$CONTAINER" ]; then
+            echo "No running frontend container."
+            docker ps -a
+            exit 1
+          fi
+          docker restart "$CONTAINER"
+          sleep 8
+          docker logs "$CONTAINER" --tail 15 2>&1 || true
+          echo "=== Deploy finished ==="
+          REMOTE
+            exit 0
+          fi
+
           {
             echo "## Image published — manual deploy required"
             echo ""
             echo "Docker image \`ghcr.io/sass-botflow/frontend:latest\` is ready."
             echo ""
-            echo "### Option A — EasyPanel (1 click)"
-            echo "1. Open EasyPanel → project \`sass-botflow\` → service \`frontend\`"
-            echo "2. Source must be **Docker Image**: \`ghcr.io/sass-botflow/frontend:latest\`"
-            echo "3. Click **Restart** (or **Deploy**)"
+            echo "### EasyPanel (1 click)"
+            echo "1. EasyPanel → \`sass-botflow\` → \`frontend\`"
+            echo "2. Source = **Docker Image**: \`ghcr.io/sass-botflow/frontend:latest\`"
+            echo "3. Click **Restart**"
             echo ""
-            echo "### Option B — Auto deploy next time"
-            echo "Add one secret in GitHub → Settings → Secrets → Actions:"
-            echo "- \`EASYPANEL_DEPLOY_WEBHOOK\` — copy from EasyPanel → service → Deployments → Webhook"
-            echo "- OR SSH secrets: \`DEPLOY_SSH_HOST\`, \`DEPLOY_SSH_USER\`, \`DEPLOY_SSH_KEY\`"
+            echo "### Auto deploy next time"
+            echo "Add GitHub secret \`EASYPANEL_DEPLOY_WEBHOOK\` (EasyPanel → Deployments → Webhook)"
+            echo "or SSH secrets: \`DEPLOY_SSH_HOST\`, \`DEPLOY_SSH_USER\`, \`DEPLOY_SSH_KEY\`"
             echo ""
             echo "Verify: \`curl https://www.botflow.ink/api/health\`"
           } >> "$GITHUB_STEP_SUMMARY"
