@@ -13,7 +13,7 @@ const stats = [
   { label: "Total conversations", value: "1,284", icon: MessageSquare },
   { label: "AI handled", value: "78%", icon: Sparkles, accent: "text-violet-500" },
   { label: "Human handled", value: "22%", icon: User, accent: "text-blue-500" },
-  { label: "Active channels", value: "2 / 3", icon: null },
+  { label: "Connected apps", value: "2 / 3", icon: null },
 ];
 
 const channelStatus: Record<ChannelId, boolean> = {
@@ -25,7 +25,7 @@ const channelStatus: Record<ChannelId, boolean> = {
 const recentConversations = [
   {
     name: "Fatima B.",
-    preview: "Do you have appointments tomorrow?",
+    preview: "What are your prices?",
     channel: "whatsapp" as ChannelId,
     time: "2m",
   },
@@ -59,7 +59,7 @@ export default function DashboardPage() {
             Good morning 👋
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Here&apos;s how your AI is performing across all channels.
+            Here&apos;s how your bot is performing today.
           </p>
         </div>
 
@@ -90,7 +90,7 @@ export default function DashboardPage() {
         <div className="mb-6 grid gap-4 lg:grid-cols-2">
           <Card className="border-border/60 shadow-none">
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Channel connections</CardTitle>
+              <CardTitle className="text-base">Connected apps</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {CHANNELS.map((ch) => (
@@ -123,7 +123,7 @@ export default function DashboardPage() {
 
           <Card className="border-border/60 shadow-none">
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Messages by channel</CardTitle>
+              <CardTitle className="text-base">Messages by app</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {channelStats.map((item) => (

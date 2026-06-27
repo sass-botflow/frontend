@@ -18,7 +18,7 @@ export function ChannelsEmptyState() {
         </div>
         <div className="space-y-2">
           <h3 className="text-lg font-semibold tracking-tight">
-            Connect your first channel
+            Connect your first app
           </h3>
           <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
             Scroll down to WhatsApp, Instagram, or TikTok. Each card has a form
@@ -28,7 +28,7 @@ export function ChannelsEmptyState() {
           </p>
           <p className="inline-flex items-center gap-1.5 text-xs font-medium text-primary">
             <ArrowDown className="h-3.5 w-3.5" />
-            Forms are directly on each channel card below
+            Forms are directly on each app card below
           </p>
         </div>
       </div>

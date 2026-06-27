@@ -40,7 +40,7 @@ export default function AiSettingsPage() {
 
   return (
     <SettingsPageShell
-      title="AI Settings"
+      title="Bot behavior"
       description="Customize how your AI assistant communicates and when to hand off to humans."
     >
       <SettingsSection title="AI personality">

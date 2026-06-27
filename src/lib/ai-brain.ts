@@ -28,7 +28,6 @@ export type BusinessTypeId =
 
 export type AiGoalId =
   | "answer-questions"
-  | "book-appointments"
   | "collect-leads"
   | "recommend-products"
   | "handle-support"
@@ -130,7 +129,6 @@ export const BUSINESS_TYPES: BusinessType[] = [
 
 export const AI_GOALS: { id: AiGoalId; label: string; promptFragment: string }[] = [
   { id: "answer-questions", label: "Answer customer questions", promptFragment: "Answer customer questions clearly and accurately." },
-  { id: "book-appointments", label: "Book appointments", promptFragment: "Help customers book appointments when they ask." },
   { id: "collect-leads", label: "Collect leads", promptFragment: "Collect contact details from interested prospects." },
   { id: "recommend-products", label: "Recommend products", promptFragment: "Recommend relevant products or services based on customer needs." },
   { id: "handle-support", label: "Handle support requests", promptFragment: "Handle support requests patiently and resolve common issues." },
@@ -186,7 +184,6 @@ export interface WizardData {
 
 export const DEFAULT_GOALS: AiGoalId[] = [
   "answer-questions",
-  "book-appointments",
   "collect-leads",
   "transfer-human",
 ];

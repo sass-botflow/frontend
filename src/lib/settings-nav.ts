@@ -3,9 +3,7 @@ import {
   Bot,
   Building2,
   CreditCard,
-  HelpCircle,
-  LayoutGrid,
-  Radio,
+  PlugZap,
   User,
   Users,
 } from "lucide-react";
@@ -21,9 +19,9 @@ export const SETTINGS_SECTIONS = [
     label: "Workspace",
     items: [
       { href: "/dashboard/settings/business", label: "Business", icon: Building2, description: "Company details & branding" },
-      { href: "/dashboard/settings/channels", label: "Channels", icon: Radio, description: "WhatsApp, Instagram, TikTok" },
-      { href: "/dashboard/settings/ai", label: "AI Settings", icon: Bot, description: "Personality & handoff rules" },
-      { href: "/dashboard/settings/knowledge", label: "Knowledge Base", icon: BookOpen, description: "PDFs, websites & docs" },
+      { href: "/dashboard/channels", label: "Connect", icon: PlugZap, description: "WhatsApp, Instagram, TikTok" },
+      { href: "/dashboard/settings/ai", label: "Bot behavior", icon: Bot, description: "Personality & handoff rules" },
+      { href: "/dashboard/settings/knowledge", label: "Train bot", icon: BookOpen, description: "PDFs, websites & docs" },
     ],
   },
   {
@@ -31,13 +29,6 @@ export const SETTINGS_SECTIONS = [
     items: [
       { href: "/dashboard/settings/team", label: "Team", icon: Users, description: "Members, roles & activity" },
       { href: "/dashboard/settings/billing", label: "Billing", icon: CreditCard, description: "Plan, usage & invoices" },
-    ],
-  },
-  {
-    label: "Platform",
-    items: [
-      { href: "/dashboard/settings/apps", label: "App Store", icon: LayoutGrid, description: "Integrations & apps" },
-      { href: "/dashboard/settings/support", label: "Support Center", icon: HelpCircle, description: "Help, tickets & docs" },
     ],
   },
 ] as const;

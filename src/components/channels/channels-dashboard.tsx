@@ -38,7 +38,7 @@ export function ChannelsDashboard() {
 
   return (
     <>
-      <DashboardHeader title="Channels" />
+      <DashboardHeader title="Connect" />
 
       <DisconnectChannelDialog
         integration={disconnectTarget}
@@ -63,15 +63,14 @@ export function ChannelsDashboard() {
           >
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
               <Sparkles className="h-3.5 w-3.5" />
-              Channel integrations
+              Messaging apps
             </div>
             <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-              Connect your customer channels
+              Connect WhatsApp, Instagram &amp; TikTok
             </h2>
             <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-              Fill in the connection form on each channel card below. Paste your
-              phone number, username, IDs, and access tokens — then click Save
-              &amp; connect.
+              Link the apps your customers use. Paste your credentials on each card
+              below — then click Save &amp; connect.
             </p>
           </motion.div>
 

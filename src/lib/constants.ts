@@ -13,9 +13,9 @@ export const PLANS = [
     price: 49,
     description: "Perfect for one local business getting started.",
     features: [
-      "1 channel",
+      "1 messaging app",
       "500 conversations / month",
-      "AI Brain included",
+      "AI bot included",
       "Email support",
     ],
   },
@@ -25,7 +25,7 @@ export const PLANS = [
     price: 99,
     description: "For growing businesses with more customers.",
     features: [
-      "All 3 channels",
+      "All 3 apps",
       "2,000 conversations / month",
       "Team members",
       "Priority support",
@@ -38,7 +38,7 @@ export const PLANS = [
     price: 199,
     description: "For teams that need more volume and control.",
     features: [
-      "All 3 channels",
+      "All 3 apps",
       "Unlimited conversations",
       "Unlimited team members",
       "API access",
@@ -46,15 +46,12 @@ export const PLANS = [
   },
 ] as const;
 
+/** Simple dashboard navigation — no CRM, appointments, or analytics. */
 export const NAV_ITEMS = [
   { href: "/dashboard", label: "Overview", icon: "LayoutDashboard" },
   { href: "/dashboard/inbox", label: "Inbox", icon: "Inbox" },
-  { href: "/dashboard/brain", label: "AI Agents", icon: "Bot" },
-  { href: "/dashboard/channels", label: "Channels", icon: "Radio" },
-  { href: "/dashboard/crm", label: "CRM", icon: "Contact" },
-  { href: "/dashboard/appointments", label: "Appointments", icon: "Calendar" },
-  { href: "/dashboard/analytics", label: "Analytics", icon: "BarChart3" },
-  { href: "/dashboard/settings/knowledge", label: "Knowledge", icon: "BookOpen" },
+  { href: "/dashboard/brain", label: "My Bot", icon: "Bot" },
+  { href: "/dashboard/channels", label: "Connect", icon: "PlugZap" },
   { href: "/dashboard/billing", label: "Billing", icon: "CreditCard" },
   { href: "/dashboard/affiliate", label: "Affiliate", icon: "Gift" },
   { href: "/dashboard/settings", label: "Settings", icon: "Settings" },

@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export const metadata = { title: "Knowledge Base · Settings" };
+export const metadata = { title: "Train bot · Settings" };
 
 const pdfs = [
   { name: "Product Catalog 2026.pdf", size: "2.4 MB", pages: 48, status: "Indexed" },
@@ -30,8 +30,8 @@ const documents = [
 export default function KnowledgeSettingsPage() {
   return (
     <SettingsPageShell
-      title="Knowledge Base"
-      description="Train your AI with documents, PDFs, and website content."
+      title="Train bot"
+      description="Teach your AI with documents, PDFs, and website content."
     >
       <SettingsSection title="Uploaded PDFs">
         <SettingsCard>
