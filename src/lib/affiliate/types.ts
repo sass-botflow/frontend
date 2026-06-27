@@ -32,11 +32,22 @@ export interface AffiliateStats {
   monthlyRecurring: number;
 }
 
+export interface EarningRecord {
+  id: string;
+  amount: number;
+  type: string;
+  status: EarningStatus;
+  period: string | null;
+  description: string | null;
+  createdAt: string;
+}
+
 export interface AffiliateDashboardResponse {
   affiliate: AffiliateRecord | null;
   isEnrolled: boolean;
   stats: AffiliateStats;
   referrals: ReferralRecord[];
+  earnings: EarningRecord[];
 }
 
 export interface JoinAffiliateResponse {

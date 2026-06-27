@@ -1,6 +1,5 @@
 "use client";
 
-import { DollarSign, TrendingUp, Users, Wallet } from "lucide-react";
 import type { AffiliateStats } from "@/lib/affiliate/types";
 import { formatCurrency } from "@/lib/utils";
 import { cn } from "@/lib/utils";
@@ -14,51 +13,56 @@ export function AffiliateStatsGrid({ stats }: AffiliateStatsGridProps) {
     {
       label: "Total earnings",
       value: formatCurrency(stats.totalEarnings),
-      icon: DollarSign,
       accent: "text-emerald-400",
     },
     {
       label: "Pending payout",
       value: formatCurrency(stats.pendingPayout),
-      icon: Wallet,
       accent: "text-amber-400",
     },
     {
-      label: "Active referrals",
-      value: String(stats.activeReferrals),
-      icon: Users,
+      label: "Paid out",
+      value: formatCurrency(stats.paidOut),
       accent: "text-primary",
     },
     {
       label: "Monthly recurring",
       value: formatCurrency(stats.monthlyRecurring),
-      icon: TrendingUp,
       accent: "text-violet-400",
+    },
+    {
+      label: "Active referrals",
+      value: String(stats.activeReferrals),
+      accent: "text-foreground",
+    },
+    {
+      label: "Total referrals",
+      value: String(stats.totalReferrals),
+      accent: "text-muted-foreground",
     },
   ];
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      {items.map((item) => (
-        <div
-          key={item.label}
-          className="glass rounded-2xl border border-border/50 p-4 transition-all hover:border-primary/20"
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                {item.label}
-              </p>
-              <p className={cn("mt-1 text-2xl font-semibold tracking-tight", item.accent)}>
-                {item.value}
-              </p>
-            </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-              <item.icon className="h-4 w-4 text-primary" />
-            </div>
+    <div className="rounded-2xl border border-border/50 bg-card/50 p-5 sm:p-6">
+      <h3 className="text-lg font-semibold">Your performance</h3>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Real-time stats from your affiliate dashboard
+      </p>
+      <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {items.map((item) => (
+          <div
+            key={item.label}
+            className="rounded-xl border border-border/50 bg-background/50 p-4"
+          >
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {item.label}
+            </p>
+            <p className={cn("mt-1 text-2xl font-bold tracking-tight", item.accent)}>
+              {item.value}
+            </p>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }

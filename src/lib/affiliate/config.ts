@@ -7,7 +7,17 @@ export const AFFILIATE_CONFIG = {
   minPayout: 50,
   payoutMethods: ["PayPal", "Stripe"] as const,
   payoutSchedule: "Monthly",
+  channels: ["WhatsApp", "Instagram", "TikTok"] as const,
+  examplePlanPrice: 99,
+  exampleReferralCount: 10,
 } as const;
+
+export const AFFILIATE_EXAMPLE_MONTHLY =
+  Math.round(
+    AFFILIATE_CONFIG.examplePlanPrice *
+      AFFILIATE_CONFIG.commissionRate *
+      AFFILIATE_CONFIG.exampleReferralCount,
+  );
 
 export const AFFILIATE_PLAN_COMMISSIONS = PLANS.map((plan) => ({
   planId: plan.id,
