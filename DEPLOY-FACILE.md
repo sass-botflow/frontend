@@ -1,11 +1,43 @@
 # Deploy — ma khasskch t3ani (Darija)
 
 > **L'mochkil:** GitHub kaybni l'image ✅ — walakin server ma kaypullach ❌ (`version: "dev"` f health).
-> **L'hal:** Configuri **marra wa7da** — men ba3d kol push = deploy automatique.
+> **L'hal:** Deploy **daba** b paste URL, wla configuri auto **marra wa7da**.
 
 ---
 
-## ✅ Option 1 — GitHub Webhook (AS7AL — 5 min)
+## 🚀 Option 0 — Deploy DABA (2 min, bla secrets)
+
+Ma khassk **la Settings, la secrets**. Ghir paste URL w klik:
+
+### Step 1 — Copier URL mn EasyPanel
+
+1. Dkhol: **http://187.124.12.89:3000**
+2. **sass-botflow** → **frontend** → **Deployments**
+3. Copier **Deployment Trigger** URL:
+   ```
+   http://187.124.12.89:3000/api/deploy/xxxxxxxx
+   ```
+
+### Step 2 — Run workflow f GitHub
+
+1. Dkhol: https://github.com/sass-botflow/frontend/actions/workflows/deploy-now.yml
+2. Klik **Run workflow** (dropdown lfoq)
+3. **easypanel_webhook** = paste URL li copiti
+4. **Run workflow**
+
+GitHub ghadi ytrigger EasyPanel → pull image jdid → deploy ✅
+
+### Step 3 — T2akked
+
+```bash
+curl https://www.botflow.ink/api/health
+```
+
+Ila `version` mazal `"dev"` → EasyPanel Source khasso ykon **Docker Image** `ghcr.io/sass-botflow/frontend:latest` (port `3000`).
+
+---
+
+## ✅ Option 1 — GitHub Webhook (auto kol push — 5 min)
 
 Ma khassk **la secrets** f GitHub Actions, la SSH. Ghir 2 configs:
 

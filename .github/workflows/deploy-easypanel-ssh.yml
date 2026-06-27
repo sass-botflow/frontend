@@ -7,6 +7,11 @@ name: Deploy to EasyPanel server
 
 on:
   workflow_dispatch:
+    inputs:
+      easypanel_webhook:
+        description: "Optional — paste Deployment Trigger URL (overrides secret)"
+        required: false
+        type: string
 
 jobs:
   deploy:
@@ -14,7 +19,7 @@ jobs:
     steps:
       - name: Deploy to EasyPanel
         env:
-          WEBHOOK: ${{ secrets.EASYPANEL_DEPLOY_WEBHOOK }}
+          WEBHOOK: ${{ inputs.easypanel_webhook || secrets.EASYPANEL_DEPLOY_WEBHOOK }}
           SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
           SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
           SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
@@ -52,11 +57,14 @@ jobs:
             exit 0
           fi
 
-          echo "::error::No deploy secrets configured."
+          echo "::error::No deploy webhook configured."
           {
             echo "## Deploy secrets missing"
             echo ""
-            echo "### Easiest — GitHub Webhook (no Actions secrets)"
+            echo "### As7al — paste webhook (bla secrets)"
+            echo "Actions → **[Deploy now (paste webhook)](https://github.com/sass-botflow/frontend/actions/workflows/deploy-now.yml)** → Run workflow"
+            echo ""
+            echo "### Easiest auto — GitHub Webhook (no Actions secrets)"
             echo "1. EasyPanel → \`frontend\` → **Deployments** → **Deployment Trigger** URL"
             echo "   (\`http://187.124.12.89:3000/api/deploy/xxxxxxxx\`)"
             echo "2. GitHub → Settings → Webhooks → Add webhook (push event, SSL off)"
