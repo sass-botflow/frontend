@@ -38,7 +38,11 @@ Men ba3d awwal build:
    ghcr.io/sass-botflow/frontend:latest
    ```
 5. **Port:** `3000`
-6. **Domains** → `botflow.ink` + HTTPS ON + Internal port `3000`
+6. **Domains** — zid **jouj** domains 3la nfs service (obligatoire):
+   - `www.botflow.ink` → HTTPS ON → port `3000`
+   - `botflow.ink` → HTTPS ON → port `3000`
+
+   Ila `botflow.ink` ma mzidch, `/privacy` w `/terms` kaytl3o **EasyPanel 404** (logo vert). `www.botflow.ink` yemken ykhdem w apex la.
 
 ### 4) Environment Variables (runtime)
 
@@ -67,9 +71,27 @@ GitHub kaybni `ghcr.io/sass-botflow/frontend:latest` automatiquement men `main`.
 | Ma kaynach Restart | **Deploy** — ghadi ypulli image jdid |
 | Ma t9derch tdkhol EasyPanel | Chouf **Option B** lta7t |
 
----
+### 404 f `/privacy` ghir 3la `botflow.ink` (www kheddam)
 
-## ⚡ Ma qdertch ndir Deploy? — 3 options
+**Cause:** EasyPanel 3andu ghir `www.botflow.ink` f Domains — apex `botflow.ink` ma kaywselch l container.
+
+**Fix A — EasyPanel (as7al):**
+1. Service `frontend` → **Domains** → **Add domain**
+2. `botflow.ink` → HTTPS ON → port `3000`
+3. Deploy / Restart
+
+**Fix B — Cloudflare (bla EasyPanel):**
+1. Cloudflare → `botflow.ink` → **Rules** → **Redirect Rules**
+2. If hostname equals `botflow.ink` → Redirect to `https://www.botflow.ink/${uri.path}` (301)
+
+Verify:
+```bash
+curl -I https://botflow.ink/privacy
+# Expected: 301/308 → www, then 200
+./scripts/verify-production.sh
+```
+
+---
 
 ### Option A — Restart (1 click)
 1. EasyPanel → `sass-botflow` → `frontend`
@@ -100,7 +122,8 @@ Sift screenshot dyal EasyPanel (service frontend) w nqolk **fin tkliki b daba**.
 | Ma kaynach Deploy button | Khass tkoun f **Project → Service** (mashi accueil) |
 | Build failed | St3mel **Docker Image** (Tari9a 1), mashi GitHub build |
 | Pull image failed | GHCR public wla credentials |
-| 404 / logo vert | Port = **3000**, chouf Logs |
+| 404 / logo vert | Port = **3000**, chouf Logs. Ila ghir `www` kheddam: zid domain `botflow.ink` f EasyPanel |
+| `/privacy` 404 on apex | Add `botflow.ink` domain on frontend service (see step 6) |
 | 502 | Internal port = **3000** |
 
 ### 3lach EasyPanel kaytl3 "Cancel"?
