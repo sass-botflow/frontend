@@ -21,6 +21,11 @@ export function Footer() {
       { href: "/sign-up", label: t.nav.startFree },
       { href: "#faq", label: t.nav.faq },
     ],
+    [t.footer.legal]: [
+      { href: "/privacy", label: t.footer.privacy },
+      { href: "/terms", label: t.footer.terms },
+      { href: "/data-deletion", label: t.footer.dataDeletion },
+    ],
     [t.footer.support]: [
       { href: "/dashboard/settings/support", label: t.footer.helpCenter },
       { href: "mailto:support@botflow.ink", label: t.footer.contact },
@@ -63,9 +68,16 @@ export function Footer() {
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} {APP_NAME}. {t.footer.rights}
           </p>
-          <div className="flex gap-6 text-sm text-muted-foreground">
-            <Link href="#" className="hover:text-foreground">{t.footer.privacy}</Link>
-            <Link href="#" className="hover:text-foreground">{t.footer.terms}</Link>
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+            <Link href="/privacy" className="hover:text-foreground">
+              {t.footer.privacy}
+            </Link>
+            <Link href="/terms" className="hover:text-foreground">
+              {t.footer.terms}
+            </Link>
+            <Link href="/data-deletion" className="hover:text-foreground">
+              {t.footer.dataDeletion}
+            </Link>
           </div>
         </div>
       </div>

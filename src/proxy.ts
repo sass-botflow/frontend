@@ -2,6 +2,7 @@ import { clerkMiddleware, createRouteMatcher, clerkClient } from "@clerk/nextjs/
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { defaultLocale, isValidLocale } from "@/lib/i18n/config";
+import { LEGAL_PATHS } from "@/lib/legal/constants";
 import {
   isOnboardingComplete,
   type UserOnboardingMetadata,
@@ -27,6 +28,9 @@ function handleLocaleRedirect(request: NextRequest) {
     pathname.startsWith("/api") ||
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/onboarding") ||
+    pathname === LEGAL_PATHS.privacy ||
+    pathname === LEGAL_PATHS.terms ||
+    pathname === LEGAL_PATHS.dataDeletion ||
     isAuthRoute(request) ||
     pathname.startsWith("/_next") ||
     pathname.includes(".")
