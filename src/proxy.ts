@@ -21,6 +21,20 @@ const isAuthRoute = createRouteMatcher([
   "/register(.*)",
 ]);
 
+const APEX_HOSTS = new Set(["botflow.ink", "botflow.ink:3000", "botflow.ink:443"]);
+
+function redirectApexToWww(request: NextRequest) {
+  const host = request.headers.get("host")?.toLowerCase() ?? "";
+  if (!APEX_HOSTS.has(host)) {
+    return null;
+  }
+
+  const destination = new URL(request.url);
+  destination.protocol = "https:";
+  destination.host = "www.botflow.ink";
+  return NextResponse.redirect(destination, 308);
+}
+
 function handleLocaleRedirect(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -81,6 +95,11 @@ function isOAuthCallbackPath(pathname: string) {
 }
 
 export default clerkMiddleware(async (auth, request) => {
+  const apexRedirect = redirectApexToWww(request);
+  if (apexRedirect) {
+    return apexRedirect;
+  }
+
   const localeResponse = handleLocaleRedirect(request);
   if (localeResponse) {
     return localeResponse;

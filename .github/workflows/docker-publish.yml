@@ -113,3 +113,18 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
           echo "::warning::Image ready — run 'Deploy now (paste webhook)' or configure webhook (DEPLOY-FACILE.md)"
           exit 0
+
+  verify:
+    needs: [publish, deploy]
+    if: always() && needs.publish.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify production routes
+        run: |
+          chmod +x scripts/verify-production.sh
+          sleep 30
+          ./scripts/verify-production.sh || {
+            echo "::warning::Production verification failed — see script output. Common fix: add botflow.ink domain in EasyPanel."
+            exit 0
+          }

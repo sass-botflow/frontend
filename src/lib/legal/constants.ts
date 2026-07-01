@@ -1,6 +1,9 @@
 export const LEGAL_COMPANY = {
   name: "BotFlow",
-  website: "https://botflow.ink",
+  /** Canonical production URL (www is the live app host). */
+  website: "https://www.botflow.ink",
+  /** Apex domain — must route to the same EasyPanel service, then redirects to www. */
+  websiteApex: "https://botflow.ink",
   email: "support@botflow.ink",
   lastUpdated: "July 1, 2026",
 } as const;
