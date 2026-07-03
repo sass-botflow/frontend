@@ -27,6 +27,7 @@ TARIQA 1 — DOCKER IMAGE (as7al, khassha tkoun haka)
    INTEGRATION_ENCRYPTION_KEY=32-char-random-string-here
    NEXT_PUBLIC_APP_URL=https://www.botflow.ink
    NEXT_PUBLIC_API_URL=https://api.botflow.ink
+   JWT_SECRET=same-value-as-backend-JWT_SECRET
 
 5. Deploy:
    - Klik "Deploy" w STANA 1-2 d9i9a (pull image)

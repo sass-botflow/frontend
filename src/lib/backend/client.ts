@@ -1,5 +1,12 @@
 import { getBackendApiUrl } from "@/lib/backend/config";
-import { getBackendAuthHeaders, BackendAuthError } from "@/lib/backend/auth";
+import { getBackendAuthHeaders } from "@/lib/backend/auth";
+import { BackendApiError, BackendAuthError } from "@/lib/backend/errors";
+import {
+  authHeaderLogMeta,
+  logBackendOAuthRedirect,
+  logBackendRequest,
+  logBackendResponse,
+} from "@/lib/backend/logger";
 import type {
   BackendBot,
   BackendChannel,
@@ -8,15 +15,7 @@ import type {
   BackendMessage,
 } from "@/lib/backend/types";
 
-export class BackendApiError extends Error {
-  constructor(
-    message: string,
-    public status: number,
-  ) {
-    super(message);
-    this.name = "BackendApiError";
-  }
-}
+export { BackendApiError, BackendAuthError } from "@/lib/backend/errors";
 
 function extractErrorMessage(body: unknown, fallback: string): string {
   if (!body || typeof body !== "object") return fallback;
@@ -35,6 +34,10 @@ async function backendFetch<T>(
   init?: RequestInit & { redirect?: RequestRedirect },
 ): Promise<T> {
   const headers = await getBackendAuthHeaders();
+  const method = init?.method ?? "GET";
+
+  logBackendRequest(method, path, authHeaderLogMeta(headers.Authorization));
+
   const response = await fetch(getBackendApiUrl(path), {
     ...init,
     headers: {
@@ -43,6 +46,8 @@ async function backendFetch<T>(
     },
     cache: "no-store",
   });
+
+  logBackendResponse(method, path, response.status);
 
   if (response.status === 204) {
     return undefined as T;
@@ -78,33 +83,43 @@ export async function fetchBackendChannels(): Promise<BackendChannel[]> {
 }
 
 export async function refreshBackendChannel(channelId: string): Promise<BackendChannel> {
-  const body = await backendFetch<BackendChannel | { channel: BackendChannel }>(
-    `/api/channels/refresh?channelId=${encodeURIComponent(channelId)}`,
+  const body = await backendFetch<BackendChannel>(
+    `/api/channels/${encodeURIComponent(channelId)}/refresh`,
+    { method: "POST" },
   );
-  if (body && typeof body === "object" && "channel" in body) {
-    return (body as { channel: BackendChannel }).channel;
-  }
-  return body as BackendChannel;
+  return body;
 }
 
 export async function disconnectBackendChannel(channelId: string): Promise<void> {
-  await backendFetch<void>(
-    `/api/channels/disconnect?channelId=${encodeURIComponent(channelId)}`,
-  );
+  await backendFetch<void>(`/api/channels/${encodeURIComponent(channelId)}/disconnect`, {
+    method: "POST",
+  });
 }
 
 export async function startWhatsAppOAuthRedirectUrl(): Promise<string> {
   const headers = await getBackendAuthHeaders();
-  const response = await fetch(getBackendApiUrl("/api/integrations/whatsapp/oauth"), {
+  const path = "/api/channels/whatsapp/connect";
+
+  logBackendRequest("GET", path, {
+    ...authHeaderLogMeta(headers.Authorization),
+    redirect: "manual",
+  });
+
+  const response = await fetch(getBackendApiUrl(path), {
     method: "GET",
     headers,
     redirect: "manual",
     cache: "no-store",
   });
 
+  logBackendResponse("GET", path, response.status, { redirect: "manual" });
+
   if (response.status >= 300 && response.status < 400) {
     const location = response.headers.get("location");
-    if (location) return location;
+    if (location) {
+      logBackendOAuthRedirect(location);
+      return location;
+    }
   }
 
   if (!response.ok) {
@@ -119,10 +134,13 @@ export async function startWhatsAppOAuthRedirectUrl(): Promise<string> {
     url?: string;
     redirectUrl?: string;
   };
-  if (body.url) return body.url;
-  if (body.redirectUrl) return body.redirectUrl;
+  const redirectUrl = body.url ?? body.redirectUrl;
+  if (redirectUrl) {
+    logBackendOAuthRedirect(redirectUrl);
+    return redirectUrl;
+  }
 
-  return getBackendApiUrl("/api/integrations/whatsapp/oauth");
+  throw new BackendApiError("Backend did not return a Meta OAuth redirect URL.", 502);
 }
 
 export async function fetchBackendBots(): Promise<BackendBot[]> {
@@ -168,16 +186,22 @@ export async function fetchBackendConversations(
 export async function fetchBackendMessages(
   conversationId: string,
 ): Promise<BackendMessage[]> {
-  const body = await backendFetch<
-    BackendMessage[] | { messages: BackendMessage[]; data: BackendMessage[] }
-  >(`/api/inbox/conversations/${encodeURIComponent(conversationId)}/messages`);
+  const conversation = await backendFetch<{
+    messages?: Array<{
+      id: string;
+      content: string;
+      direction: string;
+      createdAt: string;
+      conversationId?: string;
+    }>;
+  }>(`/api/inbox/conversations/${encodeURIComponent(conversationId)}`);
 
-  if (Array.isArray(body)) return body;
-  if (body && typeof body === "object") {
-    if (Array.isArray(body.messages)) return body.messages;
-    if (Array.isArray(body.data)) return body.data;
-  }
-  return [];
+  const messages = conversation.messages ?? [];
+  return messages.map((message) => ({
+    id: message.id,
+    conversationId: message.conversationId ?? conversationId,
+    direction: message.direction.toLowerCase() === "outbound" ? "outbound" : "inbound",
+    body: message.content,
+    createdAt: message.createdAt,
+  }));
 }
-
-export { BackendAuthError };

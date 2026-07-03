@@ -85,7 +85,7 @@ export function useChannels() {
   );
 
   function startWhatsAppConnect() {
-    window.location.href = "/api/integrations/whatsapp/oauth";
+    window.location.href = "/api/channels/whatsapp/connect";
   }
 
   return {

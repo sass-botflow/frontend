@@ -1,26 +1,37 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { BackendAuthError } from "@/lib/backend/errors";
+import { resolveBackendBearerToken } from "@/lib/backend/token-bridge";
+import { authHeaderLogMeta } from "@/lib/backend/logger";
 
-export class BackendAuthError extends Error {
-  constructor(message = "Unauthorized") {
-    super(message);
-    this.name = "BackendAuthError";
-  }
-}
+export { BackendAuthError } from "@/lib/backend/errors";
 
 export async function getBackendAuthHeaders(): Promise<Record<string, string>> {
-  const { userId, getToken } = await auth({ treatPendingAsSignedOut: false });
+  const authState = await auth({ treatPendingAsSignedOut: false });
+  const user = await currentUser();
 
-  if (!userId) {
+  if (!authState.userId) {
     throw new BackendAuthError();
   }
 
-  const token = await getToken();
+  const token = await resolveBackendBearerToken();
   if (!token) {
-    throw new BackendAuthError("Missing session token.");
+    throw new BackendAuthError("Missing API session token.");
+  }
+
+  const authorization = `Bearer ${token}`;
+  const logMeta = authHeaderLogMeta(authorization);
+
+  if (process.env.BACKEND_AUTH_DEBUG === "true" || process.env.NODE_ENV !== "production") {
+    console.info("[backend-bff] clerk session resolved", {
+      clerkUserId: authState.userId,
+      clerkSessionId: authState.sessionId ?? null,
+      clerkEmail: user?.primaryEmailAddressId ?? null,
+      ...logMeta,
+    });
   }
 
   return {
-    Authorization: `Bearer ${token}`,
+    Authorization: authorization,
     "Content-Type": "application/json",
   };
 }

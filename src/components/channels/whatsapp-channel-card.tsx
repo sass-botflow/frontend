@@ -115,7 +115,7 @@ export function WhatsAppChannelCard({
           <DetailTile
             icon={CalendarClock}
             label="Connected"
-            value={formatRelativeTime(channel.createdAt)}
+            value={formatRelativeTime(channel.connectedAt ?? channel.createdAt)}
           />
         </div>
       </div>

@@ -17,6 +17,7 @@ export interface BackendChannel {
   displayPhoneNumber: string;
   businessName?: string | null;
   status: string;
+  connectedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
