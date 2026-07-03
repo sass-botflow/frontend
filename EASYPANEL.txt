@@ -1,0 +1,15 @@
+EASYPANEL DEPLOY — 5 steps
+
+1. Source → GitHub → sass-botflow/frontend → branch: main
+2. Build → Dockerfile (NOT Nixpacks / NOT Docker Image)
+3. Port → 3000
+4. Environment (runtime):
+   CLERK_SECRET_KEY=sk_...
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
+   DATABASE_URL=file:/app/data/botflow.db
+5. Click Deploy — wait 3-5 min (build), don't click Cancel
+
+If deploy stops in 1 second:
+- Build method is wrong → set Dockerfile
+- Source is Docker Image → switch to GitHub
+- GitHub token expired → EasyPanel Settings → GitHub → reconnect

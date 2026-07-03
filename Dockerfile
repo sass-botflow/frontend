@@ -1,21 +1,21 @@
 # syntax=docker/dockerfile:1
 
 FROM node:20-alpine AS deps
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY prisma ./prisma
 RUN npm ci
 
 FROM node:20-alpine AS builder
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ARG NEXT_PUBLIC_APP_URL=https://www.botflow.ink
 ARG NEXT_PUBLIC_API_URL=https://api.botflow.ink
-ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_build_placeholder
 ARG NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
 ARG NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 ARG NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
@@ -38,6 +38,7 @@ ENV NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=$NEXT_PUBLIC_CLERK_SIGN_UP_FORC
 ENV DATABASE_URL="file:./build.db"
 ENV APP_VERSION=$APP_VERSION
 ENV BUILD_TIME=$BUILD_TIME
+ENV NODE_OPTIONS=--max-old-space-size=2048
 
 RUN npm run build
 
@@ -50,6 +51,7 @@ ARG BUILD_TIME=unknown
 
 ENV NODE_ENV=production
 ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
 ENV APP_VERSION=$APP_VERSION
 ENV BUILD_TIME=$BUILD_TIME
 
@@ -75,9 +77,7 @@ USER nextjs
 
 EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=5 \
   CMD curl -f http://127.0.0.1:3000/api/health || exit 1
 
-# Docker injects HOSTNAME=container-id at runtime, which breaks Next.js binding.
-# Force 0.0.0.0 so EasyPanel's reverse proxy can reach the app.
 CMD ["./docker-start.sh"]
