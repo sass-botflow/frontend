@@ -8,6 +8,7 @@ import {
 } from "@/lib/integrations/connect-credentials";
 import { toIntegrationRecord } from "@/lib/integrations/serialize";
 import type { IntegrationPlatform, IntegrationRecord } from "@/lib/integrations/types";
+import { disconnectWhatsAppConnection } from "@/lib/meta/whatsapp-connection";
 
 async function ensureDb() {
   const db = await checkDatabase();
@@ -100,6 +101,18 @@ export async function disconnectPlatform(
   platform: IntegrationPlatform,
 ): Promise<IntegrationRecord> {
   await ensureDb();
+
+  if (platform === "whatsapp") {
+    await disconnectWhatsAppConnection(userId);
+    const row = await prisma.integration.findUnique({
+      where: { userId_platform: { userId, platform: "whatsapp" } },
+    });
+    if (!row) {
+      throw new Error("WhatsApp integration slot not found.");
+    }
+    return toIntegrationRecord(row);
+  }
+
   const row = await prisma.integration.upsert({
     where: { userId_platform: { userId, platform } },
     create: { userId, platform, isConnected: false },

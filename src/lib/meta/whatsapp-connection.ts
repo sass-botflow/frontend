@@ -1,9 +1,9 @@
-import { prisma } from "@/lib/prisma";
-import { encryptSecret, decryptSecret } from "@/lib/crypto/token-encryption";
-import { fetchWhatsAppPhoneDetails } from "@/lib/meta/graph-api";
-import type { WhatsAppPhoneVerificationStatus } from "@/lib/meta/whatsapp-types";
 import type { IntegrationRecord } from "@/lib/integrations/types";
 import { toIntegrationRecord } from "@/lib/integrations/serialize";
+import { channelService } from "@/lib/channels/service";
+import type { WhatsAppPhoneVerificationStatus } from "@/lib/meta/whatsapp-types";
+import { prisma } from "@/lib/prisma";
+import { resolveWorkspaceId } from "@/lib/workspace";
 
 export interface WhatsAppEmbeddedSignupPayload {
   wabaId: string;
@@ -15,67 +15,44 @@ export interface WhatsAppEmbeddedSignupPayload {
   accessToken: string;
 }
 
+async function getWhatsAppIntegrationRecord(
+  workspaceId: string,
+): Promise<IntegrationRecord> {
+  const row = await prisma.integration.findUnique({
+    where: { userId_platform: { userId: workspaceId, platform: "whatsapp" } },
+  });
+
+  if (!row) {
+    throw new Error("WhatsApp integration slot not found.");
+  }
+
+  return toIntegrationRecord(row);
+}
+
 export async function completeWhatsAppEmbeddedSignup(
   userId: string,
   payload: WhatsAppEmbeddedSignupPayload,
 ): Promise<IntegrationRecord> {
-  const now = new Date();
-  const row = await prisma.integration.upsert({
-    where: { userId_platform: { userId, platform: "whatsapp" } },
-    create: {
-      userId,
-      platform: "whatsapp",
-      isConnected: true,
-      accessToken: encryptSecret(payload.accessToken),
-      metaBusinessId: payload.wabaId,
-      phoneNumberId: payload.phoneNumberId,
-      phoneNumber: payload.phoneNumber,
-      phoneStatus: payload.phoneStatus,
-      businessName: payload.businessName,
-      externalId: payload.phoneNumber,
-      refreshToken: payload.businessId,
-      connectedAt: now,
-    },
-    update: {
-      isConnected: true,
-      accessToken: encryptSecret(payload.accessToken),
-      metaBusinessId: payload.wabaId,
-      phoneNumberId: payload.phoneNumberId,
-      phoneNumber: payload.phoneNumber,
-      phoneStatus: payload.phoneStatus,
-      businessName: payload.businessName,
-      externalId: payload.phoneNumber,
-      refreshToken: payload.businessId,
-      connectedAt: now,
-    },
+  await channelService.connectWhatsAppChannel(userId, {
+    businessId: payload.businessId,
+    wabaId: payload.wabaId,
+    phoneNumberId: payload.phoneNumberId,
+    displayPhoneNumber: payload.phoneNumber,
+    businessName: payload.businessName,
+    status: payload.phoneStatus,
+    accessToken: payload.accessToken,
   });
 
-  return toIntegrationRecord(row);
+  return getWhatsAppIntegrationRecord(resolveWorkspaceId(userId));
 }
 
 export async function refreshWhatsAppConnection(
   userId: string,
 ): Promise<IntegrationRecord> {
-  const row = await prisma.integration.findUnique({
-    where: { userId_platform: { userId, platform: "whatsapp" } },
-  });
+  await channelService.refreshPrimaryWhatsAppChannel(userId);
+  return getWhatsAppIntegrationRecord(resolveWorkspaceId(userId));
+}
 
-  if (!row?.isConnected || !row.accessToken || !row.phoneNumberId) {
-    throw new Error("WhatsApp is not connected for this workspace.");
-  }
-
-  const accessToken = decryptSecret(row.accessToken);
-  const phone = await fetchWhatsAppPhoneDetails(row.phoneNumberId, accessToken);
-
-  const updated = await prisma.integration.update({
-    where: { id: row.id },
-    data: {
-      phoneNumber: phone.displayPhoneNumber,
-      businessName: phone.verifiedName,
-      phoneStatus: phone.verificationStatus,
-      externalId: phone.displayPhoneNumber,
-    },
-  });
-
-  return toIntegrationRecord(updated);
+export async function disconnectWhatsAppConnection(userId: string): Promise<void> {
+  await channelService.disconnectPrimaryWhatsAppChannel(userId);
 }

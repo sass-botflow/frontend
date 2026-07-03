@@ -76,7 +76,7 @@ export function WhatsAppOAuthConnect({
         <p className="mt-4 text-xs leading-relaxed text-amber-300">{configError}</p>
       ) : !showProgress ? (
         <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-          One workspace supports one WhatsApp Business connection.
+          One workspace can connect multiple WhatsApp numbers. Each phone is stored securely per workspace.
         </p>
       ) : null}
     </div>
