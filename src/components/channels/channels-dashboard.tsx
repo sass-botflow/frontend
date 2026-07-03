@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { PlugZap, Radio, Sparkles } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/header";
@@ -12,8 +12,10 @@ import {
   ChannelsPageSkeleton,
 } from "@/components/channels/channels-skeleton";
 import { useIntegrations } from "@/hooks/use-integrations";
+import type { ConnectCredentialsInput } from "@/lib/integrations/connect-credentials";
 import type { IntegrationPlatform, IntegrationRecord } from "@/lib/integrations/types";
 import { cn } from "@/lib/utils";
+import { useSearchParams } from "next/navigation";
 
 export function ChannelsDashboard() {
   const {
@@ -28,8 +30,20 @@ export function ChannelsDashboard() {
 
   const [disconnectTarget, setDisconnectTarget] =
     useState<IntegrationRecord | null>(null);
+  const [banner, setBanner] = useState<string | null>(null);
+  const searchParams = useSearchParams();
 
   const showEmptyState = !loading && connectedCount === 0;
+
+  useEffect(() => {
+    const connected = searchParams.get("connected");
+    const error = searchParams.get("error");
+    if (connected === "whatsapp") {
+      setBanner("WhatsApp Business connected successfully.");
+    } else if (error) {
+      setBanner(error);
+    }
+  }, [searchParams]);
 
   async function handleDisconnect(platform: IntegrationPlatform) {
     await disconnect(platform);
@@ -69,8 +83,8 @@ export function ChannelsDashboard() {
               Connect WhatsApp, Instagram &amp; TikTok
             </h2>
             <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-              Link the apps your customers use. Paste your credentials on each card
-              below — then click Save &amp; connect.
+              Connect WhatsApp with Meta OAuth in one click. Instagram and TikTok
+              use secure credential forms below.
             </p>
           </motion.div>
 
@@ -103,13 +117,21 @@ export function ChannelsDashboard() {
             </motion.div>
           )}
 
-          {error && (
-            <div className="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
-              <p className="font-medium">Could not sync saved channels</p>
-              <p className="mt-1 text-amber-200/80">
-                {error}. Scroll down — WhatsApp, Instagram and TikTok forms are
-                still available below.
+          {(error || banner) && (
+            <div
+              className={cn(
+                "mb-6 rounded-xl px-4 py-3 text-sm",
+                banner?.includes("successfully")
+                  ? "border border-emerald-500/30 bg-emerald-500/10 text-emerald-200"
+                  : "border border-amber-500/30 bg-amber-500/10 text-amber-200",
+              )}
+            >
+              <p className="font-medium">
+                {banner?.includes("successfully")
+                  ? "Channel connected"
+                  : "Could not sync saved channels"}
               </p>
+              <p className="mt-1 opacity-90">{banner ?? error}</p>
             </div>
           )}
 
@@ -125,7 +147,7 @@ export function ChannelsDashboard() {
                   integration={integration}
                   index={index}
                   loading={actionPlatform === integration.platform}
-                  onConnect={connect}
+                  onConnect={connect as (credentials: ConnectCredentialsInput) => Promise<void>}
                   onDisconnectRequest={setDisconnectTarget}
                 />
               ))}

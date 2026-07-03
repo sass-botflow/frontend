@@ -1,27 +1,8 @@
 import type { IntegrationPlatform } from "@/lib/integrations/types";
 
-export interface WhatsAppConnectInput {
-  phoneNumber: string;
-  phoneNumberId: string;
-  accessToken: string;
-}
-
-export interface InstagramConnectInput {
-  username: string;
-  pageId: string;
-  accessToken: string;
-}
-
-export interface TikTokConnectInput {
-  username: string;
-  businessId: string;
-  accessToken: string;
-}
-
 export type ConnectCredentialsInput =
-  | ({ platform: "whatsapp" } & WhatsAppConnectInput)
-  | ({ platform: "instagram" } & InstagramConnectInput)
-  | ({ platform: "tiktok" } & TikTokConnectInput);
+  | { platform: "instagram"; username: string; pageId: string; accessToken: string }
+  | { platform: "tiktok"; username: string; businessId: string; accessToken: string };
 
 export interface FieldConfig {
   name: string;
@@ -31,28 +12,11 @@ export interface FieldConfig {
   hint?: string;
 }
 
-export const CONNECT_FIELDS: Record<IntegrationPlatform, FieldConfig[]> = {
-  whatsapp: [
-    {
-      name: "phoneNumber",
-      label: "WhatsApp Business phone number",
-      placeholder: "+212 612 345 678",
-      hint: "The number customers message on WhatsApp.",
-    },
-    {
-      name: "phoneNumberId",
-      label: "Phone Number ID",
-      placeholder: "From Meta Developer Console",
-      hint: "WhatsApp → API Setup → Phone number ID.",
-    },
-    {
-      name: "accessToken",
-      label: "Permanent access token",
-      placeholder: "EAAxxxx...",
-      type: "password",
-      hint: "Meta permanent token with whatsapp_business_messaging.",
-    },
-  ],
+export const MANUAL_CONNECT_PLATFORMS = ["instagram", "tiktok"] as const;
+
+export type ManualConnectPlatform = (typeof MANUAL_CONNECT_PLATFORMS)[number];
+
+export const CONNECT_FIELDS: Record<ManualConnectPlatform, FieldConfig[]> = {
   instagram: [
     {
       name: "username",
@@ -97,17 +61,6 @@ export const CONNECT_FIELDS: Record<IntegrationPlatform, FieldConfig[]> = {
   ],
 };
 
-function normalizePhone(value: string) {
-  const digits = value.replace(/[^\d+]/g, "");
-  if (!digits.startsWith("+")) {
-    throw new Error("Phone number must include country code, e.g. +212...");
-  }
-  if (digits.length < 10) {
-    throw new Error("Enter a valid WhatsApp business phone number.");
-  }
-  return digits;
-}
-
 function normalizeUsername(value: string) {
   const trimmed = value.trim();
   const handle = trimmed.startsWith("@") ? trimmed : `@${trimmed}`;
@@ -134,16 +87,9 @@ function requireId(value: string, label: string) {
 }
 
 export function validateConnectCredentials(
-  input: Record<string, string> & { platform: IntegrationPlatform },
+  input: Record<string, string> & { platform: ManualConnectPlatform },
 ): ConnectCredentialsInput {
   switch (input.platform) {
-    case "whatsapp":
-      return {
-        platform: "whatsapp",
-        phoneNumber: normalizePhone(input.phoneNumber ?? ""),
-        phoneNumberId: requireId(input.phoneNumberId ?? "", "Phone Number ID"),
-        accessToken: requireToken(input.accessToken ?? "", "Access token"),
-      };
     case "instagram":
       return {
         platform: "instagram",
@@ -162,8 +108,11 @@ export function validateConnectCredentials(
 }
 
 export function getDisplayName(credentials: ConnectCredentialsInput): string {
-  if (credentials.platform === "whatsapp") {
-    return credentials.phoneNumber;
-  }
   return credentials.username;
+}
+
+export function isManualConnectPlatform(
+  platform: IntegrationPlatform,
+): platform is ManualConnectPlatform {
+  return platform === "instagram" || platform === "tiktok";
 }

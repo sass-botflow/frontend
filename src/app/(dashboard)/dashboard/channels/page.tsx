@@ -1,11 +1,17 @@
+import { Suspense } from "react";
 import { ChannelsDashboard } from "@/components/channels/channels-dashboard";
+import { ChannelsPageSkeleton } from "@/components/channels/channels-skeleton";
 
 export const metadata = {
-  title: "Connect",
+  title: "Channels",
   description:
-    "Connect WhatsApp, Instagram, and TikTok to BotFlow.",
+    "Connect WhatsApp via Meta OAuth, and Instagram and TikTok to BotFlow.",
 };
 
 export default function ChannelsPage() {
-  return <ChannelsDashboard />;
+  return (
+    <Suspense fallback={<ChannelsPageSkeleton />}>
+      <ChannelsDashboard />
+    </Suspense>
+  );
 }

@@ -1,56 +1,13 @@
 import { prisma } from "@/lib/prisma";
+import { encryptSecret } from "@/lib/crypto/token-encryption";
 import { checkDatabase } from "@/lib/integrations/db";
 import {
   getDisplayName,
   validateConnectCredentials,
   type ConnectCredentialsInput,
 } from "@/lib/integrations/connect-credentials";
-import type {
-  IntegrationPlatform,
-  IntegrationRecord,
-  PlatformStats,
-} from "@/lib/integrations/types";
-
-const PLATFORM_STATS: Record<IntegrationPlatform, PlatformStats> = {
-  whatsapp: {
-    primaryMetric: { label: "Conversations today", value: 0 },
-    leadsCaptured: { label: "Leads captured", value: 0 },
-  },
-  instagram: {
-    primaryMetric: { label: "DMs today", value: 0 },
-    leadsCaptured: { label: "Leads captured", value: 0 },
-  },
-  tiktok: {
-    primaryMetric: { label: "Messages today", value: 0 },
-    leadsCaptured: { label: "Leads captured", value: 0 },
-  },
-};
-
-function toRecord(
-  row: {
-    id: string;
-    platform: string;
-    externalId: string | null;
-    isConnected: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-  },
-): IntegrationRecord {
-  const platform = row.platform as IntegrationPlatform;
-  const connected = row.isConnected;
-
-  return {
-    id: row.id,
-    platform,
-    externalId: row.externalId,
-    isConnected: connected,
-    displayName: connected ? row.externalId : null,
-    lastSyncedAt: connected ? row.updatedAt.toISOString() : null,
-    stats: connected ? PLATFORM_STATS[platform] : null,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
-  };
-}
+import { toIntegrationRecord } from "@/lib/integrations/serialize";
+import type { IntegrationPlatform, IntegrationRecord } from "@/lib/integrations/types";
 
 async function ensureDb() {
   const db = await checkDatabase();
@@ -85,27 +42,21 @@ export async function getIntegrationsForUser(
     orderBy: { platform: "asc" },
   });
 
-  return rows.map(toRecord);
+  return rows.map(toIntegrationRecord);
 }
 
 function mapCredentialsToDb(credentials: ConnectCredentialsInput) {
   switch (credentials.platform) {
-    case "whatsapp":
-      return {
-        externalId: getDisplayName(credentials),
-        accessToken: credentials.accessToken,
-        refreshToken: credentials.phoneNumberId,
-      };
     case "instagram":
       return {
         externalId: getDisplayName(credentials),
-        accessToken: credentials.accessToken,
+        accessToken: encryptSecret(credentials.accessToken),
         refreshToken: credentials.pageId,
       };
     case "tiktok":
       return {
         externalId: getDisplayName(credentials),
-        accessToken: credentials.accessToken,
+        accessToken: encryptSecret(credentials.accessToken),
         refreshToken: credentials.businessId,
       };
   }
@@ -115,8 +66,16 @@ export async function connectPlatform(
   userId: string,
   rawInput: Record<string, string> & { platform: IntegrationPlatform },
 ): Promise<IntegrationRecord> {
+  if (rawInput.platform === "whatsapp") {
+    throw new Error(
+      "WhatsApp must be connected via Meta OAuth. Use Connect WhatsApp Business.",
+    );
+  }
+
   await ensureDb();
-  const credentials = validateConnectCredentials(rawInput);
+  const credentials = validateConnectCredentials(
+    rawInput as Record<string, string> & { platform: "instagram" | "tiktok" },
+  );
   const mapped = mapCredentialsToDb(credentials);
 
   const row = await prisma.integration.upsert({
@@ -133,7 +92,7 @@ export async function connectPlatform(
     },
   });
 
-  return toRecord(row);
+  return toIntegrationRecord(row);
 }
 
 export async function disconnectPlatform(
@@ -149,10 +108,19 @@ export async function disconnectPlatform(
       accessToken: null,
       refreshToken: null,
       externalId: null,
+      metaBusinessId: null,
+      phoneNumberId: null,
+      phoneNumber: null,
+      businessName: null,
+      connectedAt: null,
     },
   });
 
-  return toRecord(row);
+  if (platform === "whatsapp") {
+    await prisma.metaOAuthPending.deleteMany({ where: { userId } });
+  }
+
+  return toIntegrationRecord(row);
 }
 
 export function isIntegrationPlatform(value: string): value is IntegrationPlatform {

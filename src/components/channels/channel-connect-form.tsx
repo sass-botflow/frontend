@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   CONNECT_FIELDS,
+  isManualConnectPlatform,
   validateConnectCredentials,
   type ConnectCredentialsInput,
 } from "@/lib/integrations/connect-credentials";
@@ -14,19 +15,9 @@ import type { IntegrationPlatform } from "@/lib/integrations/types";
 import { cn } from "@/lib/utils";
 
 const PLATFORM_HELP: Record<
-  IntegrationPlatform,
+  Exclude<IntegrationPlatform, "whatsapp">,
   { title: string; steps: string[]; docsUrl?: string; docsLabel?: string }
 > = {
-  whatsapp: {
-    title: "Enter your WhatsApp Business details",
-    steps: [
-      "Open Meta Developer Console → WhatsApp → API Setup.",
-      "Copy your Phone Number ID and permanent access token.",
-      "Paste them below with your business phone number.",
-    ],
-    docsUrl: "https://developers.facebook.com/docs/whatsapp/cloud-api/get-started",
-    docsLabel: "WhatsApp Cloud API guide",
-  },
   instagram: {
     title: "Enter your Instagram Business details",
     steps: [
@@ -50,7 +41,7 @@ const PLATFORM_HELP: Record<
 };
 
 interface ChannelConnectFormProps {
-  platform: IntegrationPlatform;
+  platform: Exclude<IntegrationPlatform, "whatsapp">;
   loading: boolean;
   onSubmit: (credentials: ConnectCredentialsInput) => Promise<void>;
   className?: string;
@@ -64,6 +55,10 @@ export function ChannelConnectForm({
 }: ChannelConnectFormProps) {
   const [values, setValues] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
+
+  if (!isManualConnectPlatform(platform)) {
+    return null;
+  }
 
   const fields = CONNECT_FIELDS[platform];
   const help = PLATFORM_HELP[platform];

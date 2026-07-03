@@ -8,18 +8,36 @@ datasource db {
 }
 
 model Integration {
-  id           String   @id @default(cuid())
-  userId       String
-  platform     String
-  externalId   String?
-  accessToken  String?
-  refreshToken String?
-  isConnected  Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id              String    @id @default(cuid())
+  userId          String
+  platform        String
+  externalId      String?
+  accessToken     String?
+  refreshToken    String?
+  metaBusinessId  String?
+  phoneNumberId   String?
+  phoneNumber     String?
+  businessName    String?
+  connectedAt     DateTime?
+  isConnected     Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   @@unique([userId, platform])
   @@index([userId])
+  @@index([phoneNumberId])
+}
+
+model MetaOAuthPending {
+  id          String   @id @default(cuid())
+  userId      String
+  accessToken String
+  payload     String
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model Affiliate {
