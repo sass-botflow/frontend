@@ -2,22 +2,30 @@
 
 import { Building2, Loader2, Phone, RefreshCw, Unlink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useWhatsAppEmbeddedSignup } from "@/hooks/use-whatsapp-embedded-signup";
 import type { WhatsAppConnectionDetails } from "@/lib/integrations/types";
 
 interface WhatsAppConnectedViewProps {
   details: WhatsAppConnectionDetails;
   loading?: boolean;
   onDisconnect: () => void;
+  onReconnected?: () => void | Promise<void>;
+  onError?: (message: string) => void;
 }
 
 export function WhatsAppConnectedView({
   details,
-  loading,
+  loading: externalLoading,
   onDisconnect,
+  onReconnected,
+  onError,
 }: WhatsAppConnectedViewProps) {
-  function handleReconnect() {
-    window.location.href = "/auth/meta?reconnect=1";
-  }
+  const { launchSignup, loading: signupLoading, ready } = useWhatsAppEmbeddedSignup({
+    onSuccess: onReconnected,
+    onError,
+  });
+
+  const loading = externalLoading || signupLoading;
 
   return (
     <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/[0.04] p-4 sm:p-5">
@@ -47,8 +55,8 @@ export function WhatsAppConnectedView({
         <Button
           type="button"
           variant="outline"
-          disabled={loading}
-          onClick={handleReconnect}
+          disabled={loading || !ready}
+          onClick={launchSignup}
           className="h-10 rounded-xl"
         >
           {loading ? (

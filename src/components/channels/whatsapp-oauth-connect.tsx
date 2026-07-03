@@ -2,17 +2,30 @@
 
 import { Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useWhatsAppEmbeddedSignup } from "@/hooks/use-whatsapp-embedded-signup";
 import { cn } from "@/lib/utils";
 
 interface WhatsAppOAuthConnectProps {
   loading?: boolean;
   className?: string;
+  onConnected?: () => void | Promise<void>;
+  onError?: (message: string) => void;
 }
 
-export function WhatsAppOAuthConnect({ loading, className }: WhatsAppOAuthConnectProps) {
-  function handleConnect() {
-    window.location.href = "/auth/meta";
-  }
+export function WhatsAppOAuthConnect({
+  loading: externalLoading,
+  className,
+  onConnected,
+  onError,
+}: WhatsAppOAuthConnectProps) {
+  const { launchSignup, loading: signupLoading, ready, configError } =
+    useWhatsAppEmbeddedSignup({
+      onSuccess: onConnected,
+      onError,
+    });
+
+  const loading = externalLoading || signupLoading;
+  const disabled = loading || !ready || Boolean(configError);
 
   return (
     <div
@@ -25,19 +38,20 @@ export function WhatsAppOAuthConnect({ loading, className }: WhatsAppOAuthConnec
         <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#25D366]" />
         <div className="space-y-1">
           <p className="text-sm font-semibold text-foreground">
-            Connect in a few clicks with Meta
+            Set up WhatsApp with Meta Embedded Signup
           </p>
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Login with Facebook, select your business, and choose your WhatsApp
-            number. No manual tokens.
+            Create your business portfolio, WhatsApp Business account, and phone
+            number in one guided flow. No manual tokens or pre-existing Meta
+            Business account required.
           </p>
         </div>
       </div>
 
       <Button
         type="button"
-        disabled={loading}
-        onClick={handleConnect}
+        disabled={disabled}
+        onClick={launchSignup}
         className="h-11 w-full rounded-xl bg-[#25D366] font-semibold text-white hover:bg-[#1fb855] sm:w-auto sm:min-w-[240px]"
       >
         {loading ? (
@@ -45,15 +59,24 @@ export function WhatsAppOAuthConnect({ loading, className }: WhatsAppOAuthConnec
             <Loader2 className="h-4 w-4 animate-spin" />
             Connecting...
           </>
-        ) : (
+        ) : ready ? (
           "Connect WhatsApp Business"
+        ) : (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Loading Meta...
+          </>
         )}
       </Button>
 
-      <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-        Secure connection via Meta. We never ask users to paste access tokens
-        manually.
-      </p>
+      {configError ? (
+        <p className="mt-4 text-xs leading-relaxed text-amber-300">{configError}</p>
+      ) : (
+        <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+          Secure connection via Meta. BotFlow stores your access token encrypted
+          and never exposes it in the browser.
+        </p>
+      )}
     </div>
   );
 }

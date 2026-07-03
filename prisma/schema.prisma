@@ -28,18 +28,6 @@ model Integration {
   @@index([phoneNumberId])
 }
 
-model MetaOAuthPending {
-  id          String   @id @default(cuid())
-  userId      String
-  accessToken String
-  payload     String
-  expiresAt   DateTime
-  createdAt   DateTime @default(now())
-
-  @@index([userId])
-  @@index([expiresAt])
-}
-
 model Affiliate {
   id          String   @id @default(cuid())
   userId      String   @unique

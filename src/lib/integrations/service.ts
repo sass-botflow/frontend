@@ -116,10 +116,6 @@ export async function disconnectPlatform(
     },
   });
 
-  if (platform === "whatsapp") {
-    await prisma.metaOAuthPending.deleteMany({ where: { userId } });
-  }
-
   return toIntegrationRecord(row);
 }
 

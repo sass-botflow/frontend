@@ -26,6 +26,7 @@ export function ChannelsDashboard() {
     error,
     connect,
     disconnect,
+    refresh,
   } = useIntegrations();
 
   const [disconnectTarget, setDisconnectTarget] =
@@ -83,7 +84,8 @@ export function ChannelsDashboard() {
               Connect WhatsApp, Instagram &amp; TikTok
             </h2>
             <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-              Connect WhatsApp with Meta OAuth in one click. Instagram and TikTok
+              Set up WhatsApp with Meta Embedded Signup — create your business
+              portfolio, WABA, and phone number in one flow. Instagram and TikTok
               use secure credential forms below.
             </p>
           </motion.div>
@@ -149,6 +151,11 @@ export function ChannelsDashboard() {
                   loading={actionPlatform === integration.platform}
                   onConnect={connect as (credentials: ConnectCredentialsInput) => Promise<void>}
                   onDisconnectRequest={setDisconnectTarget}
+                  onWhatsAppConnected={async () => {
+                    await refresh();
+                    setBanner("WhatsApp Business connected successfully.");
+                  }}
+                  onWhatsAppError={(message) => setBanner(message)}
                 />
               ))}
             </div>
