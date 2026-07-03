@@ -33,9 +33,15 @@ import {
   type KnowledgeSourceId,
   type WizardData,
 } from "@/lib/ai-brain";
+import {
+  WorkflowChannelPicker,
+  WorkflowChannelSummary,
+} from "@/components/brain/workflow-channel-picker";
+import { useBots } from "@/hooks/use-bots";
+import { AppBanner } from "@/components/ui/app-banner";
 import { cn } from "@/lib/utils";
 
-const initialData: WizardData = {
+const initialData: WizardData & { channelId: string | null } = {
   businessType: null,
   businessName: "",
   websiteUrl: "",
@@ -44,6 +50,7 @@ const initialData: WizardData = {
   country: "Morocco",
   goals: [...DEFAULT_GOALS],
   knowledgeSource: null,
+  channelId: null,
 };
 
 const knowledgeIcons: Record<KnowledgeSourceId, typeof Globe> = {
@@ -55,10 +62,12 @@ const knowledgeIcons: Record<KnowledgeSourceId, typeof Globe> = {
 
 export default function BrainPage() {
   const [step, setStep] = useState(1);
-  const [data, setData] = useState<WizardData>(initialData);
+  const [data, setData] = useState(initialData);
   const [generating, setGenerating] = useState(false);
   const [generated, setGenerated] = useState(false);
   const [prompt, setPrompt] = useState("");
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const { primaryBot, updateBot, saving } = useBots();
 
   function toggleGoal(goalId: AiGoalId) {
     setData((prev) => ({
@@ -87,9 +96,24 @@ export default function BrainPage() {
   async function handleGenerate() {
     setGenerating(true);
     setStep(5);
+    setSaveError(null);
     const result = generateAiPrompt(data);
     await new Promise((r) => setTimeout(r, 2200));
     setPrompt(result);
+
+    if (primaryBot && data.channelId) {
+      try {
+        await updateBot(primaryBot.id, {
+          channelId: data.channelId,
+          name: data.businessName || primaryBot.name,
+        });
+      } catch {
+        setSaveError(
+          "Workflow created, but channel assignment failed. Update it in workflow settings.",
+        );
+      }
+    }
+
     setGenerating(false);
     setGenerated(true);
   }
@@ -206,6 +230,16 @@ export default function BrainPage() {
                         value={data.whatsappNumber}
                         onChange={(e) =>
                           setData((prev) => ({ ...prev, whatsappNumber: e.target.value }))
+                        }
+                      />
+                    </div>
+
+                    <div className="space-y-2 border-t border-border/60 pt-4">
+                      <Label>WhatsApp channel for this workflow</Label>
+                      <WorkflowChannelPicker
+                        value={data.channelId}
+                        onChange={(channelId) =>
+                          setData((prev) => ({ ...prev, channelId }))
                         }
                       />
                     </div>
@@ -371,6 +405,21 @@ export default function BrainPage() {
                       <strong>{data.businessName}</strong> in under 60 seconds.
                     </p>
 
+                    {saveError ? (
+                      <div className="mt-4">
+                        <AppBanner message={saveError} variant="error" autoDismissMs={0} />
+                      </div>
+                    ) : null}
+
+                    {data.channelId ? (
+                      <div className="mt-6 text-left">
+                        <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                          Connected WhatsApp channel
+                        </p>
+                        <WorkflowChannelSummary channelId={data.channelId} />
+                      </div>
+                    ) : null}
+
                     <Card className="mt-8 border-border/60 text-left shadow-none">
                       <CardContent className="p-5">
                         <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -385,9 +434,9 @@ export default function BrainPage() {
                     </Card>
 
                     <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-                      <Button size="lg" asChild>
+                      <Button size="lg" asChild disabled={saving}>
                         <Link href="/dashboard/channels">
-                          Connect WhatsApp
+                          {data.channelId ? "Manage Channels" : "Connect WhatsApp"}
                           <ArrowRight className="h-4 w-4" />
                         </Link>
                       </Button>

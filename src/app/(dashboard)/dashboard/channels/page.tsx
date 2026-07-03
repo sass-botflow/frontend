@@ -5,7 +5,7 @@ import { ChannelsPageSkeleton } from "@/components/channels/channels-skeleton";
 export const metadata = {
   title: "Channels",
   description:
-    "Connect WhatsApp via Meta OAuth, and Instagram and TikTok to BotFlow.",
+    "Connect WhatsApp via Meta Embedded Signup, and Instagram and TikTok to BotFlow.",
 };
 
 export default function ChannelsPage() {

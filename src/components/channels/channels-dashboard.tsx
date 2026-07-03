@@ -7,10 +7,13 @@ import { DashboardHeader } from "@/components/dashboard/header";
 import { ChannelsEmptyState } from "@/components/channels/channels-empty-state";
 import { DisconnectChannelDialog } from "@/components/channels/disconnect-channel-dialog";
 import { IntegrationCard } from "@/components/channels/integration-card";
+import { WhatsAppChannelsSection } from "@/components/channels/whatsapp-channels-section";
 import {
   ChannelsHeroSkeleton,
   ChannelsPageSkeleton,
 } from "@/components/channels/channels-skeleton";
+import { AppBanner } from "@/components/ui/app-banner";
+import { useChannels } from "@/hooks/use-channels";
 import { useIntegrations } from "@/hooks/use-integrations";
 import type { ConnectCredentialsInput } from "@/lib/integrations/connect-credentials";
 import type { IntegrationPlatform, IntegrationRecord } from "@/lib/integrations/types";
@@ -20,31 +23,51 @@ import { useSearchParams } from "next/navigation";
 export function ChannelsDashboard() {
   const {
     integrations,
-    connectedCount,
-    loading,
+    loading: integrationsLoading,
     actionPlatform,
-    error,
+    error: integrationsError,
     connect,
     disconnect,
-    refresh,
   } = useIntegrations();
+
+  const {
+    whatsappChannels,
+    loading: channelsLoading,
+    refresh: refreshChannels,
+  } = useChannels();
 
   const [disconnectTarget, setDisconnectTarget] =
     useState<IntegrationRecord | null>(null);
-  const [banner, setBanner] = useState<string | null>(null);
+  const [banner, setBanner] = useState<{
+    message: string;
+    variant: "success" | "error";
+  } | null>(null);
   const searchParams = useSearchParams();
 
-  const showEmptyState = !loading && connectedCount === 0;
+  const otherIntegrations = integrations.filter((i) => i.platform !== "whatsapp");
+  const otherConnectedCount = otherIntegrations.filter((i) => i.isConnected).length;
+  const totalConnected = whatsappChannels.length + otherConnectedCount;
+  const loading = integrationsLoading || channelsLoading;
+  const showEmptyState = !loading && totalConnected === 0;
 
   useEffect(() => {
     const connected = searchParams.get("connected");
     const error = searchParams.get("error");
-    if (connected === "whatsapp") {
-      setBanner("WhatsApp Business connected successfully.");
+    const success = searchParams.get("success");
+
+    if (connected === "whatsapp" || success) {
+      setBanner({
+        message: "WhatsApp Business connected successfully.",
+        variant: "success",
+      });
+      void refreshChannels();
     } else if (error) {
-      setBanner(error);
+      setBanner({
+        message: decodeURIComponent(error),
+        variant: "error",
+      });
     }
-  }, [searchParams]);
+  }, [searchParams, refreshChannels]);
 
   async function handleDisconnect(platform: IntegrationPlatform) {
     await disconnect(platform);
@@ -84,9 +107,8 @@ export function ChannelsDashboard() {
               Connect WhatsApp, Instagram &amp; TikTok
             </h2>
             <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-              Set up WhatsApp with Meta Embedded Signup — create your business
-              portfolio, WABA, and phone number in one flow. Instagram and TikTok
-              use secure credential forms below.
+              Connect WhatsApp with one click through Meta Embedded Signup.
+              Instagram and TikTok use secure credential forms below.
             </p>
           </motion.div>
 
@@ -101,63 +123,65 @@ export function ChannelsDashboard() {
               <HeroMetric
                 icon={Radio}
                 label="Connected"
-                value={`${connectedCount} / 3`}
+                value={`${totalConnected} / ${2 + (whatsappChannels.length > 0 ? whatsappChannels.length : 1)}`}
                 accent="text-primary"
               />
               <HeroMetric
                 icon={PlugZap}
-                label="Active automations"
-                value={connectedCount > 0 ? String(connectedCount * 2) : "0"}
-                accent="text-violet-400"
+                label="WhatsApp lines"
+                value={String(whatsappChannels.length)}
+                accent="text-emerald-400"
               />
               <HeroMetric
                 icon={Sparkles}
                 label="AI coverage"
-                value={connectedCount > 0 ? "Live" : "Waiting"}
-                accent="text-emerald-400"
+                value={totalConnected > 0 ? "Live" : "Waiting"}
+                accent="text-violet-400"
               />
             </motion.div>
           )}
 
-          {(error || banner) && (
-            <div
-              className={cn(
-                "mb-6 rounded-xl px-4 py-3 text-sm",
-                banner?.includes("successfully")
-                  ? "border border-emerald-500/30 bg-emerald-500/10 text-emerald-200"
-                  : "border border-amber-500/30 bg-amber-500/10 text-amber-200",
-              )}
-            >
-              <p className="font-medium">
-                {banner?.includes("successfully")
-                  ? "Channel connected"
-                  : "Could not sync saved channels"}
-              </p>
-              <p className="mt-1 opacity-90">{banner ?? error}</p>
-            </div>
+          {(integrationsError || banner) && (
+            <AppBanner
+              message={banner?.message ?? integrationsError}
+              variant={banner?.variant ?? "error"}
+              onDismiss={() => setBanner(null)}
+            />
           )}
 
           {loading ? (
             <ChannelsPageSkeleton />
           ) : (
-            <div className="space-y-5">
+            <div className="space-y-8">
               {showEmptyState && <ChannelsEmptyState />}
 
-              {integrations.map((integration, index) => (
-                <IntegrationCard
-                  key={integration.id}
-                  integration={integration}
-                  index={index}
-                  loading={actionPlatform === integration.platform}
-                  onConnect={connect as (credentials: ConnectCredentialsInput) => Promise<void>}
-                  onDisconnectRequest={setDisconnectTarget}
-                  onWhatsAppConnected={async () => {
-                    await refresh();
-                    setBanner("WhatsApp Business connected successfully.");
-                  }}
-                  onWhatsAppError={(message) => setBanner(message)}
-                />
-              ))}
+              <WhatsAppChannelsSection />
+
+              {otherIntegrations.length > 0 && (
+                <div className="space-y-5">
+                  <div>
+                    <h3 className="text-lg font-semibold tracking-tight">
+                      Other channels
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Instagram and TikTok connect with API credentials.
+                    </p>
+                  </div>
+
+                  {otherIntegrations.map((integration, index) => (
+                    <IntegrationCard
+                      key={integration.id}
+                      integration={integration}
+                      index={index}
+                      loading={actionPlatform === integration.platform}
+                      onConnect={
+                        connect as (credentials: ConnectCredentialsInput) => Promise<void>
+                      }
+                      onDisconnectRequest={setDisconnectTarget}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

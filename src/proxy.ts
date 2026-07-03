@@ -11,7 +11,7 @@ import {
 const COOKIE_NAME = "botflow_locale";
 const PUBLIC_PATHS = ["/pricing"];
 
-const isProtectedRoute = createRouteMatcher(["/dashboard(.*)"]);
+const isProtectedRoute = createRouteMatcher(["/dashboard(.*)", "/settings(.*)"]);
 const isOnboardingRoute = createRouteMatcher(["/onboarding(.*)"]);
 const isAuthRoute = createRouteMatcher([
   "/sign-in(.*)",
@@ -41,6 +41,7 @@ function handleLocaleRedirect(request: NextRequest) {
   if (
     pathname.startsWith("/api") ||
     pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/settings") ||
     pathname.startsWith("/onboarding") ||
     pathname === LEGAL_PATHS.privacy ||
     pathname === LEGAL_PATHS.terms ||
