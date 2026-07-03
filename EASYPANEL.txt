@@ -1,19 +1,71 @@
-EASYPANEL DEPLOY — 5 steps
+═══════════════════════════════════════════════════════════
+  BOTFLOW — DEPLOY F EASYPANEL (Darija — 3 dakika)
+═══════════════════════════════════════════════════════════
 
-1. Source → GitHub → sass-botflow/frontend → branch: main
-2. Build → Dockerfile (NOT Nixpacks / NOT Docker Image)
-3. Port → 3000
-4. Environment (runtime):
-   CLERK_SECRET_KEY=sk_...
-   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
+⚠️  MA TBUILDICH MN GITHUB F EASYPANEL — ghadi ycancel wla yfail!
+    GitHub kaybni l'image automatiquement. Nta ghir kat-pulliha.
+
+───────────────────────────────────────────────────────────
+TARIQA 1 — DOCKER IMAGE (as7al, khassha tkoun haka)
+───────────────────────────────────────────────────────────
+
+1. Dkhol EasyPanel → sass-botflow → frontend
+
+2. Source:
+   Type   = Docker Image
+   Image  = ghcr.io/sass-botflow/frontend:latest
+   Port   = 3000
+
+3. Domains (zid jouj):
+   - www.botflow.ink
+   - botflow.ink
+
+4. Environment (runtime — copier hado):
+   CLERK_SECRET_KEY=sk_live_...
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
    DATABASE_URL=file:/app/data/botflow.db
-   INTEGRATION_ENCRYPTION_KEY=32-char-random
-   META_APP_ID=...
-   META_APP_SECRET=...
-   META_EMBEDDED_SIGNUP_CONFIG_ID=...
-5. Click Deploy — wait 3-5 min (build), don't click Cancel
+   INTEGRATION_ENCRYPTION_KEY=32-char-random-string-here
+   NEXT_PUBLIC_APP_URL=https://www.botflow.ink
+   NEXT_PUBLIC_API_URL=https://api.botflow.ink
 
-If deploy stops in 1 second:
-- Build method is wrong → set Dockerfile
-- Source is Docker Image → switch to GitHub
-- GitHub token expired → EasyPanel Settings → GitHub → reconnect
+5. Deploy:
+   - Klik "Deploy" w STANA 1-2 d9i9a (pull image)
+   - MA TKLIKICH Cancel!
+
+6. T2akked:
+   curl https://www.botflow.ink/api/health
+   → version khassha ma tkounch "dev"
+
+───────────────────────────────────────────────────────────
+TARIQA 2 — DEPLOY DABA (ila image qdima)
+───────────────────────────────────────────────────────────
+
+1. EasyPanel → frontend → Deployments → copier "Deployment Trigger" URL
+   (http://187.124.12.89:3000/api/deploy/xxxxxxxx)
+
+2. GitHub → Actions → "Deploy now (paste webhook)" → Run workflow
+   → paste URL → Run
+
+3. Stana 2 d9i9a → curl health (version jdid)
+
+Guide kamil: DEPLOY-FACILE.md
+
+───────────────────────────────────────────────────────────
+ILA DEPLOY KAYCANCEL F 1 THANIYA
+───────────────────────────────────────────────────────────
+
+✗ Source = GitHub + Dockerfile  →  BADLHA l Docker Image (Tariqa 1)
+✗ Source = Nixpacks               →  BADLHA l Docker Image
+✗ Port ≠ 3000                     →  7ot 3000
+✗ GitHub token expired            →  EasyPanel Settings → GitHub → reconnect
+✗ Image private                   →  zid GitHub PAT f Registry credentials
+
+───────────────────────────────────────────────────────────
+ILA 404 (logo vert EasyPanel)
+───────────────────────────────────────────────────────────
+
+→ Zid domain botflow.ink f EasyPanel (mashi ghir www)
+→ Chouf Logs → container khassu ykoun Running
+→ Port = 3000
+
+═══════════════════════════════════════════════════════════
