@@ -25,8 +25,8 @@ export function ChannelsEmptyState() {
             <span className="font-medium text-foreground">
               Connect WhatsApp Business
             </span>{" "}
-            — Meta Embedded Signup handles Business Manager, WABA, and phone
-            selection automatically. Instagram and TikTok forms are below.
+            below. Meta Embedded Signup handles Business Manager, WABA, and phone
+            selection automatically — no manual tokens.
           </p>
           <p className="inline-flex items-center gap-1.5 text-xs font-medium text-primary">
             <ArrowDown className="h-3.5 w-3.5" />

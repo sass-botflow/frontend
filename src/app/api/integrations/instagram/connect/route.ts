@@ -1,30 +1,9 @@
-import { NextResponse } from "next/server";
-import { requireUserId } from "@/lib/integrations/auth";
-import { connectPlatform } from "@/lib/integrations/service";
+import { proxyBackendJson } from "@/lib/backend/proxy";
 
 export async function POST(request: Request) {
-  const authResult = await requireUserId();
-  if ("error" in authResult) return authResult.error;
-
-  let body: Record<string, string>;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-  }
-
-  try {
-    const integration = await connectPlatform(authResult.userId, {
-      platform: "instagram",
-      ...body,
-    });
-
-    return NextResponse.json({
-      integration,
-      message: "Instagram Business connected",
-    });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Connect failed";
-    return NextResponse.json({ error: message }, { status: 400 });
-  }
+  const body = await request.text();
+  return proxyBackendJson("/api/integrations/instagram/connect", {
+    method: "POST",
+    body,
+  });
 }

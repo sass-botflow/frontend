@@ -4,7 +4,6 @@ FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 COPY package.json package-lock.json ./
-COPY prisma ./prisma
 RUN npm ci
 
 FROM node:20-alpine AS builder
@@ -39,7 +38,6 @@ ENV NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=$NEXT_PUBLIC_CLERK_SIGN_IN_FORC
 ENV NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=$NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL
 ENV NEXT_PUBLIC_META_APP_ID=$NEXT_PUBLIC_META_APP_ID
 ENV NEXT_PUBLIC_META_EMBEDDED_SIGNUP_CONFIG_ID=$NEXT_PUBLIC_META_EMBEDDED_SIGNUP_CONFIG_ID
-ENV DATABASE_URL="file:./build.db"
 ENV APP_VERSION=$APP_VERSION
 ENV BUILD_TIME=$BUILD_TIME
 ENV NODE_OPTIONS=--max-old-space-size=2048
@@ -65,18 +63,9 @@ RUN addgroup --system --gid 1001 nodejs && \
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/prisma/migrations ./prisma/migrations
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
-COPY --from=builder /app/package.json ./package.json
 COPY scripts/docker-start.sh ./docker-start.sh
 
-RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data /app/docker-start.sh && \
-    chmod +x /app/docker-start.sh
-
-ENV DATABASE_URL="file:/app/data/botflow.db"
+RUN chown nextjs:nodejs /app/docker-start.sh && chmod +x /app/docker-start.sh
 
 USER nextjs
 
