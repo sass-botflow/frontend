@@ -41,14 +41,3 @@ export interface ConnectIntegrationResponse {
 export interface DisconnectIntegrationBody {
   platform: IntegrationPlatform;
 }
-
-export interface WhatsAppPendingSelectionResponse {
-  pendingId: string;
-  options: Array<{
-    id: string;
-    businessName: string;
-    wabaName: string;
-    phoneNumber: string;
-    verifiedName: string;
-  }>;
-}

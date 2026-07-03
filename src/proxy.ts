@@ -42,7 +42,6 @@ function handleLocaleRedirect(request: NextRequest) {
     pathname.startsWith("/api") ||
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/onboarding") ||
-    pathname.startsWith("/auth/meta") ||
     pathname === LEGAL_PATHS.privacy ||
     pathname === LEGAL_PATHS.terms ||
     pathname === LEGAL_PATHS.dataDeletion ||

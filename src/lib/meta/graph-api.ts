@@ -1,12 +1,11 @@
 import {
   getMetaAppId,
   getMetaAppSecret,
-  getMetaOAuthRedirectUri,
   META_GRAPH_VERSION,
 } from "@/lib/meta/config";
 
 interface GraphErrorBody {
-  error?: { message?: string; type?: string; code?: number };
+  error?: { message?: string; type?: string; code?: number; error_subcode?: number };
 }
 
 async function graphFetch<T>(path: string, accessToken: string): Promise<T> {
@@ -26,11 +25,36 @@ async function graphFetch<T>(path: string, accessToken: string): Promise<T> {
   return body;
 }
 
-export async function exchangeCodeForToken(code: string) {
+async function graphPost<T>(
+  path: string,
+  accessToken: string,
+  payload?: Record<string, unknown>,
+): Promise<T> {
+  const url = path.startsWith("http")
+    ? path
+    : `https://graph.facebook.com/${META_GRAPH_VERSION}${path}`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: payload ? JSON.stringify(payload) : undefined,
+    cache: "no-store",
+  });
+
+  const body = (await response.json()) as T & GraphErrorBody;
+  if (!response.ok) {
+    throw new Error(body.error?.message ?? `Meta API error (${response.status})`);
+  }
+  return body;
+}
+
+export async function exchangeEmbeddedSignupCode(code: string) {
   const params = new URLSearchParams({
     client_id: getMetaAppId(),
     client_secret: getMetaAppSecret(),
-    redirect_uri: getMetaOAuthRedirectUri(),
     code,
   });
 
@@ -46,7 +70,7 @@ export async function exchangeCodeForToken(code: string) {
   };
 
   if (!response.ok || !body.access_token) {
-    throw new Error(body.error?.message ?? "Failed to exchange OAuth code.");
+    throw new Error(body.error?.message ?? "Failed to exchange Embedded Signup code.");
   }
 
   return body.access_token;
@@ -76,59 +100,88 @@ export async function exchangeForLongLivedToken(shortLivedToken: string) {
   return body.access_token;
 }
 
-export interface WhatsAppPhoneOption {
-  wabaId: string;
-  wabaName: string;
-  businessId: string;
-  businessName: string;
-  phoneNumberId: string;
-  phoneNumber: string;
+export interface WhatsAppPhoneDetails {
+  id: string;
+  displayPhoneNumber: string;
   verifiedName: string;
 }
 
-interface BusinessNode {
-  id: string;
-  name: string;
-  owned_whatsapp_business_accounts?: {
-    data: Array<{ id: string; name?: string }>;
-  };
-}
-
-export async function discoverWhatsAppPhoneOptions(
+export async function fetchWhatsAppPhoneDetails(
+  phoneNumberId: string,
   accessToken: string,
-): Promise<WhatsAppPhoneOption[]> {
-  const businesses = await graphFetch<{ data: BusinessNode[] }>(
-    `/me/businesses?fields=id,name,owned_whatsapp_business_accounts{id,name}`,
+): Promise<WhatsAppPhoneDetails> {
+  const phone = await graphFetch<{
+    id: string;
+    display_phone_number?: string;
+    verified_name?: string;
+  }>(
+    `/${phoneNumberId}?fields=id,display_phone_number,verified_name`,
     accessToken,
   );
 
-  const options: WhatsAppPhoneOption[] = [];
+  return {
+    id: phone.id,
+    displayPhoneNumber: phone.display_phone_number ?? phoneNumberId,
+    verifiedName: phone.verified_name ?? "WhatsApp Business",
+  };
+}
 
-  for (const business of businesses.data ?? []) {
-    const wabas = business.owned_whatsapp_business_accounts?.data ?? [];
-    for (const waba of wabas) {
-      const phones = await graphFetch<{
-        data: Array<{
-          id: string;
-          display_phone_number?: string;
-          verified_name?: string;
-        }>;
-      }>(`/${waba.id}/phone_numbers?fields=id,display_phone_number,verified_name`, accessToken);
-
-      for (const phone of phones.data ?? []) {
-        if (!phone.display_phone_number) continue;
-        options.push({
-          wabaId: waba.id,
-          wabaName: waba.name ?? waba.id,
-          businessId: business.id,
-          businessName: business.name,
-          phoneNumberId: phone.id,
-          phoneNumber: phone.display_phone_number,
-          verifiedName: phone.verified_name ?? business.name,
-        });
-      }
+export async function subscribeAppToWaba(wabaId: string, accessToken: string) {
+  try {
+    await graphPost<{ success: boolean }>(`/${wabaId}/subscribed_apps`, accessToken);
+  } catch (err) {
+    const message = err instanceof Error ? err.message.toLowerCase() : "";
+    if (!message.includes("already") && !message.includes("subscribed")) {
+      throw err;
     }
   }
+}
 
-  return options;
+function generateRegistrationPin() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+export async function registerPhoneForCloudApi(
+  phoneNumberId: string,
+  accessToken: string,
+) {
+  try {
+    await graphPost<{ success: boolean }>(`/${phoneNumberId}/register`, accessToken, {
+      messaging_product: "whatsapp",
+      pin: generateRegistrationPin(),
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message.toLowerCase() : "";
+    if (
+      !message.includes("already") &&
+      !message.includes("registered") &&
+      !message.includes("exists")
+    ) {
+      throw err;
+    }
+  }
+}
+
+export type EmbeddedSignupFinishEvent =
+  | "FINISH"
+  | "FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING"
+  | "FINISH_ONLY_WABA";
+
+export async function onboardEmbeddedSignupCustomer(params: {
+  code: string;
+  wabaId: string;
+  phoneNumberId: string;
+  finishEvent: EmbeddedSignupFinishEvent;
+}) {
+  const shortToken = await exchangeEmbeddedSignupCode(params.code);
+  const accessToken = await exchangeForLongLivedToken(shortToken);
+  const phone = await fetchWhatsAppPhoneDetails(params.phoneNumberId, accessToken);
+
+  await subscribeAppToWaba(params.wabaId, accessToken);
+
+  if (params.finishEvent !== "FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING") {
+    await registerPhoneForCloudApi(params.phoneNumberId, accessToken);
+  }
+
+  return { accessToken, phone };
 }

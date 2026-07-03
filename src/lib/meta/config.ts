@@ -1,13 +1,7 @@
 export const META_GRAPH_VERSION = "v21.0";
 
-export const META_OAUTH_SCOPES = [
-  "whatsapp_business_management",
-  "whatsapp_business_messaging",
-  "business_management",
-] as const;
-
 export function getMetaAppId() {
-  const appId = process.env.META_APP_ID;
+  const appId = process.env.META_APP_ID ?? process.env.NEXT_PUBLIC_META_APP_ID;
   if (!appId) {
     throw new Error("META_APP_ID is not configured.");
   }
@@ -22,21 +16,26 @@ export function getMetaAppSecret() {
   return secret;
 }
 
-export function getMetaOAuthRedirectUri() {
-  return (
-    process.env.META_OAUTH_REDIRECT_URI ??
-    `${process.env.NEXT_PUBLIC_APP_URL ?? "https://www.botflow.ink"}/auth/meta/callback`
-  );
+export function getMetaEmbeddedSignupConfigId() {
+  const configId =
+    process.env.META_EMBEDDED_SIGNUP_CONFIG_ID ??
+    process.env.NEXT_PUBLIC_META_EMBEDDED_SIGNUP_CONFIG_ID;
+  if (!configId) {
+    throw new Error("META_EMBEDDED_SIGNUP_CONFIG_ID is not configured.");
+  }
+  return configId;
 }
 
-export function getMetaOAuthAuthorizeUrl(state: string) {
-  const params = new URLSearchParams({
-    client_id: getMetaAppId(),
-    redirect_uri: getMetaOAuthRedirectUri(),
-    state,
-    scope: META_OAUTH_SCOPES.join(","),
-    response_type: "code",
-  });
+export interface MetaEmbeddedSignupPublicConfig {
+  appId: string;
+  configId: string;
+  graphVersion: string;
+}
 
-  return `https://www.facebook.com/${META_GRAPH_VERSION}/dialog/oauth?${params.toString()}`;
+export function getMetaEmbeddedSignupPublicConfig(): MetaEmbeddedSignupPublicConfig {
+  return {
+    appId: getMetaAppId(),
+    configId: getMetaEmbeddedSignupConfigId(),
+    graphVersion: META_GRAPH_VERSION,
+  };
 }

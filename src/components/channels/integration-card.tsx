@@ -25,6 +25,8 @@ interface IntegrationCardProps {
   loading: boolean;
   onConnect: (credentials: ConnectCredentialsInput) => Promise<void>;
   onDisconnectRequest: (integration: IntegrationRecord) => void;
+  onWhatsAppConnected?: () => void | Promise<void>;
+  onWhatsAppError?: (message: string) => void;
 }
 
 const PLATFORM_ACCENTS: Record<
@@ -57,6 +59,8 @@ export function IntegrationCard({
   loading,
   onConnect,
   onDisconnectRequest,
+  onWhatsAppConnected,
+  onWhatsAppError,
 }: IntegrationCardProps) {
   const platform = integration.platform;
   const accent = PLATFORM_ACCENTS[platform];
@@ -143,7 +147,11 @@ export function IntegrationCard({
         </div>
 
         {isWhatsApp && !connected && (
-          <WhatsAppOAuthConnect loading={loading} />
+          <WhatsAppOAuthConnect
+            loading={loading}
+            onConnected={onWhatsAppConnected}
+            onError={onWhatsAppError}
+          />
         )}
 
         {isWhatsApp && connected && integration.whatsapp && (
@@ -151,6 +159,8 @@ export function IntegrationCard({
             details={integration.whatsapp}
             loading={loading}
             onDisconnect={() => onDisconnectRequest(integration)}
+            onReconnected={onWhatsAppConnected}
+            onError={onWhatsAppError}
           />
         )}
 
