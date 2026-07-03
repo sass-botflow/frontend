@@ -11,8 +11,10 @@ import {
 } from "lucide-react";
 import { ChannelConnectForm } from "@/components/channels/channel-connect-form";
 import { ChannelLogo } from "@/components/channels/channel-logo";
+import { WhatsAppConnectedView } from "@/components/channels/whatsapp-connected-view";
+import { WhatsAppOAuthConnect } from "@/components/channels/whatsapp-oauth-connect";
 import { Button } from "@/components/ui/button";
-import { CHANNEL_MAP } from "@/lib/channels";
+import { isManualConnectPlatform } from "@/lib/integrations/connect-credentials";
 import type { ConnectCredentialsInput } from "@/lib/integrations/connect-credentials";
 import type { IntegrationPlatform, IntegrationRecord } from "@/lib/integrations/types";
 import { cn, formatRelativeTime } from "@/lib/utils";
@@ -57,11 +59,9 @@ export function IntegrationCard({
   onDisconnectRequest,
 }: IntegrationCardProps) {
   const platform = integration.platform;
-  const channel = CHANNEL_MAP[platform];
   const accent = PLATFORM_ACCENTS[platform];
   const connected = integration.isConnected;
-  const accountLabel =
-    platform === "whatsapp" ? "Connected phone" : "Connected account";
+  const isWhatsApp = platform === "whatsapp";
 
   return (
     <motion.article
@@ -98,18 +98,22 @@ export function IntegrationCard({
                 <StatusBadge connected={connected} />
               </div>
               <p className="text-sm leading-relaxed text-muted-foreground">
-                {channel.description}
+                {platform === "whatsapp"
+                  ? "Reply to customers on WhatsApp Business automatically."
+                  : platform === "instagram"
+                    ? "Automate Instagram DMs and capture leads."
+                    : "Handle TikTok messages from one inbox."}
               </p>
 
-              {connected && integration.displayName && (
+              {connected && !isWhatsApp && integration.displayName && (
                 <div className="flex items-center gap-2 text-sm">
                   <UserRound className="h-4 w-4 text-primary" />
-                  <span className="text-muted-foreground">{accountLabel}:</span>
+                  <span className="text-muted-foreground">Connected account:</span>
                   <span className="font-medium">{integration.displayName}</span>
                 </div>
               )}
 
-              {connected && integration.lastSyncedAt && (
+              {connected && integration.lastSyncedAt && !isWhatsApp && (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <CalendarClock className="h-3.5 w-3.5" />
                   Last sync {formatRelativeTime(integration.lastSyncedAt)}
@@ -118,7 +122,7 @@ export function IntegrationCard({
             </div>
           </div>
 
-          {connected && (
+          {connected && !isWhatsApp && (
             <Button
               size="lg"
               variant="outline"
@@ -138,7 +142,19 @@ export function IntegrationCard({
           )}
         </div>
 
-        {!connected && (
+        {isWhatsApp && !connected && (
+          <WhatsAppOAuthConnect loading={loading} />
+        )}
+
+        {isWhatsApp && connected && integration.whatsapp && (
+          <WhatsAppConnectedView
+            details={integration.whatsapp}
+            loading={loading}
+            onDisconnect={() => onDisconnectRequest(integration)}
+          />
+        )}
+
+        {!connected && isManualConnectPlatform(platform) && (
           <ChannelConnectForm
             platform={platform}
             loading={loading}
@@ -146,7 +162,7 @@ export function IntegrationCard({
           />
         )}
 
-        {connected && integration.stats && (
+        {connected && integration.stats && !isWhatsApp && (
           <div className="grid gap-3 sm:grid-cols-2">
             <StatTile
               icon={MessageCircle}
