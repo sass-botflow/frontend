@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MetaEmbeddedSignupPublicConfig } from "@/lib/meta/config";
+import type { WhatsAppConnectPhase } from "@/lib/meta/whatsapp-types";
 
 const FB_SDK_URL = "https://connect.facebook.net/en_US/sdk.js";
 
@@ -64,7 +65,7 @@ export function useWhatsAppEmbeddedSignup(options?: {
   onSuccess?: () => void | Promise<void>;
   onError?: (message: string) => void;
 }) {
-  const [loading, setLoading] = useState(false);
+  const [phase, setPhase] = useState<WhatsAppConnectPhase>("idle");
   const [ready, setReady] = useState(false);
   const [configError, setConfigError] = useState<string | null>(null);
   const configRef = useRef<MetaEmbeddedSignupPublicConfig | null>(null);
@@ -74,10 +75,16 @@ export function useWhatsAppEmbeddedSignup(options?: {
   const onSuccessRef = useRef(options?.onSuccess);
   const onErrorRef = useRef(options?.onError);
 
+  const loading = phase !== "idle" && phase !== "error";
+
   useEffect(() => {
     onSuccessRef.current = options?.onSuccess;
     onErrorRef.current = options?.onError;
   }, [options?.onSuccess, options?.onError]);
+
+  const resetPhase = useCallback(() => {
+    setPhase("idle");
+  }, []);
 
   const finalizeSignup = useCallback(async () => {
     const session = sessionRef.current;
@@ -86,7 +93,7 @@ export function useWhatsAppEmbeddedSignup(options?: {
 
     if (!session || !code || !config) return;
 
-    setLoading(true);
+    setPhase("saving");
     try {
       const response = await fetch("/api/integrations/whatsapp/embedded-signup", {
         method: "POST",
@@ -107,14 +114,16 @@ export function useWhatsAppEmbeddedSignup(options?: {
 
       sessionRef.current = null;
       codeRef.current = null;
+      setPhase("connected");
       await onSuccessRef.current?.();
+      setTimeout(resetPhase, 1200);
     } catch (err) {
       const message = err instanceof Error ? err.message : "WhatsApp connection failed.";
+      setPhase("error");
       onErrorRef.current?.(message);
-    } finally {
-      setLoading(false);
+      setTimeout(resetPhase, 300);
     }
-  }, []);
+  }, [resetPhase]);
 
   const tryFinalize = useCallback(() => {
     if (sessionRef.current && codeRef.current) {
@@ -139,8 +148,9 @@ export function useWhatsAppEmbeddedSignup(options?: {
         const cancelMessage =
           data.data?.error_message ??
           "WhatsApp setup was cancelled before it could finish.";
+        setPhase("error");
         onErrorRef.current?.(cancelMessage);
-        setLoading(false);
+        setTimeout(resetPhase, 300);
         return;
       }
 
@@ -155,10 +165,11 @@ export function useWhatsAppEmbeddedSignup(options?: {
 
         if (!wabaId || !phoneNumberId || !businessId) {
           if (data.event === "FINISH_ONLY_WABA") {
+            setPhase("error");
             onErrorRef.current?.(
               "WhatsApp account created, but no phone number was added. Complete phone setup to continue.",
             );
-            setLoading(false);
+            setTimeout(resetPhase, 300);
           }
           return;
         }
@@ -169,10 +180,14 @@ export function useWhatsAppEmbeddedSignup(options?: {
           businessId,
           finishEvent: data.event,
         };
+        setPhase("retrieving_business");
+        if (codeRef.current) {
+          setPhase("retrieving_phone");
+        }
         tryFinalize();
       }
     },
-    [tryFinalize],
+    [resetPhase, tryFinalize],
   );
 
   useEffect(() => {
@@ -247,7 +262,7 @@ export function useWhatsAppEmbeddedSignup(options?: {
       return;
     }
 
-    setLoading(true);
+    setPhase("connecting");
     sessionRef.current = null;
     codeRef.current = null;
 
@@ -255,12 +270,16 @@ export function useWhatsAppEmbeddedSignup(options?: {
       (response) => {
         if (response.authResponse?.code) {
           codeRef.current = response.authResponse.code;
+          if (sessionRef.current) {
+            setPhase("retrieving_phone");
+          }
           tryFinalize();
           return;
         }
 
-        setLoading(false);
+        setPhase("error");
         onErrorRef.current?.("Meta authorization was cancelled.");
+        setTimeout(resetPhase, 300);
       },
       {
         config_id: config.configId,
@@ -273,11 +292,12 @@ export function useWhatsAppEmbeddedSignup(options?: {
         },
       },
     );
-  }, [tryFinalize]);
+  }, [resetPhase, tryFinalize]);
 
   return {
     launchSignup,
     loading,
+    phase,
     ready,
     configError,
   };

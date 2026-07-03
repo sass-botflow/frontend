@@ -68,6 +68,7 @@ export async function POST(request: Request) {
       businessId,
       phoneNumber: phone.displayPhoneNumber,
       businessName: phone.verifiedName,
+      phoneStatus: phone.verificationStatus,
       accessToken,
     });
 

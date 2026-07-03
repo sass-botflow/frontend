@@ -111,6 +111,7 @@ export async function disconnectPlatform(
       metaBusinessId: null,
       phoneNumberId: null,
       phoneNumber: null,
+      phoneStatus: null,
       businessName: null,
       connectedAt: null,
     },

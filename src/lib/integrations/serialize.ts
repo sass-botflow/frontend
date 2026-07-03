@@ -22,6 +22,8 @@ export function toIntegrationRecord(row: {
   isConnected: boolean;
   businessName: string | null;
   phoneNumber: string | null;
+  phoneNumberId: string | null;
+  phoneStatus: string | null;
   connectedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
@@ -49,6 +51,13 @@ export function toIntegrationRecord(row: {
         ? {
             businessName: row.businessName,
             phoneNumber: row.phoneNumber,
+            phoneNumberId: row.phoneNumberId,
+            phoneStatus:
+              row.phoneStatus === "VERIFIED" ||
+              row.phoneStatus === "PENDING" ||
+              row.phoneStatus === "UNKNOWN"
+                ? row.phoneStatus
+                : "UNKNOWN",
             connectedAt: row.connectedAt?.toISOString() ?? row.updatedAt.toISOString(),
             connectionStatus: "connected" as const,
           }

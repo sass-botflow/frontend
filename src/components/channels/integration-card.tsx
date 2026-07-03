@@ -160,6 +160,7 @@ export function IntegrationCard({
             loading={loading}
             onDisconnect={() => onDisconnectRequest(integration)}
             onReconnected={onWhatsAppConnected}
+            onRefreshed={onWhatsAppConnected}
             onError={onWhatsAppError}
           />
         )}

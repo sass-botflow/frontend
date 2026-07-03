@@ -3,6 +3,7 @@ import {
   getMetaAppSecret,
   META_GRAPH_VERSION,
 } from "@/lib/meta/config";
+import { mapMetaVerificationStatus } from "@/lib/meta/whatsapp-types";
 
 interface GraphErrorBody {
   error?: { message?: string; type?: string; code?: number; error_subcode?: number };
@@ -104,6 +105,7 @@ export interface WhatsAppPhoneDetails {
   id: string;
   displayPhoneNumber: string;
   verifiedName: string;
+  verificationStatus: "VERIFIED" | "PENDING" | "UNKNOWN";
 }
 
 export async function fetchWhatsAppPhoneDetails(
@@ -114,8 +116,9 @@ export async function fetchWhatsAppPhoneDetails(
     id: string;
     display_phone_number?: string;
     verified_name?: string;
+    code_verification_status?: string;
   }>(
-    `/${phoneNumberId}?fields=id,display_phone_number,verified_name`,
+    `/${phoneNumberId}?fields=id,display_phone_number,verified_name,code_verification_status`,
     accessToken,
   );
 
@@ -123,6 +126,7 @@ export async function fetchWhatsAppPhoneDetails(
     id: phone.id,
     displayPhoneNumber: phone.display_phone_number ?? phoneNumberId,
     verifiedName: phone.verified_name ?? "WhatsApp Business",
+    verificationStatus: mapMetaVerificationStatus(phone.code_verification_status),
   };
 }
 

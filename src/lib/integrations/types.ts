@@ -10,6 +10,8 @@ export interface PlatformStats {
 export interface WhatsAppConnectionDetails {
   businessName: string | null;
   phoneNumber: string | null;
+  phoneNumberId: string | null;
+  phoneStatus: "VERIFIED" | "PENDING" | "UNKNOWN";
   connectedAt: string | null;
   connectionStatus: "connected";
 }

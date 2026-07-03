@@ -17,6 +17,7 @@ model Integration {
   metaBusinessId  String?
   phoneNumberId   String?
   phoneNumber     String?
+  phoneStatus     String?
   businessName    String?
   connectedAt     DateTime?
   isConnected     Boolean   @default(false)
