@@ -53,7 +53,7 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ## EasyPanel deployment
 
-**Quick guide (Darija):** [DEPLOY-FACILE.md](./DEPLOY-FACILE.md) — deploy en 2 min sans secrets.
+**Quick guide (Darija):** [DEPLOY-DABA.md](./DEPLOY-DABA.md) — **GitHub Source** f EasyPanel (GHCR private).
 
 GitHub Actions bni `ghcr.io/sass-botflow/frontend:latest` sur chaque push `main`. EasyPanel **kat-pulli** l'image — ma tbuildich f EasyPanel.
 
