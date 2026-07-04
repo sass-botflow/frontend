@@ -2,7 +2,7 @@
 
 > **Guide sari3 (Darija):** [EASYPANEL.txt](./EASYPANEL.txt) · [DEPLOY-FACILE.md](./DEPLOY-FACILE.md)
 
-## ⚠️ Ne build PAS sur EasyPanel
+## ⚠️ Ne build PAS sur EasyPanel (sauf si GHCR private)
 
 GitHub Actions bni l'image automatiquement. EasyPanel **ghir kat-pulli**:
 
@@ -10,7 +10,9 @@ GitHub Actions bni l'image automatiquement. EasyPanel **ghir kat-pulli**:
 ghcr.io/sass-botflow/frontend:latest
 ```
 
-Ila Source = GitHub + Dockerfile → deploy kaycancel / fail f 1-2 thanya.
+**Exception:** si GHCR est **private** et tu ne peux pas la rendre public → utilise **GitHub + Dockerfile** (voir Tariqa 1B dans EASYPANEL.txt).
+
+Ila Source = GitHub + Dockerfile sans raison → deploy peut être lent; Docker Image est préféré une fois GHCR public.
 
 ---
 
