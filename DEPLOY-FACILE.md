@@ -134,7 +134,7 @@ Hard refresh: **Ctrl+Shift+R** f browser.
 |---------|-----|
 | Deploy → **Cancel** | Source = **Docker Image**, mashi GitHub build |
 | Webhook failed (404) | URL ghalat — copier mn EasyPanel → Deployments |
-| Pull access denied | GHCR image private → dirha Public f GitHub Packages |
+| Pull access denied | GHCR image private → Actions → **Make GHCR package public** wla GitHub Packages → Public |
 | Ma 3andekch login EasyPanel | Sift l'admin: webhook URL + "enable Docker Image source" |
 | Port 404 / logo vert | Internal port = **3000** |
 

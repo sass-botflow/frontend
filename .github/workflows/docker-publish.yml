@@ -46,6 +46,31 @@ jobs:
             APP_VERSION=${{ github.sha }}
             BUILD_TIME=${{ github.event.head_commit.timestamp }}
 
+      - name: Make GHCR package public (EasyPanel pull)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PKG: ${{ github.event.repository.name }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          set -e
+          for BASE in "orgs/${OWNER}" "users/${OWNER}"; do
+            CODE=$(curl -sS -o /tmp/pkg.json -w "%{http_code}" \
+              -X PATCH \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "https://api.github.com/${BASE}/packages/container/${PKG}" \
+              -d '{"visibility":"public"}')
+            echo "${BASE}: HTTP ${CODE}"
+            if [ "$CODE" = "200" ]; then
+              echo "GHCR package is public — EasyPanel can pull without registry credentials."
+              cat /tmp/pkg.json
+              exit 0
+            fi
+          done
+          echo "::warning::Could not auto-publish GHCR package. EasyPanel → Settings → add GitHub PAT (read:packages) OR GitHub Packages → frontend → Public"
+          exit 0
+
   deploy:
     needs: publish
     runs-on: ubuntu-latest

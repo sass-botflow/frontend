@@ -57,7 +57,8 @@ ILA DEPLOY KAYCANCEL F 1 THANIYA
 ✗ Source = Nixpacks               →  BADLHA l Docker Image
 ✗ Port ≠ 3000                     →  7ot 3000
 ✗ GitHub token expired            →  EasyPanel Settings → GitHub → reconnect
-✗ Image private                   →  zid GitHub PAT f Registry credentials
+✗ Image private                   →  GitHub Packages → frontend → Public (wla PAT f Registry)
+✗ DATABASE_URL f env              →  SUPPRIMER (Prisma supprimé)
 
 ───────────────────────────────────────────────────────────
 ILA 404 (logo vert EasyPanel)
