@@ -49,17 +49,19 @@ Men ba3d awwal build:
 ```
 PORT=3000
 NODE_ENV=production
+CLERK_SECRET_KEY=sk_live_...
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
+JWT_SECRET=<same as backend JWT_SECRET>
 NEXT_PUBLIC_APP_URL=https://www.botflow.ink
 NEXT_PUBLIC_API_URL=https://api.botflow.ink
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
 NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
 NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/onboarding
 NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=/en
-DATABASE_URL=file:/app/data/botflow.db
 ```
+
+**Supprimer** si encore présents: `DATABASE_URL`, `INTEGRATION_ENCRYPTION_KEY` (Prisma supprimé).
 
 ### 5) Deploy — **ma khasskch rebuild!**
 
@@ -116,9 +118,9 @@ Sift screenshot dyal EasyPanel (service frontend) w nqolk **fin tkliki b daba**.
 | Problème | Solution |
 |----------|----------|
 | **Deploy → Cancel** | Chouf **Logs** (tab Logs). 7alabat: image ma tpullatch, build failed, wla container crash f startup |
-| Cancel + "pull access denied" | GHCR image private → dirha **Public** wla zid registry token |
+| Cancel + "pull access denied" | GHCR image **private** → GitHub Packages → `frontend` → **Public** (wla PAT f Registry) |
 | Cancel + build timeout | St3mel **Docker Image** (Tari9a 1), mashi GitHub build f EasyPanel |
-| Cancel + container exit 1 | Zid `DATABASE_URL=file:/app/data/botflow.db` f env vars |
+| Cancel + container exit 1 | Chouf Logs — zid `CLERK_SECRET_KEY` + `JWT_SECRET` f env vars |
 | Ma kaynach Deploy button | Khass tkoun f **Project → Service** (mashi accueil) |
 | Build failed | St3mel **Docker Image** (Tari9a 1), mashi GitHub build |
 | Pull image failed | GHCR public wla credentials |
@@ -138,7 +140,7 @@ EasyPanel ma kay "cancel" bla sabab. Hadi l-asbab l-mumkin:
 
 **Chno dir:**
 1. Service → **Logs** (awel 20 lines)
-2. Ila kayban `prisma` wla `Error` → zid `DATABASE_URL=file:/app/data/botflow.db`
+2. Ila kayban `Error` / `CLERK` → zid env vars (`CLERK_SECRET_KEY`, `JWT_SECRET`)
 3. Source = **Docker Image** (mashi GitHub)
 4. Image = `ghcr.io/sass-botflow/frontend:latest`
 5. **Deploy** mn jdid — **ma tklikch Cancel**
@@ -155,8 +157,8 @@ curl https://www.botflow.ink/api/health
 Khassk tchouf:
 ```json
 {
-  "version": "6987428...",
-  "features": { "premiumChannels": true, "integrationsApi": true }
+  "version": "9714138...",
+  "persistence": "backend-api"
 }
 ```
 

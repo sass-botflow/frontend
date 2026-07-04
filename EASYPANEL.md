@@ -1,102 +1,90 @@
-# EasyPanel Deployment Guide — BotFlow Frontend
+# EasyPanel — BotFlow Frontend Deploy
 
-## Root cause of EasyPanel 404
+> **Guide sari3 (Darija):** [EASYPANEL.txt](./EASYPANEL.txt) · [DEPLOY-FACILE.md](./DEPLOY-FACILE.md)
 
-EasyPanel shows its own 404 page (green hexagon logo) when the reverse proxy cannot reach a healthy container.
+## ⚠️ Ne build PAS sur EasyPanel
 
-**Primary code cause (fixed):** Docker injects `HOSTNAME=<container-id>` at runtime. Next.js standalone reads `process.env.HOSTNAME` and tries to bind to that hostname. The server crashes with:
+GitHub Actions bni l'image automatiquement. EasyPanel **ghir kat-pulli**:
 
 ```
-Error: getaddrinfo EAI_AGAIN <container-id>
+ghcr.io/sass-botflow/frontend:latest
 ```
 
-The container never stays up → EasyPanel returns 404.
+Ila Source = GitHub + Dockerfile → deploy kaycancel / fail f 1-2 thanya.
 
-**Fix:** Force bind address at runtime:
+---
 
-```dockerfile
-CMD ["sh", "-c", "HOSTNAME=0.0.0.0 PORT=${PORT:-3000} node server.js"]
-```
+## Configuration (marra wa7da)
 
-## EasyPanel configuration
-
-### Service settings
-
-| Field | Value |
-|-------|-------|
+| Champ | Valeur |
+|-------|--------|
 | Project | `sass-botflow` |
-| Service name | `frontend` |
-| Repository | `https://github.com/sass-botflow/frontend` |
-| Branch | `main` |
-| Builder | **Dockerfile** |
-| Dockerfile path | `./Dockerfile` |
-
-### Networking
-
-| Field | Value |
-|-------|-------|
-| Domains | **`www.botflow.ink`** and **`botflow.ink`** (both required) |
-| HTTPS | Enabled (Let's Encrypt) for each domain |
-| Internal port | `3000` |
+| Service | `frontend` |
+| **Source type** | **Docker Image** |
+| **Image** | `ghcr.io/sass-botflow/frontend:latest` |
+| **Port** | `3000` |
+| Domains | `www.botflow.ink` **et** `botflow.ink` |
 | Health check | `/api/health` |
 
-> **Important:** If only `www.botflow.ink` is configured, apex `botflow.ink` shows the green EasyPanel 404 page for every route (`/privacy`, `/`, etc.). Add **both** domains to the same `frontend` service.
+### Environment variables (runtime)
 
-### Environment / build args
-
-**Runtime env:**
 ```
+CLERK_SECRET_KEY=sk_live_...
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
+JWT_SECRET=<same as backend JWT_SECRET>
+NEXT_PUBLIC_APP_URL=https://www.botflow.ink
+NEXT_PUBLIC_API_URL=https://api.botflow.ink
 PORT=3000
-NODE_ENV=production
-NEXT_PUBLIC_APP_URL=https://www.botflow.ink
-NEXT_PUBLIC_API_URL=https://api.botflow.ink
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/onboarding
-NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=/en
 ```
 
-**Docker build args** (same `NEXT_PUBLIC_*` keys):
-```
-NEXT_PUBLIC_APP_URL=https://www.botflow.ink
-NEXT_PUBLIC_API_URL=https://api.botflow.ink
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/onboarding
-NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=/en
-```
+**Supprimer** (plus utilisés depuis Prisma removal):
 
-## Verification checklist
+- `DATABASE_URL`
+- `INTEGRATION_ENCRYPTION_KEY`
 
-After deploy:
+---
+
+## Deploy
+
+1. Push sur `main` → GitHub build image
+2. EasyPanel → **Deploy** (ou webhook auto — voir DEPLOY-FACILE.md)
+3. **Ne pas cliquer Cancel** — attendre 1-2 min (pull image)
+
+### Vérifier
 
 ```bash
-curl -I https://www.botflow.ink/privacy
-# Expected: HTTP/2 200
-
-curl -I https://botflow.ink/privacy
-# Expected: HTTP/2 308 (redirect to www) or 200
-
 curl https://www.botflow.ink/api/health
-# Expected: {"status":"ok","service":"botflow-frontend",...}
-
-./scripts/verify-production.sh
 ```
+
+| `version` | Signification |
+|-----------|---------------|
+| `"dev"` | Image locale / vieille — pas le GHCR build |
+| `"9714138..."` (git sha) | Deploy OK ✅ |
+
+---
 
 ## Troubleshooting
 
-| Symptom | Cause | Fix |
-|---------|-------|-----|
-| EasyPanel 404 logo | Container not running **or apex domain missing** | Add `botflow.ink` + `www.botflow.ink` in Domains |
-| `getaddrinfo EAI_AGAIN` | HOSTNAME binding bug | Pull latest `main` with Dockerfile fix |
-| Build fails | Missing lockfile | Ensure `package-lock.json` is committed |
-| 502 Bad Gateway | Wrong internal port | Set port to `3000` in EasyPanel |
-| SSL errors | Cloudflare mode | Use **Full** SSL mode |
+| Symptôme | Cause | Fix |
+|----------|-------|-----|
+| Deploy → **Cancel** en 1s | Source = GitHub build | Passer à **Docker Image** |
+| **pull access denied** | GHCR image private | GitHub Packages → `frontend` → **Public** (ou PAT registry) |
+| EasyPanel 404 (logo vert) | Container down ou domain manquant | Port `3000`, ajouter `botflow.ink` |
+| `getaddrinfo EAI_AGAIN` | HOSTNAME bug | Image récente (docker-start.sh force `0.0.0.0`) |
+| `version: "dev"` | Pas le GHCR image | Source = Docker Image + redeploy |
+| 502 | Mauvais port interne | `3000` |
+
+### GHCR private — registry credentials EasyPanel
+
+Si l'image reste private:
+
+| Champ | Valeur |
+|-------|--------|
+| Registry | `ghcr.io` |
+| Username | ton GitHub username |
+| Password | GitHub PAT avec scope `read:packages` |
+
+---
 
 ## Cloudflare DNS
 
@@ -106,4 +94,4 @@ www             CNAME botflow.ink      Proxied
 api             A     187.124.12.89    Proxied
 ```
 
-Do **not** point `www` to `parkingpage.namecheap.com`.
+SSL mode: **Full** (pas Flexible).

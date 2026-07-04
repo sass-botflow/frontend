@@ -53,43 +53,44 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ## EasyPanel deployment
 
-**Quick guide (Darija):** [DEPLOY-FACILE.md](./DEPLOY-FACILE.md) — webhook GitHub (auto deploy marra wa7da).
+**Quick guide (Darija):** [DEPLOY-FACILE.md](./DEPLOY-FACILE.md) — deploy en 2 min sans secrets.
+
+GitHub Actions bni `ghcr.io/sass-botflow/frontend:latest` sur chaque push `main`. EasyPanel **kat-pulli** l'image — ma tbuildich f EasyPanel.
 
 ### Required settings
 
 | Setting | Value |
 |---------|--------|
-| Source | GitHub `sass-botflow/frontend` |
-| Branch | `main` |
-| Build method | **Dockerfile** |
-| Domain | `botflow.ink` |
+| Source | **Docker Image** `ghcr.io/sass-botflow/frontend:latest` |
 | Internal port | **3000** |
-| Health check path | `/api/health` |
+| Domains | `www.botflow.ink` + `botflow.ink` |
+| Health check | `/api/health` |
 
-### Build arguments
+### Runtime env
 
 ```
-NEXT_PUBLIC_APP_URL=https://botflow.ink
+CLERK_SECRET_KEY=sk_live_...
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
+JWT_SECRET=<same as backend>
+NEXT_PUBLIC_APP_URL=https://www.botflow.ink
 NEXT_PUBLIC_API_URL=https://api.botflow.ink
 ```
 
 ### Verify deployment
 
-After deploy, these must return `200`:
-
-- `https://botflow.ink/`
-- `https://botflow.ink/api/health`
-
-If you see EasyPanel's green logo 404 page, the container is not running or the internal port is wrong.
+```bash
+curl https://www.botflow.ink/api/health
+# version must be a git sha, NOT "dev"
+```
 
 ### Common fixes
 
-1. Set internal port to **3000** (not 80 or 8080)
-2. Use **Dockerfile** build (not custom start without Docker)
-3. Redeploy after pushing latest `main`
-4. Check deploy logs for `getaddrinfo` / `HOSTNAME` errors
+1. Source = **Docker Image** (not GitHub + Dockerfile — causes instant Cancel)
+2. GHCR package **public** (or add registry PAT in EasyPanel)
+3. Internal port **3000**
+4. Remove obsolete `DATABASE_URL` env var
 
-See [EASYPANEL.md](./EASYPANEL.md) for full troubleshooting.
+See [EASYPANEL.md](./EASYPANEL.md) and [EASYPANEL.txt](./EASYPANEL.txt).
 
 ## Backend
 
