@@ -1,76 +1,44 @@
 ═══════════════════════════════════════════════════════════
-  BOTFLOW — DEPLOY F EASYPANEL (Darija — 3 dakika)
+  BOTFLOW — DEPLOY F EASYPANEL
 ═══════════════════════════════════════════════════════════
 
-⚠️  L'MOCHKIL L'ASASI DABA: GHCR image PRIVATE → EasyPanel ma kay9derch ypulli
-    → Deploy kaycancel f 1 thaniya ("pull access denied")
+⚠️  GHCR image PRIVATE → Docker Image kaycancel f 1 thaniya
+    ✅  HAL DABA: Source = GITHUB (kaybuildi mn code public)
+
+Guide sari3: DEPLOY-DABA.md
 
 ───────────────────────────────────────────────────────────
-TARIQA 1 — DOCKER IMAGE (as7al — b3d ma dir GHCR public)
+TARIQA 1 — GITHUB BUILD ✅ (dir hadi daba)
 ───────────────────────────────────────────────────────────
 
-STEP 0 — Dir package Public (marra wa7da):
-  GitHub → Packages → frontend → Package settings → Public
-
-1. EasyPanel → sass-botflow → frontend
-
-2. Source:
-   Type   = Docker Image
-   Image  = ghcr.io/sass-botflow/frontend:latest
-   Port   = 3000
-
-3. Domains: www.botflow.ink + botflow.ink
-
-4. Environment (runtime):
+1. EasyPanel → sass-botflow → frontend → Source
+2. Type = GitHub → sass-botflow/frontend → main → Dockerfile
+3. Port / Proxy = 3000
+4. Domains: www.botflow.ink + botflow.ink
+5. Environment:
    CLERK_SECRET_KEY=sk_live_...
    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
-   JWT_SECRET=same-value-as-backend-JWT_SECRET
+   JWT_SECRET=<nfs backend>
    NEXT_PUBLIC_APP_URL=https://www.botflow.ink
    NEXT_PUBLIC_API_URL=https://api.botflow.ink
+6. SUPPRIMER: DATABASE_URL, INTEGRATION_ENCRYPTION_KEY, META_*
+7. Deploy → stana 3-5 d9aya — MA TKLIKICH Cancel!
+8. curl https://www.botflow.ink/api/health → version ≠ dev
 
-5. Deploy → STANA 1-2 d9i9a — MA TKLIKICH Cancel!
-
-6. T2akked:
-   curl https://www.botflow.ink/api/health
-   → version = git sha (mashi "dev")
-
-───────────────────────────────────────────────────────────
-TARIQA 2 — GITHUB BUILD (ila ma t9derch dir GHCR public)
-───────────────────────────────────────────────────────────
-
-1. Source = GitHub → sass-botflow/frontend → main → Dockerfile
-2. Port = 3000
-3. Build Arguments (obligatoire):
-   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
-   NEXT_PUBLIC_APP_URL=https://www.botflow.ink
-   NEXT_PUBLIC_API_URL=https://api.botflow.ink
-4. Environment (runtime): nfs Tariqa 1
-5. Deploy — stana 3-5 d9aya (build), MA TKLIKICH Cancel
+Auto Deploy: ON (kol push main = rebuild)
 
 ───────────────────────────────────────────────────────────
-TARIQA 3 — DEPLOY DABA (webhook)
+TARIQA 2 — DOCKER IMAGE (b3d ma dir GHCR public)
 ───────────────────────────────────────────────────────────
 
-1. EasyPanel → Deployments → copier Deployment Trigger URL
-2. GitHub → Actions → "Deploy now (paste webhook)" → paste → Run
-3. Stana 2 d9i9a → curl health
-
-Guide: DEPLOY-FACILE.md
+GitHub → Packages → frontend → Public
+Image: ghcr.io/sass-botflow/frontend:latest
 
 ───────────────────────────────────────────────────────────
-ILA DEPLOY KAYCANCEL F 1 THANIYA
+TARIQA 3 — WEBHOOK
 ───────────────────────────────────────────────────────────
 
-✗ pull access denied     →  Tariqa 2 (GitHub build) WLA dir GHCR Public
-✗ Port ≠ 3000            →  7ot 3000
-✗ DATABASE_URL f env     →  SUPPRIMER (Prisma supprimé)
-✗ Image private          →  GitHub Packages → Public (wla PAT f Registry)
-
-───────────────────────────────────────────────────────────
-ILA 404 (logo vert EasyPanel)
-───────────────────────────────────────────────────────────
-
-→ Zid domain botflow.ink (mashi ghir www)
-→ Chouf Logs → container Running, port 3000
+GitHub Actions → "Deploy now (paste webhook)"
+→ paste Deployment Trigger URL mn EasyPanel
 
 ═══════════════════════════════════════════════════════════

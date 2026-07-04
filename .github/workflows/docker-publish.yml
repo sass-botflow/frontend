@@ -68,8 +68,33 @@ jobs:
               exit 0
             fi
           done
-          echo "::warning::Could not auto-publish GHCR package. EasyPanel → Settings → add GitHub PAT (read:packages) OR GitHub Packages → frontend → Public"
-          exit 0
+          echo "::warning::GHCR still private. EasyPanel: use GitHub Source (see DEPLOY-DABA.md) OR add GH_PACKAGES_ADMIN_TOKEN secret OR make package Public manually."
+
+      - name: Verify GHCR is publicly pullable
+        run: |
+          CODE=$(curl -sS -o /dev/null -w "%{http_code}" \
+            -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+            "https://ghcr.io/v2/${{ github.repository }}/manifests/latest")
+          echo "Anonymous GHCR pull check: HTTP ${CODE}"
+          if [ "$CODE" != "200" ]; then
+            echo "::warning::GHCR image NOT public (HTTP ${CODE}). EasyPanel Docker Image deploy will fail. Use GitHub Source — DEPLOY-DABA.md"
+          fi
+
+      - name: Publish to Docker Hub (public mirror)
+        if: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Push Docker Hub mirror
+        if: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
+        run: |
+          docker pull ghcr.io/${{ github.repository }}:latest
+          docker tag ghcr.io/${{ github.repository }}:latest \
+            ${{ secrets.DOCKERHUB_USERNAME }}/botflow-frontend:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/botflow-frontend:latest
+          echo "Public image: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/botflow-frontend:latest"
 
   deploy:
     needs: publish
@@ -119,22 +144,14 @@ jobs:
             echo ""
             echo "Docker image \`ghcr.io/sass-botflow/frontend:latest\` is ready but **EasyPanel was not triggered**."
             echo ""
-            echo "### Fix once (5 min) — see [DEPLOY-FACILE.md](https://github.com/sass-botflow/frontend/blob/main/DEPLOY-FACILE.md)"
+            echo "### Fix — EasyPanel Source = GitHub (not Docker Image)"
+            echo "GHCR is private. See [DEPLOY-DABA.md](https://github.com/sass-botflow/frontend/blob/main/DEPLOY-DABA.md)"
             echo ""
-            echo "1. EasyPanel → \`frontend\` → **Deployments** → copy **Deployment Trigger** URL"
-            echo "   (format: \`http://187.124.12.89:3000/api/deploy/xxxxxxxx\`)"
-            echo "2. GitHub → **Settings → Webhooks → Add webhook**"
-            echo "   - Payload URL = Deployment Trigger URL"
-            echo "   - SSL verification = **Disable**"
-            echo "   - Events = **push**"
-            echo "3. EasyPanel source = **Docker Image** \`ghcr.io/sass-botflow/frontend:latest\`"
+            echo "1. EasyPanel → \`frontend\` → **Source** → **GitHub** → \`sass-botflow/frontend\` → \`main\` → Dockerfile"
+            echo "2. Environment: CLERK keys + JWT_SECRET + NEXT_PUBLIC_* (see DEPLOY-DABA.md)"
+            echo "3. **Deploy** — wait 3-5 min"
             echo ""
-            echo "Or add GitHub Actions secret \`EASYPANEL_DEPLOY_WEBHOOK\` with the same URL."
-            echo ""
-            echo "Verify after deploy: \`curl https://www.botflow.ink/api/health\` — version must not be \`dev\`"
-            echo ""
-            echo "### Deploy daba (bla secrets)"
-            echo "Actions → **Deploy now (paste webhook)** → paste Deployment Trigger URL → **Run workflow**"
+            echo "Or: EasyPanel → **Deployments** → webhook → [Deploy now (paste webhook)](https://github.com/sass-botflow/frontend/actions/workflows/deploy-now.yml)"
           } >> "$GITHUB_STEP_SUMMARY"
           echo "::warning::Image ready — run 'Deploy now (paste webhook)' or configure webhook (DEPLOY-FACILE.md)"
           exit 0
