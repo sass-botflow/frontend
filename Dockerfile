@@ -7,7 +7,7 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 FROM node:20-alpine AS builder
-RUN apk add --no-cache libc6-compat openssl
+RUN apk add --no-cache libc6-compat openssl git
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -38,9 +38,17 @@ ENV NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=$NEXT_PUBLIC_CLERK_SIGN_IN_FORC
 ENV NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=$NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL
 ENV NEXT_PUBLIC_META_APP_ID=$NEXT_PUBLIC_META_APP_ID
 ENV NEXT_PUBLIC_META_EMBEDDED_SIGNUP_CONFIG_ID=$NEXT_PUBLIC_META_EMBEDDED_SIGNUP_CONFIG_ID
+ENV NODE_OPTIONS=--max-old-space-size=2048
+
+# Resolve version for EasyPanel GitHub builds (no APP_VERSION build arg)
+RUN V="$APP_VERSION"; \
+    if [ "$V" = "dev" ]; then V=$(git rev-parse --short HEAD 2>/dev/null || echo dev); fi; \
+    BT="$BUILD_TIME"; \
+    if [ "$BT" = "unknown" ]; then BT=$(date -u +%Y-%m-%dT%H:%M:%SZ); fi; \
+    echo "$V" > /app/BUILD_VERSION.txt && echo "$BT" > /app/BUILD_TIME.txt
+
 ENV APP_VERSION=$APP_VERSION
 ENV BUILD_TIME=$BUILD_TIME
-ENV NODE_OPTIONS=--max-old-space-size=2048
 
 RUN npm run build
 
@@ -63,6 +71,8 @@ RUN addgroup --system --gid 1001 nodejs && \
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder /app/BUILD_VERSION.txt ./BUILD_VERSION.txt
+COPY --from=builder /app/BUILD_TIME.txt ./BUILD_TIME.txt
 COPY scripts/docker-start.sh ./docker-start.sh
 
 RUN chown nextjs:nodejs /app/docker-start.sh && chmod +x /app/docker-start.sh
