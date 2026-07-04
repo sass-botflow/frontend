@@ -1,16 +1,18 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { MessageCircle, Plus, Radio } from "lucide-react";
+import { Loader2, MessageCircle, Plus, Radio } from "lucide-react";
 import { AppBanner } from "@/components/ui/app-banner";
 import { DisconnectWhatsAppChannelDialog } from "@/components/channels/disconnect-whatsapp-channel-dialog";
 import { WhatsAppBackendConnect } from "@/components/channels/whatsapp-backend-connect";
 import { WhatsAppChannelCard } from "@/components/channels/whatsapp-channel-card";
+import { WhatsAppConnectionProgress } from "@/components/channels/whatsapp-connection-progress";
 import {
   ChannelsHeroSkeleton,
   IntegrationCardSkeleton,
 } from "@/components/channels/channels-skeleton";
 import { useChannels } from "@/hooks/use-channels";
+import { useWhatsAppEmbeddedSignup } from "@/hooks/use-whatsapp-embedded-signup";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -25,17 +27,34 @@ export function WhatsAppChannelsSection() {
     refresh,
     refreshChannel,
     disconnectChannel,
-    startWhatsAppConnect,
   } = useChannels();
 
   const [disconnectTarget, setDisconnectTarget] = useState<BackendChannel | null>(
     null,
   );
-  const [connecting, setConnecting] = useState(false);
   const [banner, setBanner] = useState<{
     message: string;
     variant: "success" | "error";
   } | null>(null);
+
+  const {
+    launchSignup,
+    phase: connectPhase,
+    loading: connecting,
+    errorMessage: connectError,
+    reset: resetConnect,
+  } = useWhatsAppEmbeddedSignup({
+    onSuccess: async () => {
+      await refresh();
+      setBanner({
+        message: "WhatsApp channel connected successfully.",
+        variant: "success",
+      });
+    },
+    onError: (message) => {
+      setBanner({ message, variant: "error" });
+    },
+  });
 
   async function handleDisconnect(channelId: string) {
     try {
@@ -68,9 +87,9 @@ export function WhatsAppChannelsSection() {
     }
   }
 
-  function handleConnect() {
-    setConnecting(true);
-    startWhatsAppConnect();
+  function handleAddAnother() {
+    if (connectPhase === "error") resetConnect();
+    void launchSignup();
   }
 
   return (
@@ -96,26 +115,35 @@ export function WhatsAppChannelsSection() {
         </div>
         {whatsappChannels.length > 0 && (
           <Button
-            onClick={handleConnect}
+            onClick={handleAddAnother}
             disabled={connecting}
             className="h-10 rounded-xl bg-[#25D366] font-semibold text-white hover:bg-[#1fb855]"
           >
-            <Plus className="h-4 w-4" />
+            {connecting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Plus className="h-4 w-4" />
+            )}
             Add another number
           </Button>
         )}
       </div>
 
-      {(error || banner) && (
+      {(error || banner || connectError) && (
         <AppBanner
-          message={banner?.message ?? error}
+          message={banner?.message ?? connectError ?? error ?? ""}
           variant={banner?.variant ?? "error"}
           onDismiss={() => {
             setBanner(null);
+            if (connectError) resetConnect();
             void refresh();
           }}
         />
       )}
+
+      {connecting && whatsappChannels.length > 0 ? (
+        <WhatsAppConnectionProgress phase={connectPhase} />
+      ) : null}
 
       {loading ? (
         <div className="space-y-4">
@@ -123,7 +151,13 @@ export function WhatsAppChannelsSection() {
           <IntegrationCardSkeleton />
         </div>
       ) : whatsappChannels.length === 0 ? (
-        <WhatsAppBackendConnect onConnect={handleConnect} loading={connecting} />
+        <WhatsAppBackendConnect
+          phase={connectPhase}
+          loading={connecting}
+          errorMessage={connectError}
+          onConnect={() => void launchSignup()}
+          onReset={resetConnect}
+        />
       ) : (
         <div className="space-y-4">
           {whatsappChannels.map((channel, index) => (

@@ -84,10 +84,6 @@ export function useChannels() {
     [load],
   );
 
-  function startWhatsAppConnect() {
-    window.location.href = "/api/channels/whatsapp/connect";
-  }
-
   return {
     channels,
     whatsappChannels: channels.filter((c) => c.provider === "whatsapp"),
@@ -97,6 +93,5 @@ export function useChannels() {
     refresh: load,
     refreshChannel,
     disconnectChannel,
-    startWhatsAppConnect,
   };
 }
