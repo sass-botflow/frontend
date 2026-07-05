@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { BackendChannel } from "@/lib/backend/types";
+import { parseJsonResponse } from "@/lib/api/parse-json-response";
 
 interface ChannelsResponse {
   channels: BackendChannel[];
@@ -17,7 +18,7 @@ export function useChannels() {
     setError(null);
     try {
       const response = await fetch("/api/channels", { cache: "no-store" });
-      const body = (await response.json()) as ChannelsResponse & { error?: string };
+      const body = await parseJsonResponse<ChannelsResponse & { error?: string }>(response);
       if (!response.ok) {
         throw new Error(body.error ?? "Failed to load channels.");
       }
@@ -44,7 +45,7 @@ export function useChannels() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ channelId }),
         });
-        const body = (await response.json()) as { error?: string };
+        const body = await parseJsonResponse<{ error?: string }>(response);
         if (!response.ok) {
           throw new Error(body.error ?? "Failed to refresh channel.");
         }
@@ -69,7 +70,7 @@ export function useChannels() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ channelId }),
         });
-        const body = (await response.json()) as { error?: string };
+        const body = await parseJsonResponse<{ error?: string }>(response);
         if (!response.ok) {
           throw new Error(body.error ?? "Failed to disconnect channel.");
         }
