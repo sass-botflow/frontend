@@ -10,6 +10,7 @@ import {
   isFacebookOrigin,
 } from "@/lib/meta/facebook-sdk";
 import type { WhatsAppConnectPhase } from "@/lib/meta/whatsapp-types";
+import { parseJsonResponse } from "@/lib/api/parse-json-response";
 
 interface EmbeddedSignupSession {
   wabaId: string;
@@ -95,10 +96,12 @@ export function useWhatsAppEmbeddedSignup(options?: {
         }),
       });
 
-      const body = (await response.json()) as WhatsAppEmbeddedSignupCompleteResponse & {
-        error?: string;
-        message?: string;
-      };
+      const body = await parseJsonResponse<
+        WhatsAppEmbeddedSignupCompleteResponse & {
+          error?: string;
+          message?: string;
+        }
+      >(response);
 
       if (!response.ok) {
         throw new Error(
@@ -196,10 +199,12 @@ export function useWhatsAppEmbeddedSignup(options?: {
         cache: "no-store",
       });
 
-      const body = (await response.json()) as WhatsAppEmbeddedSignupConnectResponse & {
-        error?: string;
-        message?: string;
-      };
+      const body = await parseJsonResponse<
+        WhatsAppEmbeddedSignupConnectResponse & {
+          error?: string;
+          message?: string;
+        }
+      >(response);
 
       if (!response.ok) {
         throw new Error(

@@ -36,13 +36,43 @@ export async function proxyBackendJson(
   init?: RequestInit,
 ): Promise<NextResponse> {
   try {
-    const response = await proxyBackendRequest(path, init);
-    const contentType = response.headers.get("content-type") ?? "application/json";
+    const response = await proxyBackendRequest(path, {
+      ...init,
+      redirect: "manual",
+    });
+
+    if (response.status >= 300 && response.status < 400) {
+      const location = response.headers.get("location");
+      return NextResponse.json(
+        {
+          error: "Backend returned a redirect instead of JSON.",
+          ...(location ? { redirect: location } : {}),
+        },
+        { status: 502 },
+      );
+    }
+
+    const contentType = response.headers.get("content-type") ?? "";
     const body = await response.text();
+    const trimmed = body.trimStart();
+    const looksLikeJson =
+      contentType.includes("application/json") ||
+      trimmed.startsWith("{") ||
+      trimmed.startsWith("[");
+
+    if (!looksLikeJson) {
+      return NextResponse.json(
+        {
+          error:
+            "Backend returned a non-JSON response. Check API configuration.",
+        },
+        { status: 502 },
+      );
+    }
 
     return new NextResponse(body, {
       status: response.status,
-      headers: { "Content-Type": contentType },
+      headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
     if (err instanceof BackendAuthError) {
