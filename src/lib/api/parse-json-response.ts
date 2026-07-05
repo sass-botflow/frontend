@@ -1,4 +1,11 @@
-import { collapseWhitespace } from "@/lib/backend/read-backend-response";
+import {
+  ApiError,
+  classifyApiFailure,
+  createApiErrorFromResponse,
+  extractRequestId,
+  isHtmlResponse,
+  sanitizeErrorText,
+} from "@/lib/api/api-error";
 
 interface ApiErrorBody {
   error?: string;
@@ -6,15 +13,47 @@ interface ApiErrorBody {
   status?: number;
   backendUrl?: string;
   detail?: string;
+  errorKind?: string;
+  evolutionStatus?: number;
+  evolutionResponse?: string;
 }
 
-function formatHtmlPreview(text: string): string {
-  return collapseWhitespace(text).slice(0, 240);
+function buildMessageFromBody(body: ApiErrorBody, status: number): string {
+  const parts: string[] = [];
+
+  if (body.error) parts.push(body.error);
+  if (body.message && body.message !== body.error) parts.push(body.message);
+
+  if (body.evolutionStatus !== undefined) {
+    parts.push(`evolutionStatus ${body.evolutionStatus}`);
+  }
+
+  const evolutionHint = sanitizeErrorText(body.evolutionResponse ?? "");
+  if (evolutionHint) parts.push(evolutionHint);
+
+  const detail = sanitizeErrorText(body.detail ?? "");
+  if (detail) parts.push(detail);
+
+  if (body.backendUrl) parts.push(body.backendUrl);
+
+  if (parts.length === 0) {
+    return `HTTP ${status}: request failed.`;
+  }
+
+  return parts.join(" | ");
 }
 
 export async function parseJsonResponse<T>(response: Response): Promise<T> {
   const contentType = response.headers.get("content-type") ?? "";
   const text = await response.text();
+  const requestId = extractRequestId(response);
+
+  if (isHtmlResponse(contentType, text)) {
+    throw createApiErrorFromResponse(response, {
+      rawText: text,
+      message: "HTML gateway response",
+    });
+  }
 
   const trimmed = text.trimStart();
   const looksLikeJson =
@@ -23,38 +62,51 @@ export async function parseJsonResponse<T>(response: Response): Promise<T> {
     trimmed.startsWith("[");
 
   if (!looksLikeJson) {
-    const preview = formatHtmlPreview(text);
-    throw new Error(
-      trimmed.startsWith("<!")
-        ? `HTTP ${response.status}: HTML response instead of JSON${preview ? ` — ${preview}` : ""}`
-        : `HTTP ${response.status}: unexpected response${preview ? ` — ${preview}` : ""}`,
-    );
+    const details = classifyApiFailure({
+      status: response.status,
+      contentType,
+      text,
+      requestUrl: response.url || undefined,
+      requestId,
+    });
+
+    throw new ApiError(details);
   }
 
   let body: T & ApiErrorBody;
   try {
     body = JSON.parse(text) as T & ApiErrorBody;
   } catch {
-    throw new Error(`HTTP ${response.status}: invalid JSON response.`);
+    throw createApiErrorFromResponse(response, {
+      rawText: text,
+      message: "Invalid JSON response",
+    });
   }
 
   if (!response.ok) {
-    const message =
-      body.error ??
-      body.message ??
-      `HTTP ${response.status}: request failed.`;
-    const parts = [message];
-    if (body.status && body.status !== response.status) {
-      parts.push(`status ${body.status}`);
-    }
-    if (body.backendUrl) {
-      parts.push(`backend ${body.backendUrl}`);
-    }
-    if (body.detail) {
-      parts.push(formatHtmlPreview(body.detail));
-    }
-    throw new Error(parts.join(" | "));
+    const rawMessage = buildMessageFromBody(body, response.status);
+    const details = classifyApiFailure({
+      status: body.status ?? response.status,
+      message: rawMessage,
+      backendUrl: body.backendUrl,
+      requestUrl: response.url || undefined,
+      requestId,
+      text: body.errorKind === "html_response" ? "<html>" : "",
+    });
+
+    const backendError = sanitizeErrorText(body.error ?? body.message ?? "");
+    const useBackendError =
+      backendError.length > 0 &&
+      !backendError.toLowerCase().includes("html response") &&
+      !isHtmlResponse("", backendError);
+
+    throw new ApiError({
+      ...details,
+      userMessage: useBackendError ? backendError : details.userMessage,
+    });
   }
 
   return body as T;
 }
+
+export { ApiError, getApiErrorMessage, getApiErrorTitle, toApiError } from "@/lib/api/api-error";

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Loader2, Plus } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { IntegrationCardSkeleton } from "@/components/channels/channels-skeleton";
+import { ApiErrorDiagnosticsPanel } from "@/components/ui/api-error-diagnostics-panel";
 import { AppBanner } from "@/components/ui/app-banner";
 import { Button } from "@/components/ui/button";
 import { WhatsAppProfileCard } from "@/components/whatsapp-profiles/whatsapp-profile-card";
@@ -20,6 +21,7 @@ export function WhatsAppProfilesDashboard() {
     error,
     clearError,
     createSession,
+    refresh,
     qrOpen,
     activeSession,
     qrDataUrl,
@@ -89,7 +91,13 @@ export function WhatsAppProfilesDashboard() {
           ) : null}
 
           {error ? (
-            <AppBanner message={error} variant="error" onDismiss={clearError} />
+            <ApiErrorDiagnosticsPanel
+              error={error}
+              onRetry={() => {
+                clearError();
+                void refresh();
+              }}
+            />
           ) : null}
 
           {loading ? (
