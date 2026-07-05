@@ -1,8 +1,17 @@
 # Deploy DABA — EasyPanel (2 dakika)
 
-> **✅ Fix 2026-07-05 (PR #41):** GitHub Actions `Publish Docker image` kan **kayfail** — daba kaybni image f kol push l `main`.
->
-> **L'mochkil ba9i f EasyPanel:** GHCR image **private** → ila Source = Docker Image, deploy kaycancel. **L'hal:** Source = **GitHub**.
+> **⚠️ 2026-07-05:** Production `version: dev` = server ma kaypullach `main`.  
+> **Admin fix (1 click):** https://github.com/sass-botflow/frontend/issues/48
+
+---
+
+## Admin — dir hadi marra wa7da (5 min)
+
+1. **http://187.124.12.89:3000** → **sass-botflow** → **frontend**
+2. **Source** → **GitHub** → `sass-botflow/frontend` → `main` → `Dockerfile`
+3. **Environment** → copy mn `easypanel.env.example`
+4. **Deploy** → **Enable Auto Deploy** ON → **Deploy**
+5. Test: `curl https://www.botflow.ink/api/health` → version = git sha
 
 ---
 

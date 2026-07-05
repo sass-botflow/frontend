@@ -15,7 +15,7 @@ function readBuildFile(name: string): string | null {
 
 function getVersion(): string {
   const fromFile = readBuildFile("BUILD_VERSION.txt");
-  if (fromFile && fromFile !== "dev") return fromFile;
+  if (fromFile) return fromFile;
   return process.env.APP_VERSION ?? "dev";
 }
 
@@ -25,7 +25,7 @@ function getBuildTime(): string | null {
 
 function getDeployHint(version: string): string | undefined {
   if (version !== "dev") return undefined;
-  return "EasyPanel: switch Source to GitHub (sass-botflow/frontend, Dockerfile). GHCR image is private — Docker Image deploy will fail.";
+  return "Deploy blocked: EasyPanel not pulling main. Admin: enable GitHub Source + Auto Deploy, or add EASYPANEL_DEPLOY_WEBHOOK secret. See github.com/sass-botflow/frontend/issues/48";
 }
 
 export async function GET() {
