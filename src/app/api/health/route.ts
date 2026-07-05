@@ -1,9 +1,27 @@
+import { readFileSync } from "fs";
+import { join } from "path";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-const APP_VERSION = process.env.APP_VERSION ?? "dev";
-const BUILD_TIME = process.env.BUILD_TIME ?? null;
+function readBuildFile(name: string): string | null {
+  try {
+    const value = readFileSync(join(process.cwd(), name), "utf8").trim();
+    return value || null;
+  } catch {
+    return null;
+  }
+}
+
+function getVersion(): string {
+  const fromFile = readBuildFile("BUILD_VERSION.txt");
+  if (fromFile && fromFile !== "dev") return fromFile;
+  return process.env.APP_VERSION ?? "dev";
+}
+
+function getBuildTime(): string | null {
+  return readBuildFile("BUILD_TIME.txt") ?? process.env.BUILD_TIME ?? null;
+}
 
 function getDeployHint(version: string): string | undefined {
   if (version !== "dev") return undefined;
@@ -11,13 +29,13 @@ function getDeployHint(version: string): string | undefined {
 }
 
 export async function GET() {
-  const version = APP_VERSION;
+  const version = getVersion();
   return NextResponse.json(
     {
       status: "ok",
       service: "botflow-frontend",
       version,
-      buildTime: BUILD_TIME,
+      buildTime: getBuildTime(),
       persistence: "backend-api",
       deployHint: getDeployHint(version),
       timestamp: new Date().toISOString(),
