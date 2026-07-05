@@ -1,4 +1,9 @@
 import { extractErrorMessage } from "@/lib/backend/extract-error-message";
+import {
+  classifyApiFailure,
+  isHtmlResponse,
+  sanitizeErrorText,
+} from "@/lib/api/api-error";
 
 export interface BackendResponseBody {
   status: number;
@@ -58,14 +63,23 @@ export function formatNonJsonBackendError(
   rawText: string,
   fallback: string,
 ): string {
-  const snippet = collapseWhitespace(rawText).slice(0, 240);
+  const classified = classifyApiFailure({
+    status,
+    text: rawText,
+    backendUrl,
+    message: fallback,
+  });
+
+  if (isHtmlResponse("", rawText)) {
+    return classified.userMessage;
+  }
+
+  const snippet = sanitizeErrorText(rawText);
   if (!snippet) {
-    return `${fallback} (HTTP ${status} from ${backendUrl})`;
+    return `${classified.userMessage} (HTTP ${status})`;
   }
-  if (snippet.startsWith("<!")) {
-    return `${fallback} (HTTP ${status} from ${backendUrl}): HTML response — ${snippet}`;
-  }
-  return `${fallback} (HTTP ${status} from ${backendUrl}): ${snippet}`;
+
+  return `${classified.userMessage} (HTTP ${status})`;
 }
 
 export function formatRedirectBackendError(
@@ -83,13 +97,16 @@ export function jsonErrorPayload(
   message: string,
   status: number,
   backendUrl: string,
-  detail?: string,
+  rawText?: string,
 ) {
+  const html = rawText ? isHtmlResponse("", rawText) : false;
+  const safeMessage = html ? classifyApiFailure({ status, text: rawText, backendUrl }).userMessage : message;
+
   return {
-    error: message,
+    error: sanitizeErrorText(safeMessage) || message,
     status,
     backendUrl,
-    ...(detail ? { detail: detail.slice(0, 500) } : {}),
+    ...(html ? { errorKind: "html_response" as const } : {}),
   };
 }
 
@@ -97,5 +114,15 @@ export function extractBackendErrorMessage(
   data: unknown,
   fallback: string,
 ): string {
-  return extractErrorMessage(data, fallback);
+  const extracted = extractErrorMessage(data, fallback);
+
+  if (isHtmlResponse("", extracted)) {
+    return classifyApiFailure({
+      status: 502,
+      text: extracted,
+      message: fallback,
+    }).userMessage;
+  }
+
+  return sanitizeErrorText(extracted) || fallback;
 }

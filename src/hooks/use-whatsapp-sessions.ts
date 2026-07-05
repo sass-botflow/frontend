@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ApiError, toApiError } from "@/lib/api/api-error";
 import {
   createWhatsAppSession,
   fetchWhatsAppQr,
@@ -24,7 +25,7 @@ export function useWhatsAppSessions(options?: UseWhatsAppSessionsOptions) {
   const [sessions, setSessions] = useState<WhatsAppSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ApiError | null>(null);
 
   const [qrOpen, setQrOpen] = useState(false);
   const [activeSession, setActiveSession] = useState<WhatsAppSession | null>(null);
@@ -32,7 +33,7 @@ export function useWhatsAppSessions(options?: UseWhatsAppSessionsOptions) {
   const [qrLoading, setQrLoading] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<string>("pending");
-  const [qrError, setQrError] = useState<string | null>(null);
+  const [qrError, setQrError] = useState<ApiError | null>(null);
 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const onConnectedRef = useRef(options?.onConnected);
@@ -55,7 +56,7 @@ export function useWhatsAppSessions(options?: UseWhatsAppSessionsOptions) {
       setSessions(list);
     } catch (err) {
       setSessions([]);
-      setError(err instanceof Error ? err.message : "Failed to load WhatsApp profiles.");
+      setError(toApiError(err, "/api/whatsapp/sessions"));
     } finally {
       setLoading(false);
     }
@@ -76,8 +77,7 @@ export function useWhatsAppSessions(options?: UseWhatsAppSessionsOptions) {
       }
       setQrDataUrl(toQrDataUrl(qr.qr));
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to load QR code.";
-      setQrError(message);
+      setQrError(toApiError(err, `/api/whatsapp/sessions/${sessionId}/qr`));
       throw err;
     } finally {
       setQrLoading(false);
@@ -127,17 +127,13 @@ export function useWhatsAppSessions(options?: UseWhatsAppSessionsOptions) {
       setConnecting(true);
 
       void checkStatus(sessionId).catch((err) => {
-        setQrError(
-          err instanceof Error ? err.message : "Failed to check connection status.",
-        );
+        setQrError(toApiError(err, `/api/whatsapp/sessions/${sessionId}/status`));
         setConnecting(false);
       });
 
       pollRef.current = setInterval(() => {
         void checkStatus(sessionId).catch((err) => {
-          setQrError(
-            err instanceof Error ? err.message : "Failed to check connection status.",
-          );
+          setQrError(toApiError(err, `/api/whatsapp/sessions/${sessionId}/status`));
         });
       }, STATUS_POLL_MS);
     },
@@ -181,9 +177,7 @@ export function useWhatsAppSessions(options?: UseWhatsAppSessionsOptions) {
         await openQrConnect(session);
         return session;
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "Failed to create WhatsApp profile.";
-        setError(message);
+        setError(toApiError(err, "/api/whatsapp/sessions"));
         throw err;
       } finally {
         setCreating(false);
