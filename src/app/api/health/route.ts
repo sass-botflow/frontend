@@ -1,6 +1,7 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 import { NextResponse } from "next/server";
+import { getBackendApiUrl, getConfiguredBackendApiUrl } from "@/lib/backend/config";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,30 @@ function getDeployHint(version: string): string | undefined {
 
 export async function GET() {
   const version = getVersion();
+  const configuredBackendUrl = getConfiguredBackendApiUrl();
+  const resolvedBackendUrl = getBackendApiUrl();
+
+  let backendHealth: Record<string, unknown> | null = null;
+  let backendReachable = false;
+
+  try {
+    const response = await fetch(getBackendApiUrl("/health"), {
+      cache: "no-store",
+      signal: AbortSignal.timeout(8_000),
+    });
+    backendReachable = response.ok;
+    const contentType = response.headers.get("content-type") ?? "";
+    if (contentType.includes("application/json")) {
+      backendHealth = (await response.json()) as Record<string, unknown>;
+    }
+  } catch {
+    backendReachable = false;
+  }
+
+  const misconfiguredApiUrl =
+    configuredBackendUrl !== resolvedBackendUrl &&
+    /botflow\.ink/i.test(configuredBackendUrl);
+
   return NextResponse.json(
     {
       status: "ok",
@@ -37,6 +62,15 @@ export async function GET() {
       version,
       buildTime: getBuildTime(),
       persistence: "backend-api",
+      backend: {
+        configuredUrl: configuredBackendUrl,
+        resolvedUrl: resolvedBackendUrl,
+        reachable: backendReachable,
+        misconfiguredApiUrl,
+        evolution: backendHealth?.config
+          ? (backendHealth.config as Record<string, unknown>).evolution ?? null
+          : null,
+      },
       deployHint: getDeployHint(version),
       timestamp: new Date().toISOString(),
     },
