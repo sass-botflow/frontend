@@ -10,23 +10,10 @@ import {
   normalizeWhatsAppStatusResponse,
 } from "@/lib/whatsapp/types";
 
-async function readError(response: Response, fallback: string): Promise<string> {
-  try {
-    const body = await parseJsonResponse<{ error?: string; message?: string }>(response);
-    return body.error ?? body.message ?? fallback;
-  } catch {
-    return fallback;
-  }
-}
-
 export async function fetchWhatsAppQr(sessionId: string): Promise<WhatsAppQrResponse> {
   const response = await fetch(`/api/whatsapp/sessions/${encodeURIComponent(sessionId)}/qr`, {
     cache: "no-store",
   });
-
-  if (!response.ok) {
-    throw new Error(await readError(response, "Failed to load QR code."));
-  }
 
   const body = await parseJsonResponse<Record<string, unknown>>(response);
   const qr = normalizeWhatsAppQrResponse(body);
@@ -44,10 +31,6 @@ export async function fetchWhatsAppStatus(
     `/api/whatsapp/sessions/${encodeURIComponent(sessionId)}/status`,
     { cache: "no-store" },
   );
-
-  if (!response.ok) {
-    throw new Error(await readError(response, "Failed to check connection status."));
-  }
 
   const body = await parseJsonResponse<Record<string, unknown>>(response);
   const status = normalizeWhatsAppStatusResponse(body);
@@ -72,7 +55,7 @@ export async function createWhatsAppSession(
     response,
   );
 
-  if (!response.ok || !body.session) {
+  if (!body.session) {
     throw new Error(body.error ?? "Failed to create WhatsApp session.");
   }
 
@@ -84,10 +67,6 @@ export async function fetchWhatsAppSessions(): Promise<WhatsAppSession[]> {
   const body = await parseJsonResponse<{ sessions?: WhatsAppSession[]; error?: string }>(
     response,
   );
-
-  if (!response.ok) {
-    throw new Error(body.error ?? "Failed to load WhatsApp profiles.");
-  }
 
   return body.sessions ?? [];
 }
