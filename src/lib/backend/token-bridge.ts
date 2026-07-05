@@ -57,6 +57,27 @@ export function signBackendJwt(payload: {
   return `${header}.${body}.${signature}`;
 }
 
+export function signWhatsAppEmbeddedSignupState(payload: {
+  workspaceId: string;
+  userId: string;
+}): string {
+  const header = base64Url(JSON.stringify({ alg: "HS256", typ: "JWT" }));
+  const now = Math.floor(Date.now() / 1000);
+  const body = base64Url(
+    JSON.stringify({
+      workspaceId: payload.workspaceId,
+      userId: payload.userId,
+      purpose: "whatsapp_embedded_signup",
+      iat: now,
+      exp: now + 900,
+    }),
+  );
+  const signature = base64Url(
+    createHmac("sha256", getJwtSecret()).update(`${header}.${body}`).digest(),
+  );
+  return `${header}.${body}.${signature}`;
+}
+
 function readBackendAuthRecord(user: User): BackendAuthRecord | null {
   const record = user.privateMetadata?.backendAuth;
   if (!record || typeof record !== "object") return null;
@@ -182,6 +203,24 @@ async function tryClerkTemplateToken(
   return token;
 }
 
+export async function resolveBackendAuthRecord(): Promise<BackendAuthRecord> {
+  const { userId } = await auth({ treatPendingAsSignedOut: false });
+
+  if (!userId) {
+    throw new BackendAuthError();
+  }
+
+  const client = await clerkClient();
+  const user = await client.users.getUser(userId);
+  let record = readBackendAuthRecord(user);
+
+  if (!record) {
+    record = await registerBackendUser(user);
+  }
+
+  return record;
+}
+
 export async function resolveBackendBearerToken(): Promise<string> {
   const { userId, getToken } = await auth({ treatPendingAsSignedOut: false });
 
@@ -194,14 +233,7 @@ export async function resolveBackendBearerToken(): Promise<string> {
     return templateToken;
   }
 
-  const client = await clerkClient();
-  const user = await client.users.getUser(userId);
-  let record = readBackendAuthRecord(user);
-
-  if (!record) {
-    record = await registerBackendUser(user);
-  }
-
+  const record = await resolveBackendAuthRecord();
   return signBackendJwt({
     sub: record.userId,
     email: record.email,

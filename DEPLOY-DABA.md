@@ -28,10 +28,13 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
 JWT_SECRET=<nfs backend JWT_SECRET>
 NEXT_PUBLIC_APP_URL=https://www.botflow.ink
 NEXT_PUBLIC_API_URL=https://api.botflow.ink
-NEXT_PUBLIC_META_APP_ID=<Meta App ID>
-NEXT_PUBLIC_META_EMBEDDED_SIGNUP_CONFIG_ID=<Embedded Signup Config ID>
+JWT_SECRET=<nfs backend JWT_SECRET>
+NEXT_PUBLIC_META_APP_ID=1811541566932500
+NEXT_PUBLIC_META_EMBEDDED_SIGNUP_CONFIG_ID=<mn Meta Developer → Embedded Signup>
 PORT=3000
 ```
+
+> **WhatsApp connect ma ghadi ykhdemch** bla `NEXT_PUBLIC_META_APP_ID` + `NEXT_PUBLIC_META_EMBEDDED_SIGNUP_CONFIG_ID` (wla `META_*` nfs l9iyem f runtime env).
 
 **SUPPRIMER** ila kaynin:
 - `DATABASE_URL`

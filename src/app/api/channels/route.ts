@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { BackendAuthError } from "@/lib/backend/errors";
+import { extractErrorMessage } from "@/lib/backend/extract-error-message";
 import { proxyBackendRequest } from "@/lib/backend/proxy";
 
 export async function GET() {
@@ -8,11 +9,12 @@ export async function GET() {
     const body = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      const message =
-        body && typeof body === "object" && "message" in body
-          ? String((body as { message: unknown }).message)
-          : "Failed to load channels.";
-      return NextResponse.json({ error: message }, { status: response.status });
+      return NextResponse.json(
+        {
+          error: extractErrorMessage(body, "Failed to load channels."),
+        },
+        { status: response.status },
+      );
     }
 
     const channels = Array.isArray(body)
