@@ -1,10 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Hash, Smartphone, Tag } from "lucide-react";
+import { Hash, Phone, Smartphone, Tag } from "lucide-react";
 import { ChannelLogo } from "@/components/channels/channel-logo";
 import { ChannelStatusBadge } from "@/components/channels/channel-status-badge";
 import type { WhatsAppSession } from "@/lib/whatsapp/types";
+import { isWhatsAppSessionConnected } from "@/lib/whatsapp/types";
 
 interface WhatsAppProfileCardProps {
   session: WhatsAppSession;
@@ -12,6 +13,8 @@ interface WhatsAppProfileCardProps {
 }
 
 export function WhatsAppProfileCard({ session, index }: WhatsAppProfileCardProps) {
+  const connected = isWhatsAppSessionConnected(session.status);
+
   return (
     <motion.article
       initial={{ opacity: 0, y: 16 }}
@@ -32,7 +35,9 @@ export function WhatsAppProfileCard({ session, index }: WhatsAppProfileCardProps
               <ChannelStatusBadge status={session.status} />
             </div>
             <p className="text-sm text-muted-foreground">
-              WhatsApp profile session
+              {connected && session.phoneNumber
+                ? session.phoneNumber
+                : "WhatsApp profile session"}
             </p>
           </div>
         </div>
@@ -49,12 +54,21 @@ export function WhatsAppProfileCard({ session, index }: WhatsAppProfileCardProps
           label="Instance Name"
           value={session.instanceName}
         />
-        <ProfileField
-          icon={Smartphone}
-          label="Status"
-          value={session.status}
-          className="sm:col-span-2"
-        />
+        {session.phoneNumber ? (
+          <ProfileField
+            icon={Phone}
+            label="Phone Number"
+            value={session.phoneNumber}
+            className="sm:col-span-2"
+          />
+        ) : (
+          <ProfileField
+            icon={Smartphone}
+            label="Status"
+            value={session.status}
+            className="sm:col-span-2"
+          />
+        )}
       </dl>
     </motion.article>
   );

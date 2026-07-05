@@ -1,16 +1,43 @@
 "use client";
 
+import { useState } from "react";
 import { Loader2, Plus } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { IntegrationCardSkeleton } from "@/components/channels/channels-skeleton";
 import { AppBanner } from "@/components/ui/app-banner";
 import { Button } from "@/components/ui/button";
 import { WhatsAppProfileCard } from "@/components/whatsapp-profiles/whatsapp-profile-card";
+import { WhatsAppQrConnectModal } from "@/components/whatsapp-profiles/whatsapp-qr-connect-modal";
 import { useWhatsAppSessions } from "@/hooks/use-whatsapp-sessions";
 
 export function WhatsAppProfilesDashboard() {
-  const { sessions, loading, creating, error, clearError, createSession } =
-    useWhatsAppSessions();
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const {
+    sessions,
+    loading,
+    creating,
+    error,
+    clearError,
+    createSession,
+    qrOpen,
+    activeSession,
+    qrDataUrl,
+    qrLoading,
+    connecting,
+    connectionStatus,
+    qrError,
+    closeQrModal,
+    retryQr,
+  } = useWhatsAppSessions({
+    onConnected: ({ phoneNumber }) => {
+      setSuccessMessage(
+        phoneNumber
+          ? `WhatsApp connected successfully (${phoneNumber}).`
+          : "WhatsApp connected successfully.",
+      );
+    },
+  });
 
   async function handleAddWhatsApp() {
     try {
@@ -34,14 +61,14 @@ export function WhatsAppProfilesDashboard() {
                 WhatsApp Profiles
               </h2>
               <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-                Manage WhatsApp profile sessions for your workspace. QR linking
-                and automation will be added in the next step.
+                Link WhatsApp numbers by scanning a QR code — same flow as Qunvert.
+                Each profile runs as its own session in your workspace.
               </p>
             </div>
 
             <Button
               onClick={() => void handleAddWhatsApp()}
-              disabled={creating}
+              disabled={creating || qrOpen}
               className="h-11 shrink-0 rounded-xl bg-[#25D366] px-5 font-semibold text-white hover:bg-[#1fb855]"
             >
               {creating ? (
@@ -52,6 +79,14 @@ export function WhatsAppProfilesDashboard() {
               Add WhatsApp
             </Button>
           </div>
+
+          {successMessage ? (
+            <AppBanner
+              message={successMessage}
+              variant="success"
+              onDismiss={() => setSuccessMessage(null)}
+            />
+          ) : null}
 
           {error ? (
             <AppBanner message={error} variant="error" onDismiss={clearError} />
@@ -68,11 +103,12 @@ export function WhatsAppProfilesDashboard() {
                 No WhatsApp profiles yet
               </p>
               <p className="mt-2 text-sm text-muted-foreground">
-                Click <strong>Add WhatsApp</strong> to create your first session.
+                Click <strong>Add WhatsApp</strong> to create a session and scan
+                the QR code.
               </p>
               <Button
                 onClick={() => void handleAddWhatsApp()}
-                disabled={creating}
+                disabled={creating || qrOpen}
                 className="mt-6 h-11 rounded-xl bg-[#25D366] font-semibold text-white hover:bg-[#1fb855]"
               >
                 {creating ? (
@@ -92,6 +128,18 @@ export function WhatsAppProfilesDashboard() {
           )}
         </div>
       </div>
+
+      <WhatsAppQrConnectModal
+        open={qrOpen}
+        session={activeSession}
+        qrDataUrl={qrDataUrl}
+        qrLoading={qrLoading}
+        connecting={connecting}
+        connectionStatus={connectionStatus}
+        error={qrError}
+        onClose={closeQrModal}
+        onRetry={() => void retryQr()}
+      />
     </>
   );
 }

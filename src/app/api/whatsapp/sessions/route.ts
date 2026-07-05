@@ -1,15 +1,8 @@
 import { NextResponse } from "next/server";
 import { BackendAuthError } from "@/lib/backend/errors";
+import { extractErrorMessage } from "@/lib/backend/extract-error-message";
 import { proxyBackendRequest } from "@/lib/backend/proxy";
 import { normalizeWhatsAppSession, normalizeWhatsAppSessions } from "@/lib/whatsapp/types";
-
-function extractErrorMessage(body: unknown, fallback: string): string {
-  if (!body || typeof body !== "object") return fallback;
-  const record = body as Record<string, unknown>;
-  if (typeof record.message === "string") return record.message;
-  if (typeof record.error === "string") return record.error;
-  return fallback;
-}
 
 export async function GET() {
   try {
