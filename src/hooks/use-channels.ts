@@ -25,7 +25,12 @@ export function useChannels() {
       setChannels(body.channels ?? []);
     } catch (err) {
       setChannels([]);
-      setError(err instanceof Error ? err.message : "Failed to load channels.");
+      const message = err instanceof Error ? err.message : "Failed to load channels.";
+      setError(
+        message.includes("Internal server error")
+          ? "Could not load connected numbers from the API. You can still try connecting WhatsApp below."
+          : message,
+      );
     } finally {
       setLoading(false);
     }
