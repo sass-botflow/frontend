@@ -162,12 +162,12 @@ export function useWhatsAppSessions(options?: UseWhatsAppSessionsOptions) {
   );
 
   const createSession = useCallback(
-    async (profileName?: string) => {
+    async (displayName?: string) => {
       setCreating(true);
       setError(null);
 
       try {
-        const name = profileName ?? `WhatsApp Profile ${sessions.length + 1}`;
+        const name = displayName ?? `WhatsApp Profile ${sessions.length + 1}`;
         const session = await createWhatsAppSession(name);
 
         setSessions((current) => {
