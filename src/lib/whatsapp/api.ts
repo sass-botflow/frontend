@@ -1,5 +1,6 @@
 import { parseJsonResponse } from "@/lib/api/parse-json-response";
 import type {
+  CreateWhatsAppSessionRequest,
   WhatsAppQrResponse,
   WhatsAppSession,
   WhatsAppStatusResponse,
@@ -58,12 +59,13 @@ export async function fetchWhatsAppStatus(
 }
 
 export async function createWhatsAppSession(
-  profileName: string,
+  displayName: string,
 ): Promise<WhatsAppSession> {
+  const payload: CreateWhatsAppSessionRequest = { displayName };
   const response = await fetch("/api/whatsapp/sessions", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ profileName }),
+    body: JSON.stringify(payload),
   });
 
   const body = await parseJsonResponse<{ session?: WhatsAppSession; error?: string }>(

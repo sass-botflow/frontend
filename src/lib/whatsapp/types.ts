@@ -12,6 +12,10 @@ export interface WhatsAppSessionsResponse {
   sessions: WhatsAppSession[];
 }
 
+export interface CreateWhatsAppSessionRequest {
+  displayName: string;
+}
+
 export interface WhatsAppQrResponse {
   qr: string;
   expiresAt?: string;
@@ -86,8 +90,14 @@ export function normalizeWhatsAppSession(raw: unknown): WhatsAppSession | null {
   return {
     id,
     profileName:
-      readString(record, "profileName", "profile_name", "name") ??
-      "WhatsApp Profile",
+      readString(
+        record,
+        "displayName",
+        "display_name",
+        "profileName",
+        "profile_name",
+        "name",
+      ) ?? "WhatsApp Profile",
     instanceName:
       readString(record, "instanceName", "instance_name", "instanceId", "instance_id") ??
       "—",
@@ -170,7 +180,14 @@ export function normalizeWhatsAppStatusResponse(
       "display_phone_number",
       "number",
     ),
-    profileName: readString(record, "profileName", "profile_name", "name"),
+    profileName: readString(
+      record,
+      "displayName",
+      "display_name",
+      "profileName",
+      "profile_name",
+      "name",
+    ),
     instanceName: readString(record, "instanceName", "instance_name"),
   };
 }
