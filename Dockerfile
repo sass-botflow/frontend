@@ -26,6 +26,8 @@ ARG NEXT_PUBLIC_META_APP_ID
 ARG NEXT_PUBLIC_META_EMBEDDED_SIGNUP_CONFIG_ID
 ARG APP_VERSION=dev
 ARG BUILD_TIME=unknown
+ARG GITHUB_SHA
+ARG COMMIT_SHA
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
@@ -40,12 +42,18 @@ ENV NEXT_PUBLIC_META_APP_ID=$NEXT_PUBLIC_META_APP_ID
 ENV NEXT_PUBLIC_META_EMBEDDED_SIGNUP_CONFIG_ID=$NEXT_PUBLIC_META_EMBEDDED_SIGNUP_CONFIG_ID
 ENV NODE_OPTIONS=--max-old-space-size=2048
 
-# Resolve version for EasyPanel GitHub builds (no APP_VERSION build arg)
-RUN V="$APP_VERSION"; \
-    if [ "$V" = "dev" ]; then V=$(git rev-parse --short HEAD 2>/dev/null || echo dev); fi; \
+# Resolve version: CI passes APP_VERSION; EasyPanel GitHub builds use git / env fallbacks
+RUN set -e; \
+    V="$APP_VERSION"; \
+    if [ "$V" = "dev" ] || [ -z "$V" ]; then \
+      if [ -n "$GITHUB_SHA" ]; then V=$(echo "$GITHUB_SHA" | cut -c1-7); \
+      elif [ -n "$COMMIT_SHA" ]; then V=$(echo "$COMMIT_SHA" | cut -c1-7); \
+      else V=$(git rev-parse --short HEAD 2>/dev/null || echo dev); fi; \
+    fi; \
     BT="$BUILD_TIME"; \
-    if [ "$BT" = "unknown" ]; then BT=$(date -u +%Y-%m-%dT%H:%M:%SZ); fi; \
-    echo "$V" > /app/BUILD_VERSION.txt && echo "$BT" > /app/BUILD_TIME.txt
+    if [ "$BT" = "unknown" ] || [ -z "$BT" ]; then BT=$(date -u +%Y-%m-%dT%H:%M:%SZ); fi; \
+    echo "$V" > /app/BUILD_VERSION.txt && echo "$BT" > /app/BUILD_TIME.txt; \
+    echo "Build version: $V at $BT"
 
 ENV APP_VERSION=$APP_VERSION
 ENV BUILD_TIME=$BUILD_TIME

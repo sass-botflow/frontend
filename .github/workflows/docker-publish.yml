@@ -44,6 +44,7 @@ jobs:
             NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/onboarding
             NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=/en
             APP_VERSION=${{ github.sha }}
+            GITHUB_SHA=${{ github.sha }}
             BUILD_TIME=${{ github.event.head_commit.timestamp }}
 
       - name: Make GHCR package public (EasyPanel pull)
@@ -102,7 +103,7 @@ jobs:
     steps:
       - name: Deploy to EasyPanel
         env:
-          WEBHOOK: ${{ secrets.EASYPANEL_DEPLOY_WEBHOOK }}
+          WEBHOOK: ${{ secrets.EASYPANEL_DEPLOY_WEBHOOK || vars.EASYPANEL_DEPLOY_WEBHOOK }}
           SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
           SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
           SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
