@@ -1,7 +1,8 @@
 # Deploy DABA — EasyPanel (2 dakika)
 
-> **L'mochkil:** GHCR image **private** → EasyPanel ma kay9derch ypulli → Deploy **Cancel** f 1 thaniya.
-> **L'hal:** Badel Source l **GitHub** (repo public — kaybuildi bla GHCR).
+> **✅ Fix 2026-07-05 (PR #41):** GitHub Actions `Publish Docker image` kan **kayfail** — daba kaybni image f kol push l `main`.
+>
+> **L'mochkil ba9i f EasyPanel:** GHCR image **private** → ila Source = Docker Image, deploy kaycancel. **L'hal:** Source = **GitHub**.
 
 ---
 
