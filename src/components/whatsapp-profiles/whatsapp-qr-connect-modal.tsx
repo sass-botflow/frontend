@@ -8,7 +8,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ApiErrorDiagnosticsPanel } from "@/components/ui/api-error-diagnostics-panel";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ApiError } from "@/lib/api/api-error";
@@ -103,7 +102,19 @@ export function WhatsAppQrConnectModal({
           ) : null}
 
           {error ? (
-            <ApiErrorDiagnosticsPanel error={error} onRetry={onRetry} />
+            <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+              <p className="font-medium text-red-100">{error.details.userTitle}</p>
+              <p className="mt-1 text-red-200/90">{error.details.userMessage}</p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => void onRetry()}
+                className="mt-3 w-full border-red-500/30 bg-transparent text-red-100 hover:bg-red-500/10"
+              >
+                Try again
+              </Button>
+            </div>
           ) : null}
 
           <div className="flex items-start gap-3 rounded-xl border border-border/50 bg-background/40 px-4 py-3">

@@ -19,17 +19,12 @@ const STATUS_POLL_MS = 3000;
 
 interface UseWhatsAppSessionsOptions {
   onConnected?: (payload: { sessionId: string; phoneNumber?: string }) => void;
-  infrastructureReady?: boolean;
-  infrastructureLoading?: boolean;
 }
 
 export function useWhatsAppSessions(options?: UseWhatsAppSessionsOptions) {
   const [sessions, setSessions] = useState<WhatsAppSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
-  const [error, setError] = useState<ApiError | null>(null);
-  const infrastructureReady = options?.infrastructureReady ?? true;
-  const infrastructureLoading = options?.infrastructureLoading ?? false;
 
   const [qrOpen, setQrOpen] = useState(false);
   const [activeSession, setActiveSession] = useState<WhatsAppSession | null>(null);
@@ -54,26 +49,15 @@ export function useWhatsAppSessions(options?: UseWhatsAppSessionsOptions) {
   }, []);
 
   const load = useCallback(async () => {
-    if (infrastructureLoading) return;
-
-    if (!infrastructureReady) {
-      setSessions([]);
-      setError(null);
-      setLoading(false);
-      return;
-    }
-
-    setError(null);
     try {
       const list = await fetchWhatsAppSessions();
       setSessions(list);
-    } catch (err) {
+    } catch {
       setSessions([]);
-      setError(toApiError(err, "/api/whatsapp/sessions"));
     } finally {
       setLoading(false);
     }
-  }, [infrastructureLoading, infrastructureReady]);
+  }, []);
 
   useEffect(() => {
     void load();
@@ -103,6 +87,7 @@ export function useWhatsAppSessions(options?: UseWhatsAppSessionsOptions) {
     setActiveSession(null);
     setQrDataUrl(null);
     setQrLoading(false);
+    setCreating(false);
     setConnecting(false);
     setConnectionStatus("pending");
     setQrError(null);
@@ -172,20 +157,14 @@ export function useWhatsAppSessions(options?: UseWhatsAppSessionsOptions) {
 
   const createSession = useCallback(
     async (displayName?: string) => {
-      if (!infrastructureReady) {
-        const blocked = new ApiError({
-          category: "evolution_unreachable",
-          userTitle: "Server setup required",
-          userMessage:
-            "WhatsApp cannot be linked until Evolution API and the backend are deployed. See the setup steps above.",
-          httpStatus: 503,
-        });
-        setError(blocked);
-        throw blocked;
-      }
-
       setCreating(true);
-      setError(null);
+      setQrOpen(true);
+      setQrLoading(true);
+      setQrError(null);
+      setQrDataUrl(null);
+      setActiveSession(null);
+      setConnecting(false);
+      setConnectionStatus("pending");
 
       try {
         const name = displayName ?? `WhatsApp Profile ${sessions.length + 1}`;
@@ -199,16 +178,19 @@ export function useWhatsAppSessions(options?: UseWhatsAppSessionsOptions) {
           return [session, ...current];
         });
 
-        await openQrConnect(session);
+        setActiveSession(session);
+        await loadQr(session.id);
+        startStatusPolling(session.id);
         return session;
       } catch (err) {
-        setError(toApiError(err, "/api/whatsapp/sessions"));
+        setQrError(toApiError(err, "/api/whatsapp/sessions"));
         throw err;
       } finally {
         setCreating(false);
+        setQrLoading(false);
       }
     },
-    [infrastructureReady, openQrConnect, sessions.length],
+    [loadQr, sessions.length, startStatusPolling],
   );
 
   useEffect(() => {
@@ -219,8 +201,6 @@ export function useWhatsAppSessions(options?: UseWhatsAppSessionsOptions) {
     sessions,
     loading,
     creating,
-    error,
-    clearError: () => setError(null),
     refresh: load,
     createSession,
     qrOpen,
@@ -232,7 +212,15 @@ export function useWhatsAppSessions(options?: UseWhatsAppSessionsOptions) {
     qrError,
     closeQrModal,
     retryQr: async () => {
-      if (!activeSession) return;
+      if (!activeSession) {
+        try {
+          await createSession();
+        } catch {
+          // qrError set in createSession
+        }
+        return;
+      }
+
       try {
         await loadQr(activeSession.id);
         startStatusPolling(activeSession.id);

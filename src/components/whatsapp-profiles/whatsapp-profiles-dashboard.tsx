@@ -1,30 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { useSetupStatus } from "@/hooks/use-setup-status";
 import { Loader2, Plus } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { IntegrationCardSkeleton } from "@/components/channels/channels-skeleton";
-import { ApiErrorDiagnosticsPanel } from "@/components/ui/api-error-diagnostics-panel";
 import { AppBanner } from "@/components/ui/app-banner";
 import { Button } from "@/components/ui/button";
 import { WhatsAppProfileCard } from "@/components/whatsapp-profiles/whatsapp-profile-card";
 import { WhatsAppQrConnectModal } from "@/components/whatsapp-profiles/whatsapp-qr-connect-modal";
-import { WhatsAppSetupBanner } from "@/components/whatsapp-profiles/whatsapp-setup-banner";
 import { useWhatsAppSessions } from "@/hooks/use-whatsapp-sessions";
 
 export function WhatsAppProfilesDashboard() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const { ready: infrastructureReady, loading: infrastructureLoading } = useSetupStatus();
 
   const {
     sessions,
     loading,
     creating,
-    error,
-    clearError,
     createSession,
-    refresh,
     qrOpen,
     activeSession,
     qrDataUrl,
@@ -35,8 +28,6 @@ export function WhatsAppProfilesDashboard() {
     closeQrModal,
     retryQr,
   } = useWhatsAppSessions({
-    infrastructureReady,
-    infrastructureLoading,
     onConnected: ({ phoneNumber }) => {
       setSuccessMessage(
         phoneNumber
@@ -50,7 +41,7 @@ export function WhatsAppProfilesDashboard() {
     try {
       await createSession();
     } catch {
-      // Error state handled by hook
+      // Error shown inside QR modal
     }
   }
 
@@ -75,8 +66,8 @@ export function WhatsAppProfilesDashboard() {
 
             <Button
               onClick={() => void handleAddWhatsApp()}
-              disabled={creating || qrOpen || infrastructureLoading || !infrastructureReady}
-              className="h-11 shrink-0 rounded-xl bg-[#25D366] px-5 font-semibold text-white hover:bg-[#1fb855] disabled:opacity-50"
+              disabled={creating || qrOpen}
+              className="h-11 shrink-0 rounded-xl bg-[#25D366] px-5 font-semibold text-white hover:bg-[#1fb855]"
             >
               {creating ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -87,23 +78,11 @@ export function WhatsAppProfilesDashboard() {
             </Button>
           </div>
 
-          <WhatsAppSetupBanner />
-
           {successMessage ? (
             <AppBanner
               message={successMessage}
               variant="success"
               onDismiss={() => setSuccessMessage(null)}
-            />
-          ) : null}
-
-          {error && infrastructureReady ? (
-            <ApiErrorDiagnosticsPanel
-              error={error}
-              onRetry={() => {
-                clearError();
-                void refresh();
-              }}
             />
           ) : null}
 
@@ -123,8 +102,8 @@ export function WhatsAppProfilesDashboard() {
               </p>
               <Button
                 onClick={() => void handleAddWhatsApp()}
-                disabled={creating || qrOpen || infrastructureLoading || !infrastructureReady}
-                className="mt-6 h-11 rounded-xl bg-[#25D366] font-semibold text-white hover:bg-[#1fb855] disabled:opacity-50"
+                disabled={creating || qrOpen}
+                className="mt-6 h-11 rounded-xl bg-[#25D366] font-semibold text-white hover:bg-[#1fb855]"
               >
                 {creating ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -148,7 +127,7 @@ export function WhatsAppProfilesDashboard() {
         open={qrOpen}
         session={activeSession}
         qrDataUrl={qrDataUrl}
-        qrLoading={qrLoading}
+        qrLoading={qrLoading || creating}
         connecting={connecting}
         connectionStatus={connectionStatus}
         error={qrError}
