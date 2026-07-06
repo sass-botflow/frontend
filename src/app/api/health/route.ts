@@ -2,6 +2,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { NextResponse } from "next/server";
 import { getBackendApiUrl, getConfiguredBackendApiUrl } from "@/lib/backend/config";
+import { collectSetupStatus } from "@/lib/setup/status";
 
 export const dynamic = "force-dynamic";
 
@@ -55,9 +56,12 @@ export async function GET() {
     configuredBackendUrl !== resolvedBackendUrl &&
     /botflow\.ink/i.test(configuredBackendUrl);
 
+  const setup = await collectSetupStatus();
+  const setupBlockers = setup.checks.filter((check) => check.status !== "ok");
+
   return NextResponse.json(
     {
-      status: "ok",
+      status: setup.ready ? "ok" : "degraded",
       service: "botflow-frontend",
       version,
       buildTime: getBuildTime(),
@@ -67,10 +71,26 @@ export async function GET() {
         resolvedUrl: resolvedBackendUrl,
         reachable: backendReachable,
         misconfiguredApiUrl,
+        buildCommit: backendHealth?.buildCommit ?? null,
+        whatsappModule: backendHealth?.modules
+          ? (backendHealth.modules as Record<string, unknown>).whatsapp ?? null
+          : null,
         evolution: backendHealth?.config
           ? (backendHealth.config as Record<string, unknown>).evolution ?? null
           : null,
+        evolutionReachable:
+          backendHealth?.evolutionConnectivity &&
+          typeof backendHealth.evolutionConnectivity === "object"
+            ? (backendHealth.evolutionConnectivity as Record<string, unknown>).reachable ??
+              null
+            : null,
       },
+      whatsappReady: setup.ready,
+      setupBlockers: setupBlockers.map((check) => ({
+        id: check.id,
+        status: check.status,
+        title: check.title,
+      })),
       deployHint: getDeployHint(version),
       timestamp: new Date().toISOString(),
     },

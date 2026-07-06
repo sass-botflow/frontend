@@ -9,6 +9,7 @@ import { AppBanner } from "@/components/ui/app-banner";
 import { Button } from "@/components/ui/button";
 import { WhatsAppProfileCard } from "@/components/whatsapp-profiles/whatsapp-profile-card";
 import { WhatsAppQrConnectModal } from "@/components/whatsapp-profiles/whatsapp-qr-connect-modal";
+import { WhatsAppSetupBanner } from "@/components/whatsapp-profiles/whatsapp-setup-banner";
 import { useWhatsAppSessions } from "@/hooks/use-whatsapp-sessions";
 
 export function WhatsAppProfilesDashboard() {
@@ -81,6 +82,8 @@ export function WhatsAppProfilesDashboard() {
               Add WhatsApp
             </Button>
           </div>
+
+          <WhatsAppSetupBanner />
 
           {successMessage ? (
             <AppBanner
