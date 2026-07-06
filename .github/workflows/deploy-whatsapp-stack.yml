@@ -1,0 +1,92 @@
+name: Deploy WhatsApp stack (3 webhooks)
+
+# Deploy Evolution + backend + frontend from GitHub Actions.
+# EasyPanel → each service → Deployments → copy Deployment Trigger URL.
+
+on:
+  workflow_dispatch:
+    inputs:
+      evolution_webhook:
+        description: "Evolution Compose webhook (http://187.124.12.89:3000/api/deploy/...)"
+        required: false
+        type: string
+      backend_webhook:
+        description: "Backend API webhook"
+        required: false
+        type: string
+      frontend_webhook:
+        description: "Frontend webhook"
+        required: false
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate Evolution env (for logs)
+        run: |
+          chmod +x scripts/generate-whatsapp-env.sh
+          ./scripts/generate-whatsapp-env.sh | tee env-output.txt
+          {
+            echo "## Generated env (save AUTHENTICATION_API_KEY before deploy)"
+            echo '```'
+            cat env-output.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Deploy Evolution Compose
+        if: inputs.evolution_webhook != ''
+        run: |
+          WEBHOOK="${{ inputs.evolution_webhook }}"
+          echo "$WEBHOOK" | grep -qE '^https?://.+/api/deploy/' || { echo "::error::Invalid evolution webhook"; exit 1; }
+          curl -fsS -X POST "$WEBHOOK"
+          echo "Evolution deploy triggered."
+
+      - name: Wait for Evolution
+        if: inputs.evolution_webhook != ''
+        run: sleep 90
+
+      - name: Deploy backend
+        if: inputs.backend_webhook != ''
+        run: |
+          WEBHOOK="${{ inputs.backend_webhook }}"
+          echo "$WEBHOOK" | grep -qE '^https?://.+/api/deploy/' || { echo "::error::Invalid backend webhook"; exit 1; }
+          curl -fsS -X POST "$WEBHOOK"
+          echo "Backend deploy triggered."
+
+      - name: Wait for backend
+        if: inputs.backend_webhook != ''
+        run: sleep 60
+
+      - name: Deploy frontend
+        if: inputs.frontend_webhook != ''
+        run: |
+          WEBHOOK="${{ inputs.frontend_webhook }}"
+          echo "$WEBHOOK" | grep -qE '^https?://.+/api/deploy/' || { echo "::error::Invalid frontend webhook"; exit 1; }
+          curl -fsS -X POST "$WEBHOOK"
+          echo "Frontend deploy triggered."
+
+      - name: Wait for frontend
+        if: inputs.frontend_webhook != ''
+        run: sleep 45
+
+      - name: Verify production
+        run: |
+          chmod +x scripts/verify-whatsapp-production.sh
+          ./scripts/verify-whatsapp-production.sh || true
+          curl -fsS https://www.botflow.ink/api/setup-status | tee setup-status.json
+          {
+            echo "## Setup status"
+            echo '```json'
+            cat setup-status.json
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: No webhooks provided
+        if: inputs.evolution_webhook == '' && inputs.backend_webhook == '' && inputs.frontend_webhook == ''
+        run: |
+          echo "::warning::No webhooks provided. Open EasyPanel → each service → Deployments → copy Trigger URL."
+          echo "Then re-run: Actions → Deploy WhatsApp stack → paste 3 URLs."
+          exit 1

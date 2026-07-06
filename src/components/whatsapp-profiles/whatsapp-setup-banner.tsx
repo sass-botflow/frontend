@@ -103,7 +103,22 @@ EVOLUTION_API_KEY=<same-as-evolution-AUTHENTICATION_API_KEY>`;
               Copy-paste env vars (admin)
             </summary>
             <div className="mt-3 space-y-3">
-              <p>1. Generate key: <code className="rounded bg-black/30 px-1">{evolutionKeyHint}</code></p>
+              <p>
+                Run locally:{" "}
+                <code className="rounded bg-black/30 px-1">./scripts/generate-whatsapp-env.sh</code>
+              </p>
+              <p>
+                One-click deploy (3 webhooks):{" "}
+                <a
+                  href="https://github.com/sass-botflow/frontend/actions/workflows/deploy-whatsapp-stack.yml"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  GitHub → Deploy WhatsApp stack
+                </a>
+              </p>
+              <p>Guide: DEPLOY-ALL-DABA.md</p>
               <div>
                 <p className="mb-1 font-medium">Evolution Compose env:</p>
                 <pre className="overflow-x-auto rounded bg-black/30 p-2 text-[11px] leading-relaxed">
