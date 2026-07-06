@@ -19,6 +19,8 @@ const STATUS_POLL_MS = 3000;
 
 interface UseWhatsAppSessionsOptions {
   onConnected?: (payload: { sessionId: string; phoneNumber?: string }) => void;
+  infrastructureReady?: boolean;
+  infrastructureLoading?: boolean;
 }
 
 export function useWhatsAppSessions(options?: UseWhatsAppSessionsOptions) {
@@ -26,6 +28,8 @@ export function useWhatsAppSessions(options?: UseWhatsAppSessionsOptions) {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
+  const infrastructureReady = options?.infrastructureReady ?? true;
+  const infrastructureLoading = options?.infrastructureLoading ?? false;
 
   const [qrOpen, setQrOpen] = useState(false);
   const [activeSession, setActiveSession] = useState<WhatsAppSession | null>(null);
@@ -50,6 +54,15 @@ export function useWhatsAppSessions(options?: UseWhatsAppSessionsOptions) {
   }, []);
 
   const load = useCallback(async () => {
+    if (infrastructureLoading) return;
+
+    if (!infrastructureReady) {
+      setSessions([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
+
     setError(null);
     try {
       const list = await fetchWhatsAppSessions();
@@ -60,7 +73,7 @@ export function useWhatsAppSessions(options?: UseWhatsAppSessionsOptions) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [infrastructureLoading, infrastructureReady]);
 
   useEffect(() => {
     void load();
@@ -159,6 +172,18 @@ export function useWhatsAppSessions(options?: UseWhatsAppSessionsOptions) {
 
   const createSession = useCallback(
     async (displayName?: string) => {
+      if (!infrastructureReady) {
+        const blocked = new ApiError({
+          category: "evolution_unreachable",
+          userTitle: "Server setup required",
+          userMessage:
+            "WhatsApp cannot be linked until Evolution API and the backend are deployed. See the setup steps above.",
+          httpStatus: 503,
+        });
+        setError(blocked);
+        throw blocked;
+      }
+
       setCreating(true);
       setError(null);
 
@@ -183,7 +208,7 @@ export function useWhatsAppSessions(options?: UseWhatsAppSessionsOptions) {
         setCreating(false);
       }
     },
-    [openQrConnect, sessions.length],
+    [infrastructureReady, openQrConnect, sessions.length],
   );
 
   useEffect(() => {
