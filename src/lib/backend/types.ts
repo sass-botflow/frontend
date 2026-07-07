@@ -64,9 +64,6 @@ export interface WhatsAppEmbeddedSignupConnectResponse {
 export interface WhatsAppEmbeddedSignupCompletePayload {
   code: string;
   state: string;
-  business_id: string;
-  waba_id: string;
-  phone_number_id: string;
 }
 
 export interface WhatsAppEmbeddedSignupCompleteResponse {
