@@ -4,13 +4,10 @@ import { motion } from "framer-motion";
 import { Loader2, MessageCircle, Plus, Radio } from "lucide-react";
 import { AppBanner } from "@/components/ui/app-banner";
 import { DisconnectWhatsAppChannelDialog } from "@/components/channels/disconnect-whatsapp-channel-dialog";
-import { WhatsAppBackendConnect } from "@/components/channels/whatsapp-backend-connect";
 import { WhatsAppChannelCard } from "@/components/channels/whatsapp-channel-card";
 import { WhatsAppConnectionProgress } from "@/components/channels/whatsapp-connection-progress";
-import {
-  ChannelsHeroSkeleton,
-  IntegrationCardSkeleton,
-} from "@/components/channels/channels-skeleton";
+import { WhatsAppOnboardingWizard } from "@/components/channels/whatsapp-onboarding-wizard";
+import { IntegrationCardSkeleton } from "@/components/channels/channels-skeleton";
 import { useChannels } from "@/hooks/use-channels";
 import { useWhatsAppEmbeddedSignup } from "@/hooks/use-whatsapp-embedded-signup";
 import { Button } from "@/components/ui/button";
@@ -92,8 +89,10 @@ export function WhatsAppChannelsSection() {
     void launchSignup();
   }
 
+  const showWizard = whatsappChannels.length === 0;
+
   return (
-    <section className="space-y-5">
+    <section className="space-y-6">
       <DisconnectWhatsAppChannelDialog
         channel={disconnectTarget}
         open={disconnectTarget !== null}
@@ -103,31 +102,6 @@ export function WhatsAppChannelsSection() {
         }}
         onConfirm={handleDisconnect}
       />
-
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h3 className="text-lg font-semibold tracking-tight">
-            WhatsApp Business
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            Connect via Meta Embedded Signup — one click, no manual tokens.
-          </p>
-        </div>
-        {whatsappChannels.length > 0 && (
-          <Button
-            onClick={handleAddAnother}
-            disabled={connecting}
-            className="h-10 rounded-xl bg-[#25D366] font-semibold text-white hover:bg-[#1fb855]"
-          >
-            {connecting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Plus className="h-4 w-4" />
-            )}
-            Add another number
-          </Button>
-        )}
-      </div>
 
       {(error || banner || connectError) && (
         <AppBanner
@@ -141,17 +115,10 @@ export function WhatsAppChannelsSection() {
         />
       )}
 
-      {connecting && whatsappChannels.length > 0 ? (
-        <WhatsAppConnectionProgress phase={connectPhase} />
-      ) : null}
-
       {loading ? (
-        <div className="space-y-4">
-          <ChannelsHeroSkeleton />
-          <IntegrationCardSkeleton />
-        </div>
-      ) : whatsappChannels.length === 0 ? (
-        <WhatsAppBackendConnect
+        <IntegrationCardSkeleton />
+      ) : showWizard ? (
+        <WhatsAppOnboardingWizard
           phase={connectPhase}
           loading={connecting}
           errorMessage={connectError}
@@ -159,40 +126,71 @@ export function WhatsAppChannelsSection() {
           onReset={resetConnect}
         />
       ) : (
-        <div className="space-y-4">
-          {whatsappChannels.map((channel, index) => (
-            <WhatsAppChannelCard
-              key={channel.id}
-              channel={channel}
-              index={index}
-              loading={actionChannelId === channel.id}
-              onDisconnect={setDisconnectTarget}
-              onRefresh={handleRefresh}
-              onReconnect={() => void launchSignup()}
-            />
-          ))}
-        </div>
-      )}
+        <div className="space-y-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-lg font-semibold tracking-tight">
+                Connected channels
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Manage your WhatsApp Business numbers and reconnect via Meta
+                when needed.
+              </p>
+            </div>
+            <Button
+              onClick={handleAddAnother}
+              disabled={connecting}
+              className="h-11 rounded-xl bg-[#25D366] font-semibold text-white hover:bg-[#1fb855]"
+            >
+              {connecting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Plus className="h-4 w-4" />
+              )}
+              Add another number
+            </Button>
+          </div>
 
-      {!loading && whatsappChannels.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="grid gap-3 sm:grid-cols-2"
-        >
-          <MetricTile
-            icon={Radio}
-            label="Connected numbers"
-            value={String(whatsappChannels.length)}
-            accent="text-emerald-400"
-          />
-          <MetricTile
-            icon={MessageCircle}
-            label="Inbound routing"
-            value="Active"
-            accent="text-primary"
-          />
-        </motion.div>
+          {connecting ? (
+            <div className="rounded-2xl border border-border/60 bg-card/60 p-5 backdrop-blur-xl">
+              <p className="mb-4 text-sm font-medium">Connecting another number</p>
+              <WhatsAppConnectionProgress phase={connectPhase} className="rounded-xl" />
+            </div>
+          ) : null}
+
+          <div className="space-y-4">
+            {whatsappChannels.map((channel, index) => (
+              <WhatsAppChannelCard
+                key={channel.id}
+                channel={channel}
+                index={index}
+                loading={actionChannelId === channel.id}
+                onDisconnect={setDisconnectTarget}
+                onRefresh={handleRefresh}
+                onReconnect={() => void launchSignup()}
+              />
+            ))}
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="grid gap-3 sm:grid-cols-2"
+          >
+            <MetricTile
+              icon={Radio}
+              label="Connected numbers"
+              value={String(whatsappChannels.length)}
+              accent="text-emerald-400"
+            />
+            <MetricTile
+              icon={MessageCircle}
+              label="Inbound routing"
+              value="Active"
+              accent="text-primary"
+            />
+          </motion.div>
+        </div>
       )}
     </section>
   );

@@ -51,56 +51,79 @@ export function WhatsAppConnectionProgress({
   return (
     <div
       className={cn(
-        "rounded-lg border border-[#25D366]/20 bg-[#25D366]/[0.04] p-4",
+        "border border-[#25D366]/15 bg-[#25D366]/[0.03] p-5",
         className,
       )}
     >
-      <ul className="space-y-2.5">
-        {PROGRESS_STEPS.map((step) => {
+      <ul className="space-y-0">
+        {PROGRESS_STEPS.map((step, index) => {
           const stepIndex = phaseIndex(step.phase);
           const isComplete =
             phase === "connected" ? true : stepIndex < currentIndex;
           const isActive = phase === step.phase;
           const isPending = !isComplete && !isActive;
+          const isLast = index === PROGRESS_STEPS.length - 1;
 
           return (
-            <li
-              key={step.phase}
-              className={cn(
-                "flex items-center gap-2.5 text-sm transition-colors",
-                isComplete && "text-emerald-400",
-                isActive && "font-medium text-foreground",
-                isPending && "text-muted-foreground/70",
-              )}
-            >
+            <li key={step.phase} className="relative flex gap-4 pb-6 last:pb-0">
+              {!isLast ? (
+                <span
+                  aria-hidden
+                  className={cn(
+                    "absolute left-[11px] top-6 h-[calc(100%-12px)] w-px",
+                    isComplete ? "bg-emerald-500/40" : "bg-border/60",
+                  )}
+                />
+              ) : null}
+
               <span
                 className={cn(
-                  "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border",
+                  "relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition-colors",
                   isComplete && "border-emerald-500/40 bg-emerald-500/15",
                   isActive && "border-[#25D366]/50 bg-[#25D366]/10",
-                  isPending && "border-border/60 bg-background/40",
+                  isPending && "border-border/60 bg-background/60",
                 )}
               >
                 {isComplete ? (
-                  <Check className="h-3 w-3" />
+                  <Check className="h-3.5 w-3.5 text-emerald-400" />
                 ) : isActive ? (
-                  <Loader2 className="h-3 w-3 animate-spin text-[#25D366]" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-[#25D366]" />
                 ) : (
                   <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
                 )}
               </span>
-              {step.label}
+
+              <div className="min-w-0 pt-0.5">
+                <p
+                  className={cn(
+                    "text-sm font-medium transition-colors",
+                    isComplete && "text-emerald-400",
+                    isActive && "text-foreground",
+                    isPending && "text-muted-foreground/70",
+                  )}
+                >
+                  {step.label}
+                </p>
+                {isActive ? (
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    This usually takes a few seconds
+                  </p>
+                ) : null}
+              </div>
             </li>
           );
         })}
-        {phase === "connected" && (
-          <li className="flex items-center gap-2.5 text-sm font-medium text-emerald-400">
-            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-emerald-500/40 bg-emerald-500/15">
-              <Check className="h-3 w-3" />
+
+        {phase === "connected" ? (
+          <li className="relative flex gap-4">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-emerald-500/40 bg-emerald-500/15">
+              <Check className="h-3.5 w-3.5 text-emerald-400" />
             </span>
-            {WHATSAPP_CONNECT_PHASE_LABELS.connected}
+            <p className="pt-0.5 text-sm font-medium text-emerald-400">
+              {WHATSAPP_CONNECT_PHASE_LABELS.connected}
+            </p>
           </li>
-        )}
+        ) : null}
       </ul>
     </div>
   );
