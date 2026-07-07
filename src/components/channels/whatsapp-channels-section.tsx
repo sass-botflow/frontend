@@ -168,6 +168,7 @@ export function WhatsAppChannelsSection() {
               loading={actionChannelId === channel.id}
               onDisconnect={setDisconnectTarget}
               onRefresh={handleRefresh}
+              onReconnect={() => void launchSignup()}
             />
           ))}
         </div>

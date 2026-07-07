@@ -6,6 +6,11 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: "/dashboard/whatsapp-profiles",
+        destination: "/dashboard/channels",
+        permanent: true,
+      },
+      {
         source: "/:path*",
         has: [{ type: "host", value: "botflow.ink" }],
         destination: "https://www.botflow.ink/:path*",

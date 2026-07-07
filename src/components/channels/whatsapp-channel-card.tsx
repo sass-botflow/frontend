@@ -22,6 +22,7 @@ interface WhatsAppChannelCardProps {
   loading: boolean;
   onDisconnect: (channel: BackendChannel) => void;
   onRefresh: (channelId: string) => Promise<void>;
+  onReconnect: () => void;
 }
 
 export function WhatsAppChannelCard({
@@ -30,6 +31,7 @@ export function WhatsAppChannelCard({
   loading,
   onDisconnect,
   onRefresh,
+  onReconnect,
 }: WhatsAppChannelCardProps) {
   const businessName = channel.businessName ?? "WhatsApp Business";
 
@@ -65,6 +67,15 @@ export function WhatsAppChannelCard({
               variant="outline"
               disabled={loading}
               className="h-11 rounded-xl border-border/70 bg-background/40 font-semibold backdrop-blur"
+              onClick={onReconnect}
+            >
+              Reconnect
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              disabled={loading}
+              className="h-11 rounded-xl border-border/70 bg-background/40 font-semibold backdrop-blur"
               onClick={() => onRefresh(channel.id)}
             >
               {loading ? (
@@ -72,7 +83,7 @@ export function WhatsAppChannelCard({
               ) : (
                 <>
                   <RefreshCw className="h-4 w-4" />
-                  Refresh Token
+                  Sync
                 </>
               )}
             </Button>
@@ -114,8 +125,8 @@ export function WhatsAppChannelCard({
           />
           <DetailTile
             icon={CalendarClock}
-            label="Connected"
-            value={formatRelativeTime(channel.connectedAt ?? channel.createdAt)}
+            label="Last Sync"
+            value={formatRelativeTime(channel.updatedAt)}
           />
         </div>
       </div>
