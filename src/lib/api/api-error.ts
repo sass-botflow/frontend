@@ -1,7 +1,6 @@
 export type ApiFailureCategory =
   | "gateway_error"
   | "backend_unreachable"
-  | "evolution_unreachable"
   | "cloudflare_gateway"
   | "network_timeout"
   | "unknown";
@@ -30,7 +29,6 @@ export class ApiError extends Error {
 const CATEGORY_TITLES: Record<ApiFailureCategory, string> = {
   gateway_error: "Gateway Error",
   backend_unreachable: "Backend Unreachable",
-  evolution_unreachable: "Evolution API Unreachable",
   cloudflare_gateway: "Gateway Error",
   network_timeout: "Network Timeout",
   unknown: "Request Failed",
@@ -52,15 +50,6 @@ function isCloudflareHtml(text: string): boolean {
     lower.includes("attention required") ||
     lower.includes("error code 502") ||
     lower.includes("bad gateway")
-  );
-}
-
-function mentionsEvolution(text: string): boolean {
-  const lower = text.toLowerCase();
-  return (
-    lower.includes("evolution") ||
-    lower.includes("evolutionstatus") ||
-    lower.includes("evolutionresponse")
   );
 }
 
@@ -97,7 +86,6 @@ export function classifyApiFailure(input: {
   } = input;
 
   const html = Boolean(text && isHtmlResponse(contentType, text));
-  const combined = `${message} ${backendUrl ?? ""}`.trim();
 
   let category: ApiFailureCategory = "unknown";
 
@@ -105,8 +93,6 @@ export function classifyApiFailure(input: {
     category = "network_timeout";
   } else if (html && isCloudflareHtml(text)) {
     category = "cloudflare_gateway";
-  } else if (mentionsEvolution(combined) || mentionsEvolution(text)) {
-    category = "evolution_unreachable";
   } else if (html || status === 502 || status === 503) {
     category = html ? "gateway_error" : status === 503 ? "backend_unreachable" : "gateway_error";
   } else if (status >= 500) {
@@ -138,8 +124,6 @@ function buildUserMessage(category: ApiFailureCategory, status: number): string 
       return "A gateway error occurred while reaching the server. Please try again in a moment.";
     case "backend_unreachable":
       return "We could not reach the BotFlow backend. Check that api.botflow.ink is running and try again.";
-    case "evolution_unreachable":
-      return "The WhatsApp Evolution API is unreachable or returned an error. Verify Evolution is deployed and configured on the backend.";
     case "network_timeout":
       return "The request timed out before the server responded. Check your connection and try again.";
     default:

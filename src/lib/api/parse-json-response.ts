@@ -14,8 +14,6 @@ interface ApiErrorBody {
   backendUrl?: string;
   detail?: string;
   errorKind?: string;
-  evolutionStatus?: number;
-  evolutionResponse?: string;
 }
 
 function buildMessageFromBody(body: ApiErrorBody, status: number): string {
@@ -23,13 +21,6 @@ function buildMessageFromBody(body: ApiErrorBody, status: number): string {
 
   if (body.error) parts.push(body.error);
   if (body.message && body.message !== body.error) parts.push(body.message);
-
-  if (body.evolutionStatus !== undefined) {
-    parts.push(`evolutionStatus ${body.evolutionStatus}`);
-  }
-
-  const evolutionHint = sanitizeErrorText(body.evolutionResponse ?? "");
-  if (evolutionHint) parts.push(evolutionHint);
 
   const detail = sanitizeErrorText(body.detail ?? "");
   if (detail) parts.push(detail);
