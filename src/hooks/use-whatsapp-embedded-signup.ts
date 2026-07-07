@@ -126,14 +126,11 @@ export function useWhatsAppEmbeddedSignup(options?: {
     codeRef.current = null;
   }, [clearTimers]);
 
-  const finalizeSignup = useCallback(
-    async (options?: { discoverOnly?: boolean }) => {
+  const finalizeSignup = useCallback(async () => {
       const code = codeRef.current;
       const connect = connectRef.current;
-      const session = sessionRef.current;
 
       if (!code || !connect) return;
-      if (!options?.discoverOnly && !session) return;
       if (finalizeStartedRef.current) return;
 
       finalizeStartedRef.current = true;
@@ -142,21 +139,13 @@ export function useWhatsAppEmbeddedSignup(options?: {
       setErrorMessage(null);
 
       try {
-        const payload: Record<string, string> = {
-          code,
-          state: connect.state,
-        };
-
-        if (session) {
-          payload.business_id = session.businessId;
-          payload.waba_id = session.wabaId;
-          payload.phone_number_id = session.phoneNumberId;
-        }
-
         const response = await fetch("/api/channels/whatsapp/complete", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({
+            code,
+            state: connect.state,
+          }),
         });
 
         const body = await parseJsonResponse<
@@ -182,31 +171,26 @@ export function useWhatsAppEmbeddedSignup(options?: {
         finalizeStartedRef.current = false;
         fail(err instanceof Error ? err.message : "WhatsApp connection failed.");
       }
-    },
-    [clearTimers, fail],
-  );
+  }, [clearTimers, fail]);
 
-  const scheduleSessionFallback = useCallback(() => {
+  const scheduleCodeFallback = useCallback(() => {
     if (fallbackTimerRef.current) return;
 
     fallbackTimerRef.current = setTimeout(() => {
       fallbackTimerRef.current = null;
-      if (codeRef.current && connectRef.current && !sessionRef.current) {
-        void finalizeSignup({ discoverOnly: true });
+      if (codeRef.current && connectRef.current) {
+        void finalizeSignup();
       }
     }, SESSION_FALLBACK_MS);
   }, [finalizeSignup]);
 
   const tryFinalize = useCallback(() => {
-    if (sessionRef.current && codeRef.current) {
-      void finalizeSignup();
+    if (!codeRef.current) {
+      scheduleCodeFallback();
       return;
     }
-
-    if (codeRef.current && !sessionRef.current) {
-      scheduleSessionFallback();
-    }
-  }, [finalizeSignup, scheduleSessionFallback]);
+    void finalizeSignup();
+  }, [finalizeSignup, scheduleCodeFallback]);
 
   const handleEmbeddedSignupMessage = useCallback(
     (event: MessageEvent) => {
@@ -252,19 +236,15 @@ export function useWhatsAppEmbeddedSignup(options?: {
         }
 
         const session = readSessionFromMessage(data);
-        if (!session) {
-          if (codeRef.current) {
-            scheduleSessionFallback();
-          }
-          return;
+        if (session) {
+          sessionRef.current = session;
+          setPhase("retrieving_phone");
         }
 
-        sessionRef.current = session;
-        setPhase("retrieving_phone");
         tryFinalize();
       }
     },
-    [fail, scheduleSessionFallback, tryFinalize],
+    [fail, tryFinalize],
   );
 
   useEffect(() => {
