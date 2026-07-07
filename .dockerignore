@@ -2,5 +2,11 @@ node_modules
 .next
 .env
 .env*.local
-README.md
-ARCHITECTURE.md
+.git
+.github
+backend-patches
+*.md
+!public/**
+coverage
+.turbo
+*.log
