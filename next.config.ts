@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
+  // CI runs lint/typecheck; skip in EasyPanel Docker builds to cut ~1–2 min off build time.
+  eslint: { ignoreDuringBuilds: process.env.DOCKER_BUILD === "1" },
+  typescript: { ignoreBuildErrors: process.env.DOCKER_BUILD === "1" },
   async redirects() {
     return [
       {
