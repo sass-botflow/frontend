@@ -23,18 +23,50 @@ interface EmbeddedSignupMessageData {
   event?: string;
   data?: {
     waba_id?: string;
+    wabaId?: string;
     phone_number_id?: string;
+    phoneNumberId?: string;
     business_id?: string;
+    businessId?: string;
     error_message?: string;
+    errorMessage?: string;
     current_step?: string;
   };
 }
+
+const FINISH_EVENTS = new Set([
+  "FINISH",
+  "FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING",
+  "FINISH_ONLY_WABA",
+  "FINISH_OBO_MIGRATION",
+  "FINISH_GRANT_ONLY_API_ACCESS",
+]);
+
+const SESSION_FALLBACK_MS = 3_000;
+const FLOW_TIMEOUT_MS = 120_000;
 
 function mapSignupStepToPhase(step?: string): WhatsAppConnectPhase {
   if (!step) return "retrieving_business";
   const normalized = step.toUpperCase();
   if (normalized.includes("PHONE")) return "retrieving_phone";
   return "retrieving_business";
+}
+
+function readSessionFromMessage(
+  data: EmbeddedSignupMessageData,
+): EmbeddedSignupSession | null {
+  const payload = data.data;
+  if (!payload) return null;
+
+  const wabaId = payload.waba_id ?? payload.wabaId;
+  const phoneNumberId = payload.phone_number_id ?? payload.phoneNumberId;
+  const businessId = payload.business_id ?? payload.businessId ?? wabaId;
+
+  if (!wabaId || !phoneNumberId || !businessId) {
+    return null;
+  }
+
+  return { wabaId, phoneNumberId, businessId };
 }
 
 export function useWhatsAppEmbeddedSignup(options?: {
@@ -47,6 +79,9 @@ export function useWhatsAppEmbeddedSignup(options?: {
   const connectRef = useRef<WhatsAppEmbeddedSignupConnectResponse | null>(null);
   const sessionRef = useRef<EmbeddedSignupSession | null>(null);
   const codeRef = useRef<string | null>(null);
+  const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const flowTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const finalizeStartedRef = useRef(false);
   const listenerAttachedRef = useRef(false);
   const onSuccessRef = useRef(options?.onSuccess);
   const onErrorRef = useRef(options?.onError);
@@ -59,71 +94,119 @@ export function useWhatsAppEmbeddedSignup(options?: {
     onErrorRef.current = options?.onError;
   }, [options?.onSuccess, options?.onError]);
 
-  const fail = useCallback((message: string) => {
-    setPhase("error");
-    setErrorMessage(message);
-    onErrorRef.current?.(message);
+  const clearTimers = useCallback(() => {
+    if (fallbackTimerRef.current) {
+      clearTimeout(fallbackTimerRef.current);
+      fallbackTimerRef.current = null;
+    }
+    if (flowTimeoutRef.current) {
+      clearTimeout(flowTimeoutRef.current);
+      flowTimeoutRef.current = null;
+    }
   }, []);
 
+  const fail = useCallback(
+    (message: string) => {
+      clearTimers();
+      finalizeStartedRef.current = false;
+      setPhase("error");
+      setErrorMessage(message);
+      onErrorRef.current?.(message);
+    },
+    [clearTimers],
+  );
+
   const reset = useCallback(() => {
+    clearTimers();
+    finalizeStartedRef.current = false;
     setPhase("idle");
     setErrorMessage(null);
     connectRef.current = null;
     sessionRef.current = null;
     codeRef.current = null;
-  }, []);
+  }, [clearTimers]);
 
-  const finalizeSignup = useCallback(async () => {
-    const session = sessionRef.current;
-    const code = codeRef.current;
-    const connect = connectRef.current;
+  const finalizeSignup = useCallback(
+    async (options?: { discoverOnly?: boolean }) => {
+      const code = codeRef.current;
+      const connect = connectRef.current;
+      const session = sessionRef.current;
 
-    if (!session || !code || !connect) return;
+      if (!code || !connect) return;
+      if (!options?.discoverOnly && !session) return;
+      if (finalizeStartedRef.current) return;
 
-    setPhase("saving");
-    setErrorMessage(null);
+      finalizeStartedRef.current = true;
+      clearTimers();
+      setPhase("saving");
+      setErrorMessage(null);
 
-    try {
-      const response = await fetch("/api/channels/whatsapp/complete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      try {
+        const payload: Record<string, string> = {
           code,
           state: connect.state,
-          business_id: session.businessId,
-          waba_id: session.wabaId,
-          phone_number_id: session.phoneNumberId,
-        }),
-      });
+        };
 
-      const body = await parseJsonResponse<
-        WhatsAppEmbeddedSignupCompleteResponse & {
-          error?: string;
-          message?: string;
+        if (session) {
+          payload.business_id = session.businessId;
+          payload.waba_id = session.wabaId;
+          payload.phone_number_id = session.phoneNumberId;
         }
-      >(response);
 
-      if (!response.ok) {
-        throw new Error(
-          body.error ?? body.message ?? "WhatsApp connection failed.",
-        );
+        const response = await fetch("/api/channels/whatsapp/complete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const body = await parseJsonResponse<
+          WhatsAppEmbeddedSignupCompleteResponse & {
+            error?: string;
+            message?: string;
+          }
+        >(response);
+
+        if (!response.ok) {
+          throw new Error(
+            body.error ?? body.message ?? "WhatsApp connection failed.",
+          );
+        }
+
+        sessionRef.current = null;
+        codeRef.current = null;
+        connectRef.current = null;
+        finalizeStartedRef.current = false;
+        setPhase("connected");
+        await onSuccessRef.current?.();
+      } catch (err) {
+        finalizeStartedRef.current = false;
+        fail(err instanceof Error ? err.message : "WhatsApp connection failed.");
       }
+    },
+    [clearTimers, fail],
+  );
 
-      sessionRef.current = null;
-      codeRef.current = null;
-      connectRef.current = null;
-      setPhase("connected");
-      await onSuccessRef.current?.();
-    } catch (err) {
-      fail(err instanceof Error ? err.message : "WhatsApp connection failed.");
-    }
-  }, [fail]);
+  const scheduleSessionFallback = useCallback(() => {
+    if (fallbackTimerRef.current) return;
+
+    fallbackTimerRef.current = setTimeout(() => {
+      fallbackTimerRef.current = null;
+      if (codeRef.current && connectRef.current && !sessionRef.current) {
+        void finalizeSignup({ discoverOnly: true });
+      }
+    }, SESSION_FALLBACK_MS);
+  }, [finalizeSignup]);
 
   const tryFinalize = useCallback(() => {
     if (sessionRef.current && codeRef.current) {
       void finalizeSignup();
+      return;
     }
-  }, [finalizeSignup]);
+
+    if (codeRef.current && !sessionRef.current) {
+      scheduleSessionFallback();
+    }
+  }, [finalizeSignup, scheduleSessionFallback]);
 
   const handleEmbeddedSignupMessage = useCallback(
     (event: MessageEvent) => {
@@ -141,7 +224,17 @@ export function useWhatsAppEmbeddedSignup(options?: {
       if (data.event === "CANCEL") {
         fail(
           data.data?.error_message ??
+            data.data?.errorMessage ??
             "WhatsApp setup was cancelled before it could finish.",
+        );
+        return;
+      }
+
+      if (data.event === "ERROR") {
+        fail(
+          data.data?.error_message ??
+            data.data?.errorMessage ??
+            "Meta reported an error during WhatsApp setup.",
         );
         return;
       }
@@ -150,30 +243,28 @@ export function useWhatsAppEmbeddedSignup(options?: {
         setPhase(mapSignupStepToPhase(data.data.current_step));
       }
 
-      if (
-        data.event === "FINISH" ||
-        data.event === "FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING" ||
-        data.event === "FINISH_ONLY_WABA"
-      ) {
-        const wabaId = data.data?.waba_id;
-        const phoneNumberId = data.data?.phone_number_id;
-        const businessId = data.data?.business_id;
+      if (data.event && FINISH_EVENTS.has(data.event)) {
+        if (data.event === "FINISH_ONLY_WABA") {
+          fail(
+            "WhatsApp account created, but no phone number was added. Add a phone number in Meta and try again.",
+          );
+          return;
+        }
 
-        if (!wabaId || !phoneNumberId || !businessId) {
-          if (data.event === "FINISH_ONLY_WABA") {
-            fail(
-              "WhatsApp account created, but no phone number was added. Complete phone setup to continue.",
-            );
+        const session = readSessionFromMessage(data);
+        if (!session) {
+          if (codeRef.current) {
+            scheduleSessionFallback();
           }
           return;
         }
 
-        sessionRef.current = { wabaId, phoneNumberId, businessId };
+        sessionRef.current = session;
         setPhase("retrieving_phone");
         tryFinalize();
       }
     },
-    [fail, tryFinalize],
+    [fail, scheduleSessionFallback, tryFinalize],
   );
 
   useEffect(() => {
@@ -186,13 +277,25 @@ export function useWhatsAppEmbeddedSignup(options?: {
     };
   }, [handleEmbeddedSignupMessage]);
 
+  useEffect(() => {
+    return () => clearTimers();
+  }, [clearTimers]);
+
   const launchSignup = useCallback(async () => {
     if (loading) return;
 
+    clearTimers();
+    finalizeStartedRef.current = false;
     setPhase("connecting");
     setErrorMessage(null);
     sessionRef.current = null;
     codeRef.current = null;
+
+    flowTimeoutRef.current = setTimeout(() => {
+      fail(
+        "WhatsApp setup timed out. Close the Meta popup, wait a few seconds, and try Reconnect again.",
+      );
+    }, FLOW_TIMEOUT_MS);
 
     try {
       const response = await fetch("/api/channels/whatsapp/connect", {
@@ -233,6 +336,11 @@ export function useWhatsAppEmbeddedSignup(options?: {
             return;
           }
 
+          if (fbResponse.status === "not_authorized") {
+            fail("Meta authorization was not granted. Please approve all permissions.");
+            return;
+          }
+
           if (!sessionRef.current && !codeRef.current) {
             fail("Meta authorization was cancelled.");
           }
@@ -245,14 +353,14 @@ export function useWhatsAppEmbeddedSignup(options?: {
           extras: {
             setup: {},
             sessionInfoVersion: "3",
-            featureType: "",
+            featureType: "whatsapp_embedded_signup",
           },
         },
       );
     } catch (err) {
       fail(err instanceof Error ? err.message : "Failed to start WhatsApp signup.");
     }
-  }, [fail, tryFinalize]);
+  }, [clearTimers, fail, loading, tryFinalize]);
 
   return {
     launchSignup,

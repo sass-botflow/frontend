@@ -74,5 +74,10 @@ export async function initFacebookSdk(appId: string): Promise<void> {
 }
 
 export function isFacebookOrigin(origin: string): boolean {
-  return origin.endsWith("facebook.com");
+  try {
+    const hostname = new URL(origin).hostname;
+    return hostname === "facebook.com" || hostname.endsWith(".facebook.com");
+  } catch {
+    return origin.endsWith("facebook.com");
+  }
 }
