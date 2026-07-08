@@ -3,9 +3,9 @@ import { ChannelsDashboard } from "@/components/channels/channels-dashboard";
 import { ChannelsPageSkeleton } from "@/components/channels/channels-skeleton";
 
 export const metadata = {
-  title: "Connect WhatsApp",
+  title: "WhatsApp",
   description:
-    "Connect WhatsApp Business via Meta Embedded Signup — create or link your account in one guided flow.",
+    "Connect WhatsApp Business via QR code — scan with your phone to link your number.",
 };
 
 export default function ChannelsPage() {
