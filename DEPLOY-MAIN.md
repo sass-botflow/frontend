@@ -1,7 +1,7 @@
 # Deploy `main` — EasyPanel (Darija)
 
 > **GHCR image PRIVATE** → `Docker Image` kaytl3 **Cancel** wla `pull access denied`.  
-> **Hal:** Source = **GitHub** + branch `main` + `Dockerfile`.
+> **Hal:** Source = **GitHub** + branch `main` + **`Dockerfile.easypanel`**.
 
 ---
 
@@ -11,7 +11,7 @@
 2. Type = **GitHub**
 3. Repo = `sass-botflow/frontend`
 4. Branch = **`main`**
-5. Build = **Dockerfile** → path `Dockerfile`
+5. Build = **Dockerfile** → path **`Dockerfile.easypanel`**
 6. Port = **3000**
 7. Domains = `www.botflow.ink` + `botflow.ink`
 8. **Save**
