@@ -1,5 +1,5 @@
 const INTEGRATION = "WHATSAPP-BAILEYS";
-const REQUEST_TIMEOUT_MS = 20_000;
+const REQUEST_TIMEOUT_MS = 8_000;
 
 export interface EvolutionConfig {
   baseUrl: string;
@@ -7,11 +7,15 @@ export interface EvolutionConfig {
 }
 
 function getEvolutionBaseUrlCandidates(): string[] {
+  const envUrl =
+    process.env.EVOLUTION_API_URL?.trim() ||
+    process.env.EVOLUTION_API_BASE_URL?.trim();
+
   const candidates = [
-    process.env.EVOLUTION_API_URL?.trim(),
-    process.env.EVOLUTION_API_BASE_URL?.trim(),
-    "http://sass-botflow_evolution-api:8080",
     "https://evolution.api.botflow.ink",
+    envUrl,
+    "http://sass-botflow_evolution-api:8080",
+    "http://sass-botflow_botflow-evolution:8080",
   ].filter((value): value is string => Boolean(value));
 
   return [...new Set(candidates.map((value) => value.replace(/\/$/, "")))];
@@ -56,7 +60,9 @@ export function extractQrBase64(payload: {
   return raw.trim();
 }
 
-export function mapConnectionState(state?: string): "CONNECTED" | "DISCONNECTED" | "WAITING_QR" | "CONNECTING" {
+export function mapConnectionState(
+  state?: string,
+): "CONNECTED" | "DISCONNECTED" | "WAITING_QR" | "CONNECTING" {
   const normalized = (state ?? "").toLowerCase();
 
   if (normalized === "open") return "CONNECTED";
@@ -71,6 +77,17 @@ export function mapConnectionState(state?: string): "CONNECTED" | "DISCONNECTED"
 export function extractPhone(owner?: string | null): string | null {
   if (!owner?.trim()) return null;
   return owner.replace(/@.*/, "").replace(/\D/g, "") || null;
+}
+
+function isHtmlPayload(text: string): boolean {
+  const trimmed = text.trimStart().toLowerCase();
+  return trimmed.startsWith("<!") || trimmed.includes("<html");
+}
+
+function isRetryableNetworkError(message: string): boolean {
+  return /fetch failed|econnrefused|enotfound|timeout|abort|cloudflare|bad gateway|gateway/i.test(
+    message,
+  );
 }
 
 async function evolutionRequest<T>(
@@ -101,6 +118,11 @@ async function evolutionRequest<T>(
       });
 
       const text = await response.text();
+
+      if (isHtmlPayload(text)) {
+        throw new Error(`Evolution API returned HTML from ${baseUrl}`);
+      }
+
       let data: unknown = null;
 
       if (text) {
@@ -118,7 +140,19 @@ async function evolutionRequest<T>(
           "message" in data &&
           typeof (data as { message: unknown }).message === "string"
             ? (data as { message: string }).message
-            : `Evolution API request failed (${response.status})`;
+            : data &&
+                typeof data === "object" &&
+                "error" in data &&
+                typeof (data as { error: unknown }).error === "string"
+              ? (data as { error: string }).error
+              : `Evolution API request failed (${response.status})`;
+
+        if (response.status === 401 || response.status === 403) {
+          throw new Error(
+            "Evolution API key is invalid. Set EVOLUTION_API_KEY to match AUTHENTICATION_API_KEY on evolution-api.",
+          );
+        }
+
         throw new Error(message);
       }
 
@@ -126,7 +160,7 @@ async function evolutionRequest<T>(
     } catch (error) {
       lastError = error;
       const message = error instanceof Error ? error.message : String(error);
-      if (/fetch failed|econnrefused|enotfound|timeout|abort/i.test(message)) {
+      if (isRetryableNetworkError(message)) {
         continue;
       }
       throw error;
@@ -140,28 +174,65 @@ async function evolutionRequest<T>(
   );
 }
 
+export async function testEvolutionConnectivity(): Promise<{
+  ok: boolean;
+  baseUrl: string | null;
+  message: string;
+}> {
+  const apiKey = process.env.EVOLUTION_API_KEY?.trim();
+  const baseUrls = getEvolutionBaseUrlCandidates();
+
+  if (!apiKey) {
+    return {
+      ok: false,
+      baseUrl: null,
+      message: "EVOLUTION_API_KEY is not set on the frontend server.",
+    };
+  }
+
+  for (const baseUrl of baseUrls) {
+    try {
+      const response = await fetch(baseUrl, {
+        headers: { apikey: apiKey },
+        signal: AbortSignal.timeout(5_000),
+        cache: "no-store",
+      });
+      const text = await response.text();
+
+      if (response.ok && !isHtmlPayload(text)) {
+        return { ok: true, baseUrl, message: "Evolution API reachable" };
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  return {
+    ok: false,
+    baseUrl: null,
+    message: "Could not reach Evolution API from the frontend container.",
+  };
+}
+
 export async function createEvolutionInstance(instanceName: string): Promise<void> {
-  const webhookUrl =
-    process.env.EVOLUTION_WEBHOOK_URL?.trim() ||
-    `${process.env.BACKEND_API_URL?.replace(/\/$/, "") || "https://api.botflow.ink"}/webhooks/evolution`;
+  const payload: Record<string, unknown> = {
+    instanceName,
+    integration: INTEGRATION,
+    qrcode: true,
+  };
+
+  const webhookUrl = process.env.EVOLUTION_WEBHOOK_URL?.trim();
+  if (webhookUrl) {
+    payload.webhook = {
+      url: webhookUrl,
+      byEvents: true,
+      base64: true,
+      events: ["QRCODE_UPDATED", "CONNECTION_UPDATE", "MESSAGES_UPSERT", "SEND_MESSAGE"],
+    };
+  }
 
   try {
-    await evolutionRequest("POST", "/instance/create", {
-      instanceName,
-      integration: INTEGRATION,
-      qrcode: true,
-      webhook: {
-        url: webhookUrl,
-        byEvents: true,
-        base64: true,
-        events: [
-          "QRCODE_UPDATED",
-          "CONNECTION_UPDATE",
-          "MESSAGES_UPSERT",
-          "SEND_MESSAGE",
-        ],
-      },
-    });
+    await evolutionRequest("POST", "/instance/create", payload);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (!/already|exist/i.test(message)) {

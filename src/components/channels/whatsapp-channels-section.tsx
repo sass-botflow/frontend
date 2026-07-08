@@ -38,12 +38,14 @@ export function WhatsAppChannelsSection() {
 
   const startConnect = useCallback(async () => {
     setBanner(null);
+    setQrOpen(true);
+    setActiveInstanceId(null);
 
     try {
       const result = await connectMutation.mutateAsync();
       setActiveInstanceId(result.instanceId);
-      setQrOpen(true);
     } catch (error) {
+      setQrOpen(false);
       setBanner({
         message:
           error instanceof Error
@@ -104,6 +106,7 @@ export function WhatsAppChannelsSection() {
       <WhatsAppQrModal
         open={qrOpen}
         instanceId={activeInstanceId}
+        connecting={connectMutation.isPending && !activeInstanceId}
         onOpenChange={(open) => {
           setQrOpen(open);
           if (!open) setActiveInstanceId(null);

@@ -33,6 +33,7 @@ const SCAN_STEPS = [
 interface WhatsAppQrModalProps {
   open: boolean;
   instanceId: string | null;
+  connecting?: boolean;
   onOpenChange: (open: boolean) => void;
   onConnected: (channel: WhatsAppChannel) => void;
 }
@@ -40,6 +41,7 @@ interface WhatsAppQrModalProps {
 export function WhatsAppQrModal({
   open,
   instanceId,
+  connecting = false,
   onOpenChange,
   onConnected,
 }: WhatsAppQrModalProps) {
@@ -52,6 +54,8 @@ export function WhatsAppQrModal({
   });
 
   const showSuccess = session.isConnected;
+  const showQrLoading =
+    connecting || session.isLoading || (!session.qrImageSrc && !session.errorCode && !showSuccess);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -107,14 +111,22 @@ export function WhatsAppQrModal({
                         alt="WhatsApp QR code"
                         className="h-64 w-64 rounded-2xl object-contain sm:h-72 sm:w-72"
                       />
-                    ) : (
+                    ) : showQrLoading ? (
                       <div className="flex h-64 w-64 items-center justify-center sm:h-72 sm:w-72">
                         <div className="space-y-4 text-center">
                           <Loader2 className="mx-auto h-10 w-10 animate-spin text-[#25D366]" />
                           <p className="text-sm text-muted-foreground">
-                            Generating QR code...
+                            {connecting
+                              ? "Starting WhatsApp session..."
+                              : "Generating QR code..."}
                           </p>
                         </div>
+                      </div>
+                    ) : (
+                      <div className="flex h-64 w-64 items-center justify-center sm:h-72 sm:w-72">
+                        <p className="px-4 text-center text-sm text-muted-foreground">
+                          QR code unavailable. Close and try again.
+                        </p>
                       </div>
                     )}
 

@@ -30,7 +30,15 @@ async function requestJson<T>(
 
     if (response.status === 404 && path.includes("/whatsapp/connect")) {
       throw new Error(
-        "WhatsApp connect API is not deployed yet. Redeploy the backend from main with EVOLUTION_API_URL and EVOLUTION_API_KEY.",
+        "WhatsApp connect is not available. Check Evolution API configuration on the server.",
+      );
+    }
+
+    if (response.status >= 502) {
+      throw new Error(
+        message.includes("Evolution")
+          ? message
+          : "WhatsApp service is temporarily unavailable. Please try again.",
       );
     }
 

@@ -28,7 +28,7 @@ NEXT_PUBLIC_API_URL=https://api.botflow.ink
 PORT=3000
 
 # WhatsApp QR (server-side only — MOHIM bach ytl3 QR)
-EVOLUTION_API_URL=http://sass-botflow_evolution-api:8080
+EVOLUTION_API_URL=https://evolution.api.botflow.ink
 EVOLUTION_API_KEY=<nfs Evolution AUTHENTICATION_API_KEY>
 
 SUPPRIMER ila kaynin:
