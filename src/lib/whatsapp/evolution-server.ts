@@ -6,20 +6,33 @@ export interface EvolutionConfig {
   apiKey: string;
 }
 
-export function getEvolutionConfig(): EvolutionConfig | null {
-  const baseUrl =
-    process.env.EVOLUTION_API_URL?.trim() ||
-    process.env.EVOLUTION_API_BASE_URL?.trim();
-  const apiKey = process.env.EVOLUTION_API_KEY?.trim();
+function getEvolutionBaseUrlCandidates(): string[] {
+  const candidates = [
+    process.env.EVOLUTION_API_URL?.trim(),
+    process.env.EVOLUTION_API_BASE_URL?.trim(),
+    "http://sass-botflow_evolution-api:8080",
+    "https://evolution.api.botflow.ink",
+  ].filter((value): value is string => Boolean(value));
 
-  if (!baseUrl || !apiKey) {
+  return [...new Set(candidates.map((value) => value.replace(/\/$/, "")))];
+}
+
+export function getEvolutionConfig(): EvolutionConfig | null {
+  const apiKey = process.env.EVOLUTION_API_KEY?.trim();
+  const baseUrls = getEvolutionBaseUrlCandidates();
+
+  if (!apiKey || baseUrls.length === 0) {
     return null;
   }
 
   return {
-    baseUrl: baseUrl.replace(/\/$/, ""),
+    baseUrl: baseUrls[0]!,
     apiKey,
   };
+}
+
+export function getEvolutionBaseUrls(): string[] {
+  return getEvolutionBaseUrlCandidates();
 }
 
 export function isEvolutionConfigured(): boolean {
@@ -65,45 +78,66 @@ async function evolutionRequest<T>(
   path: string,
   body?: unknown,
 ): Promise<T> {
-  const config = getEvolutionConfig();
-  if (!config) {
+  const apiKey = process.env.EVOLUTION_API_KEY?.trim();
+  const baseUrls = getEvolutionBaseUrlCandidates();
+
+  if (!apiKey || baseUrls.length === 0) {
     throw new Error("Evolution API is not configured on the frontend server.");
   }
 
-  const response = await fetch(`${config.baseUrl}${path}`, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      apikey: config.apiKey,
-    },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-    cache: "no-store",
-  });
+  let lastError: unknown;
 
-  const text = await response.text();
-  let data: unknown = null;
-
-  if (text) {
+  for (const baseUrl of baseUrls) {
     try {
-      data = JSON.parse(text) as T;
-    } catch {
-      data = text;
+      const response = await fetch(`${baseUrl}${path}`, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          apikey: apiKey,
+        },
+        body: body !== undefined ? JSON.stringify(body) : undefined,
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        cache: "no-store",
+      });
+
+      const text = await response.text();
+      let data: unknown = null;
+
+      if (text) {
+        try {
+          data = JSON.parse(text) as T;
+        } catch {
+          data = text;
+        }
+      }
+
+      if (!response.ok) {
+        const message =
+          data &&
+          typeof data === "object" &&
+          "message" in data &&
+          typeof (data as { message: unknown }).message === "string"
+            ? (data as { message: string }).message
+            : `Evolution API request failed (${response.status})`;
+        throw new Error(message);
+      }
+
+      return data as T;
+    } catch (error) {
+      lastError = error;
+      const message = error instanceof Error ? error.message : String(error);
+      if (/fetch failed|econnrefused|enotfound|timeout|abort/i.test(message)) {
+        continue;
+      }
+      throw error;
     }
   }
 
-  if (!response.ok) {
-    const message =
-      data &&
-      typeof data === "object" &&
-      "message" in data &&
-      typeof (data as { message: unknown }).message === "string"
-        ? (data as { message: string }).message
-        : `Evolution API request failed (${response.status})`;
-    throw new Error(message);
-  }
-
-  return data as T;
+  throw new Error(
+    lastError instanceof Error
+      ? lastError.message
+      : "Could not reach Evolution API. Check EVOLUTION_API_URL and EVOLUTION_API_KEY.",
+  );
 }
 
 export async function createEvolutionInstance(instanceName: string): Promise<void> {

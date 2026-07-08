@@ -2,7 +2,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { NextResponse } from "next/server";
 import { getBackendApiUrl, getConfiguredBackendApiUrl } from "@/lib/backend/config";
-import { isEvolutionConfigured } from "@/lib/whatsapp/evolution-server";
+import { isEvolutionConfigured, getEvolutionBaseUrls } from "@/lib/whatsapp/evolution-server";
 
 export const dynamic = "force-dynamic";
 
@@ -62,6 +62,7 @@ export async function GET() {
       persistence: "backend-api",
       whatsappProvider: "evolution-api",
       evolutionBff: isEvolutionConfigured(),
+      evolutionUrls: getEvolutionBaseUrls(),
       backend: {
         configuredUrl: configuredBackendUrl,
         resolvedUrl: resolvedBackendUrl,
