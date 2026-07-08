@@ -94,6 +94,7 @@ export function WhatsAppQrModal({
                 {session.errorCode ? (
                   <WhatsAppErrorState
                     code={session.errorCode}
+                    detail={session.errorDetail}
                     onRetry={() => {
                       session.resetError();
                       void session.refetchQr();

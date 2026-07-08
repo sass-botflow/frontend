@@ -48,16 +48,48 @@ export function deriveInstanceName(userId: string): string {
   return `botflow-${userShort}`;
 }
 
-export function extractQrBase64(payload: {
-  base64?: string;
-  code?: string;
-  qrcode?: string;
-}): string | null {
-  const raw = payload.base64 ?? payload.qrcode ?? payload.code;
-  if (!raw?.trim()) {
+export function extractQrBase64(payload: unknown): string | null {
+  if (!payload) return null;
+
+  if (typeof payload === "string" && payload.trim()) {
+    return normalizeQrValue(payload.trim());
+  }
+
+  if (typeof payload !== "object") return null;
+
+  const record = payload as Record<string, unknown>;
+
+  const directCandidates = [record.base64, record.qrcode, record.qrCode, record.qr];
+  for (const candidate of directCandidates) {
+    if (typeof candidate === "string" && candidate.trim()) {
+      return normalizeQrValue(candidate.trim());
+    }
+  }
+
+  const nestedKeys = ["qrcode", "qr", "data", "response"];
+  for (const key of nestedKeys) {
+    const nested = record[key];
+    if (nested && typeof nested === "object") {
+      const extracted = extractQrBase64(nested);
+      if (extracted) return extracted;
+    }
+  }
+
+  return null;
+}
+
+function normalizeQrValue(value: string): string | null {
+  if (!value) return null;
+
+  if (value.startsWith("data:image")) {
+    return value;
+  }
+
+  if (value.startsWith("2@") || value.length < 40) {
     return null;
   }
-  return raw.trim();
+
+  return value;
 }
 
 export function mapConnectionState(
@@ -269,11 +301,10 @@ export async function fetchEvolutionInstance(instanceName: string) {
 }
 
 export async function connectEvolutionInstance(instanceName: string) {
-  return evolutionRequest<{
-    base64?: string;
-    code?: string;
-    qrcode?: string;
-  }>("GET", `/instance/connect/${encodeURIComponent(instanceName)}`);
+  return evolutionRequest<unknown>(
+    "GET",
+    `/instance/connect/${encodeURIComponent(instanceName)}`,
+  );
 }
 
 export async function getEvolutionConnectionState(instanceName: string) {

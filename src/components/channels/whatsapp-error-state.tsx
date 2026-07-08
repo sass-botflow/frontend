@@ -21,6 +21,12 @@ const ERROR_COPY: Record<
       "We couldn't reach the WhatsApp server. Check that Evolution API is running and try again.",
     icon: CloudOff,
   },
+  EVOLUTION_AUTH: {
+    title: "Evolution API key invalid",
+    description:
+      "EVOLUTION_API_KEY on the frontend must match AUTHENTICATION_API_KEY on evolution-api.",
+    icon: AlertTriangle,
+  },
   QR_EXPIRED: {
     title: "QR code expired",
     description: "Generating a fresh QR code automatically. Keep WhatsApp open on your phone.",
@@ -51,12 +57,14 @@ const ERROR_COPY: Record<
 
 interface WhatsAppErrorStateProps {
   code: WhatsAppConnectErrorCode;
+  detail?: string | null;
   onRetry?: () => void;
   className?: string;
 }
 
 export function WhatsAppErrorState({
   code,
+  detail,
   onRetry,
   className,
 }: WhatsAppErrorStateProps) {
@@ -75,7 +83,7 @@ export function WhatsAppErrorState({
       </div>
       <h3 className="text-base font-semibold text-foreground">{copy.title}</h3>
       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-        {copy.description}
+        {detail && code === "UNKNOWN" ? detail : copy.description}
       </p>
       {onRetry ? (
         <Button

@@ -42,6 +42,7 @@ export interface WhatsAppDisconnectResponse {
 
 export type WhatsAppConnectErrorCode =
   | "EVOLUTION_OFFLINE"
+  | "EVOLUTION_AUTH"
   | "QR_EXPIRED"
   | "CONNECTION_LOST"
   | "ALREADY_CONNECTED"
@@ -89,12 +90,24 @@ export function mapApiErrorToWhatsAppCode(message: string): WhatsAppConnectError
   const lower = message.toLowerCase();
 
   if (
-    lower.includes("evolution") &&
-    (lower.includes("offline") ||
-      lower.includes("unreachable") ||
-      lower.includes("not configured") ||
-      lower.includes("502") ||
-      lower.includes("503"))
+    lower.includes("api key") ||
+    lower.includes("unauthorized") ||
+    lower.includes("authentication") ||
+    lower.includes("invalid key")
+  ) {
+    return "EVOLUTION_AUTH";
+  }
+
+  if (
+    lower.includes("evolution") ||
+    lower.includes("could not reach") ||
+    lower.includes("offline") ||
+    lower.includes("unreachable") ||
+    lower.includes("not configured") ||
+    lower.includes("502") ||
+    lower.includes("503") ||
+    lower.includes("timed out") ||
+    lower.includes("timeout")
   ) {
     return "EVOLUTION_OFFLINE";
   }

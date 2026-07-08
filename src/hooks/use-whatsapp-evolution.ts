@@ -143,6 +143,11 @@ export function useWhatsAppQrSession({
     queryFn: () => fetchWhatsAppQr(instanceId!),
     enabled: shouldPollQr,
     refetchInterval: shouldPollQr ? WHATSAPP_QR_POLL_MS : false,
+    retry: (failureCount, error) => {
+      const message = error instanceof Error ? error.message.toLowerCase() : "";
+      if (message.includes("not available")) return failureCount < 12;
+      return failureCount < 3;
+    },
   });
 
   const qrImageSrc = useMemo(
@@ -200,26 +205,29 @@ export function useWhatsAppQrSession({
     const message =
       qrQuery.error instanceof Error
         ? qrQuery.error.message
-        : statusQuery.error instanceof Error
-          ? statusQuery.error.message
-          : null;
+        : null;
 
     if (!message) return null;
     return mapApiErrorToWhatsAppCode(message);
-  }, [errorCode, qrQuery.error, statusQuery.error]);
+  }, [errorCode, qrQuery.error]);
+
+  const resolveErrorDetail = useCallback((): string | null => {
+    if (qrQuery.error instanceof Error) {
+      return qrQuery.error.message;
+    }
+    return null;
+  }, [qrQuery.error]);
 
   useEffect(() => {
     const message =
       qrQuery.error instanceof Error
         ? qrQuery.error.message
-        : statusQuery.error instanceof Error
-          ? statusQuery.error.message
-          : null;
+        : null;
 
     if (message) {
       setErrorCode(mapApiErrorToWhatsAppCode(message));
     }
-  }, [qrQuery.error, statusQuery.error]);
+  }, [qrQuery.error]);
 
   return {
     qrImageSrc,
@@ -229,6 +237,7 @@ export function useWhatsAppQrSession({
     isFetchingQr: qrQuery.isFetching,
     isConnected,
     errorCode: resolveError(),
+    errorDetail: resolveErrorDetail(),
     profileName: statusQuery.data?.profileName ?? null,
     phoneNumber: statusQuery.data?.phoneNumber ?? null,
     connectedAt: statusQuery.data?.connectedAt ?? null,

@@ -50,7 +50,26 @@ export async function evolutionGetQr(instanceId: string) {
   const userId = await requireUserId();
   const instanceName = assertOwnedInstance(userId, instanceId);
 
-  const existing = await fetchEvolutionInstance(instanceName);
+  let existing = await fetchEvolutionInstance(instanceName);
+
+  if (existing) {
+    const state =
+      typeof existing.connectionStatus === "object"
+        ? (existing.connectionStatus as { state?: string }).state
+        : typeof existing.status === "string"
+          ? existing.status
+          : undefined;
+
+    if (state === "close" || state === "closed") {
+      try {
+        await deleteEvolutionInstance(instanceName);
+        existing = null;
+      } catch {
+        // Continue with reconnect attempt.
+      }
+    }
+  }
+
   if (!existing) {
     await createEvolutionInstance(instanceName);
   }
@@ -73,10 +92,23 @@ export async function evolutionGetQr(instanceId: string) {
   }
 
   const qr = await connectEvolutionInstance(instanceName);
-  const qrCode = extractQrBase64(qr);
+  let qrCode = extractQrBase64(qr);
 
   if (!qrCode) {
-    throw new Error("QR code is not available yet. Please try again in a few seconds.");
+    const refreshed = await fetchEvolutionInstance(instanceName);
+    if (refreshed) {
+      qrCode = extractQrBase64(refreshed.qrcode ?? refreshed);
+    }
+  }
+
+  if (!qrCode) {
+    return {
+      instanceId,
+      qrCode: "",
+      base64: "",
+      expiresIn: 5,
+      status: "WAITING_QR" as const,
+    };
   }
 
   return {
