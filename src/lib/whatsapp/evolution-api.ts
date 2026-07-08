@@ -26,9 +26,15 @@ async function requestJson<T>(
   );
 
   if (!response.ok) {
-    throw new Error(
-      body.error ?? body.message ?? `Request failed (${response.status})`,
-    );
+    const message = body.error ?? body.message ?? `Request failed (${response.status})`;
+
+    if (response.status === 404 && path.includes("/whatsapp/connect")) {
+      throw new Error(
+        "WhatsApp connect API is not deployed yet. Redeploy the backend from main with EVOLUTION_API_URL and EVOLUTION_API_KEY.",
+      );
+    }
+
+    throw new Error(message);
   }
 
   return body;
@@ -41,16 +47,41 @@ export function connectWhatsAppInstance(): Promise<WhatsAppConnectResponse> {
 }
 
 export function fetchWhatsAppQr(instanceId: string): Promise<WhatsAppQrResponse> {
-  return requestJson<WhatsAppQrResponse>(
-    `/api/channels/whatsapp/${encodeURIComponent(instanceId)}/qr`,
-  );
+  return requestJson<{
+    qrCode?: string;
+    base64?: string;
+    expiresIn?: number;
+    expiresAt?: string;
+    status?: string;
+  }>(`/api/channels/whatsapp/${encodeURIComponent(instanceId)}/qr`).then((body) => ({
+    qrCode: body.qrCode ?? body.base64,
+    base64: body.base64 ?? body.qrCode,
+    expiresIn: body.expiresIn,
+    expiresAt: body.expiresAt,
+    status: body.status as WhatsAppQrResponse["status"],
+  }));
 }
 
 export function fetchWhatsAppStatus(
   instanceId: string,
 ): Promise<WhatsAppStatusResponse> {
-  return requestJson<WhatsAppStatusResponse>(
-    `/api/channels/whatsapp/${encodeURIComponent(instanceId)}/status`,
+  return requestJson<{
+    status: string;
+    phone?: string | null;
+    phoneNumber?: string | null;
+    profileName?: string | null;
+    connectedAt?: string | null;
+    lastSeen?: string | null;
+    messagesToday?: number;
+  }>(`/api/channels/whatsapp/${encodeURIComponent(instanceId)}/status`).then(
+    (body) => ({
+      status: body.status as WhatsAppStatusResponse["status"],
+      phoneNumber: body.phoneNumber ?? body.phone ?? null,
+      profileName: body.profileName ?? null,
+      connectedAt: body.connectedAt ?? null,
+      lastSeen: body.lastSeen ?? null,
+      messagesToday: body.messagesToday ?? 0,
+    }),
   );
 }
 
