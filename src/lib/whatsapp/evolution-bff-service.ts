@@ -38,12 +38,8 @@ export async function evolutionConnect() {
 
   const userId = await requireUserId();
   const instanceName = deriveInstanceName(userId);
-  const existing = await fetchEvolutionInstance(instanceName);
 
-  if (!existing) {
-    await createEvolutionInstance(instanceName);
-  }
-
+  // Return immediately — QR route creates the Evolution instance (avoids Cloudflare timeout).
   return {
     instanceId: instanceName,
     status: "waiting_qr" as const,
@@ -53,17 +49,27 @@ export async function evolutionConnect() {
 export async function evolutionGetQr(instanceId: string) {
   const userId = await requireUserId();
   const instanceName = assertOwnedInstance(userId, instanceId);
-  const state = await getEvolutionConnectionState(instanceName);
-  const mapped = mapConnectionState(state.instance?.state ?? state.state);
 
-  if (mapped === "CONNECTED") {
-    return {
-      instanceId,
-      qrCode: "",
-      base64: "",
-      expiresIn: 0,
-      status: "CONNECTED" as const,
-    };
+  const existing = await fetchEvolutionInstance(instanceName);
+  if (!existing) {
+    await createEvolutionInstance(instanceName);
+  }
+
+  try {
+    const state = await getEvolutionConnectionState(instanceName);
+    const mapped = mapConnectionState(state.instance?.state ?? state.state);
+
+    if (mapped === "CONNECTED") {
+      return {
+        instanceId,
+        qrCode: "",
+        base64: "",
+        expiresIn: 0,
+        status: "CONNECTED" as const,
+      };
+    }
+  } catch {
+    // Instance may still be starting — continue to QR connect.
   }
 
   const qr = await connectEvolutionInstance(instanceName);
@@ -86,25 +92,40 @@ export async function evolutionGetStatus(instanceId: string) {
   const userId = await requireUserId();
   const instanceName = assertOwnedInstance(userId, instanceId);
 
-  const [state, details] = await Promise.all([
-    getEvolutionConnectionState(instanceName),
-    fetchEvolutionInstance(instanceName),
-  ]);
+  const details = await fetchEvolutionInstance(instanceName);
+  if (!details) {
+    return {
+      instanceId,
+      status: "WAITING_QR" as const,
+      phone: null,
+      phoneNumber: null,
+      profileName: null,
+      connectedAt: null,
+    };
+  }
 
-  const mapped = mapConnectionState(
-    state.instance?.state ??
-      state.state ??
-      (typeof details?.connectionStatus === "object"
-        ? (details.connectionStatus as { state?: string }).state
-        : undefined) ??
-      (typeof details?.status === "string" ? details.status : undefined),
-  );
+  let mapped: ReturnType<typeof mapConnectionState> = "WAITING_QR";
+
+  try {
+    const state = await getEvolutionConnectionState(instanceName);
+    mapped = mapConnectionState(
+      state.instance?.state ??
+        state.state ??
+        (typeof details.connectionStatus === "object"
+          ? (details.connectionStatus as { state?: string }).state
+          : undefined) ??
+        (typeof details.status === "string" ? details.status : undefined),
+    );
+  } catch {
+    mapped = mapConnectionState(
+      typeof details.status === "string" ? details.status : undefined,
+    );
+  }
 
   const phone =
-    extractPhone(typeof details?.owner === "string" ? details.owner : null) ??
-    null;
+    extractPhone(typeof details.owner === "string" ? details.owner : null) ?? null;
   const profileName =
-    typeof details?.profileName === "string" ? details.profileName : null;
+    typeof details.profileName === "string" ? details.profileName : null;
 
   return {
     instanceId,

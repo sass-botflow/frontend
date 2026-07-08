@@ -40,9 +40,13 @@ export async function parseJsonResponse<T>(response: Response): Promise<T> {
   const requestId = extractRequestId(response);
 
   if (isHtmlResponse(contentType, text)) {
+    const isWhatsAppRoute = (response.url || "").includes("/whatsapp/");
     throw createApiErrorFromResponse(response, {
       rawText: text,
-      message: "HTML gateway response",
+      message:
+        isWhatsAppRoute && response.status >= 500
+          ? "WhatsApp service timed out. Wait a few seconds and try again."
+          : "HTML gateway response",
     });
   }
 
