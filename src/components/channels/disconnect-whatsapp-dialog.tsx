@@ -11,43 +11,46 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { BackendChannel } from "@/lib/backend/types";
+import type { WhatsAppChannel } from "@/lib/whatsapp/evolution-types";
 
-interface DisconnectWhatsAppChannelDialogProps {
-  channel: BackendChannel | null;
+interface DisconnectWhatsAppDialogProps {
+  channel: WhatsAppChannel | null;
   open: boolean;
   loading: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: (channelId: string) => Promise<void>;
+  onConfirm: (instanceId: string) => Promise<void>;
 }
 
-export function DisconnectWhatsAppChannelDialog({
+export function DisconnectWhatsAppDialog({
   channel,
   open,
   loading,
   onOpenChange,
   onConfirm,
-}: DisconnectWhatsAppChannelDialogProps) {
+}: DisconnectWhatsAppDialogProps) {
   if (!channel) return null;
 
-  const label =
-    channel.businessName ?? channel.displayPhoneNumber ?? "this WhatsApp number";
+  const label = channel.profileName ?? channel.phoneNumber ?? "this WhatsApp number";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="rounded-3xl sm:max-w-md">
         <DialogHeader>
           <div className="mb-2 flex items-center gap-3">
             <ChannelLogo channel="whatsapp" size="md" />
-            <div>
+            <div className="text-left">
               <DialogTitle>Disconnect WhatsApp?</DialogTitle>
-              <DialogDescription className="mt-1 text-left">
-                BotFlow will stop replying on <strong>{label}</strong>. The
-                encrypted token will be removed from this workspace.
+              <DialogDescription className="mt-1">
+                BotFlow will stop replying on <strong>{label}</strong>.
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
+
+        <div className="rounded-2xl border border-border/50 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
+          Delete Session? This removes the Evolution session and unlinks the
+          device from your workspace.
+        </div>
 
         <DialogFooter>
           <Button
@@ -55,6 +58,7 @@ export function DisconnectWhatsAppChannelDialog({
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={loading}
+            className="rounded-xl"
           >
             Cancel
           </Button>
@@ -62,7 +66,8 @@ export function DisconnectWhatsAppChannelDialog({
             type="button"
             variant="destructive"
             disabled={loading}
-            onClick={() => onConfirm(channel.id)}
+            className="rounded-xl"
+            onClick={() => onConfirm(channel.instanceId)}
           >
             {loading ? (
               <>

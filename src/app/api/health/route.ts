@@ -59,7 +59,7 @@ export async function GET() {
       version,
       buildTime: getBuildTime(),
       persistence: "backend-api",
-      whatsappProvider: "meta-cloud-api",
+      whatsappProvider: "evolution-api",
       backend: {
         configuredUrl: configuredBackendUrl,
         resolvedUrl: resolvedBackendUrl,

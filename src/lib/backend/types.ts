@@ -55,25 +55,6 @@ export interface BackendMessage {
   status?: string;
 }
 
-export interface WhatsAppEmbeddedSignupConnectResponse {
-  appId: string;
-  configId: string;
-  state: string;
-}
-
-export interface WhatsAppEmbeddedSignupCompletePayload {
-  code: string;
-  state: string;
-}
-
-export interface WhatsAppEmbeddedSignupCompleteResponse {
-  connected: boolean;
-  channelId?: string;
-  phoneNumberId?: string;
-  wabaId?: string;
-  businessId?: string;
-}
-
 export type ChannelUiStatus = "connected" | "refresh_required" | "disconnected";
 
 export function mapChannelUiStatus(status: string): ChannelUiStatus {

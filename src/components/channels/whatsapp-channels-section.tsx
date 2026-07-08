@@ -1,32 +1,30 @@
 "use client";
 
+import { useCallback, useState } from "react";
 import { motion } from "framer-motion";
-import { Loader2, MessageCircle, Plus, Radio } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import { AppBanner } from "@/components/ui/app-banner";
-import { DisconnectWhatsAppChannelDialog } from "@/components/channels/disconnect-whatsapp-channel-dialog";
-import { WhatsAppChannelCard } from "@/components/channels/whatsapp-channel-card";
-import { WhatsAppConnectionProgress } from "@/components/channels/whatsapp-connection-progress";
-import { WhatsAppOnboardingWizard } from "@/components/channels/whatsapp-onboarding-wizard";
-import { IntegrationCardSkeleton } from "@/components/channels/channels-skeleton";
-import { useChannels } from "@/hooks/use-channels";
-import { useWhatsAppEmbeddedSignup } from "@/hooks/use-whatsapp-embedded-signup";
+import { DisconnectWhatsAppDialog } from "@/components/channels/disconnect-whatsapp-dialog";
+import { WhatsAppChannelDashboardCard } from "@/components/channels/whatsapp-channel-dashboard-card";
+import { WhatsAppConnectCard } from "@/components/channels/whatsapp-connect-card";
+import { WhatsAppQrModal } from "@/components/channels/whatsapp-qr-modal";
+import { ChannelsHeroSkeleton } from "@/components/channels/channels-skeleton";
+import {
+  useWhatsAppChannels,
+  useWhatsAppConnect,
+  useWhatsAppDisconnect,
+} from "@/hooks/use-whatsapp-evolution";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { useState } from "react";
-import type { BackendChannel } from "@/lib/backend/types";
+import type { WhatsAppChannel } from "@/lib/whatsapp/evolution-types";
 
 export function WhatsAppChannelsSection() {
-  const {
-    whatsappChannels,
-    loading,
-    actionChannelId,
-    error,
-    refresh,
-    refreshChannel,
-    disconnectChannel,
-  } = useChannels();
+  const channelsQuery = useWhatsAppChannels();
+  const connectMutation = useWhatsAppConnect();
+  const disconnectMutation = useWhatsAppDisconnect();
 
-  const [disconnectTarget, setDisconnectTarget] = useState<BackendChannel | null>(
+  const [qrOpen, setQrOpen] = useState(false);
+  const [activeInstanceId, setActiveInstanceId] = useState<string | null>(null);
+  const [disconnectTarget, setDisconnectTarget] = useState<WhatsAppChannel | null>(
     null,
   );
   const [banner, setBanner] = useState<{
@@ -34,115 +32,129 @@ export function WhatsAppChannelsSection() {
     variant: "success" | "error";
   } | null>(null);
 
-  const {
-    launchSignup,
-    phase: connectPhase,
-    loading: connecting,
-    errorMessage: connectError,
-    reset: resetConnect,
-  } = useWhatsAppEmbeddedSignup({
-    onSuccess: async () => {
-      await refresh();
-      setBanner({
-        message: "WhatsApp channel connected successfully.",
-        variant: "success",
-      });
-    },
-    onError: (message) => {
-      setBanner({ message, variant: "error" });
-    },
-  });
+  const channels = channelsQuery.data ?? [];
+  const loading = channelsQuery.isLoading;
+  const hasChannels = channels.length > 0;
 
-  async function handleDisconnect(channelId: string) {
+  const startConnect = useCallback(async () => {
+    setBanner(null);
+
     try {
-      await disconnectChannel(channelId);
-      setDisconnectTarget(null);
+      const result = await connectMutation.mutateAsync();
+      setActiveInstanceId(result.instanceId);
+      setQrOpen(true);
+    } catch (error) {
       setBanner({
-        message: "WhatsApp channel disconnected.",
-        variant: "success",
-      });
-    } catch {
-      setBanner({
-        message: "Could not disconnect this channel. Please try again.",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Could not start WhatsApp connection.",
         variant: "error",
       });
     }
-  }
+  }, [connectMutation]);
 
-  async function handleRefresh(channelId: string) {
-    try {
-      await refreshChannel(channelId);
-      setBanner({
-        message: "WhatsApp token refreshed successfully.",
-        variant: "success",
-      });
-    } catch {
-      setBanner({
-        message: "Token refresh failed. Reconnect if the issue persists.",
-        variant: "error",
-      });
-    }
-  }
+  const handleConnected = useCallback(async (_channel: WhatsAppChannel) => {
+    setBanner({
+      message: "WhatsApp connected successfully.",
+      variant: "success",
+    });
+    await channelsQuery.refetch();
+  }, [channelsQuery]);
 
-  function handleAddAnother() {
-    if (connectPhase === "error") resetConnect();
-    void launchSignup();
-  }
+  const handleDisconnect = useCallback(
+    async (instanceId: string) => {
+      try {
+        await disconnectMutation.mutateAsync(instanceId);
+        setDisconnectTarget(null);
+        setBanner({
+          message: "WhatsApp disconnected.",
+          variant: "success",
+        });
+      } catch (error) {
+        setBanner({
+          message:
+            error instanceof Error
+              ? error.message
+              : "Could not disconnect WhatsApp.",
+          variant: "error",
+        });
+      }
+    },
+    [disconnectMutation],
+  );
 
-  const showWizard = whatsappChannels.length === 0;
+  const handleReconnect = useCallback((channel: WhatsAppChannel) => {
+    setActiveInstanceId(channel.instanceId);
+    setQrOpen(true);
+  }, []);
 
   return (
     <section className="space-y-6">
-      <DisconnectWhatsAppChannelDialog
+      <DisconnectWhatsAppDialog
         channel={disconnectTarget}
         open={disconnectTarget !== null}
-        loading={actionChannelId === disconnectTarget?.id}
+        loading={disconnectMutation.isPending}
         onOpenChange={(open) => {
           if (!open) setDisconnectTarget(null);
         }}
         onConfirm={handleDisconnect}
       />
 
-      {(error || banner || connectError) && (
+      <WhatsAppQrModal
+        open={qrOpen}
+        instanceId={activeInstanceId}
+        onOpenChange={(open) => {
+          setQrOpen(open);
+          if (!open) setActiveInstanceId(null);
+        }}
+        onConnected={handleConnected}
+      />
+
+      {banner ? (
         <AppBanner
-          message={banner?.message ?? connectError ?? error ?? ""}
-          variant={banner?.variant ?? "error"}
-          onDismiss={() => {
-            setBanner(null);
-            if (connectError) resetConnect();
-            void refresh();
-          }}
+          message={banner.message}
+          variant={banner.variant}
+          onDismiss={() => setBanner(null)}
         />
-      )}
+      ) : null}
+
+      {channelsQuery.error ? (
+        <AppBanner
+          message={
+            channelsQuery.error instanceof Error
+              ? channelsQuery.error.message
+              : "Could not load WhatsApp channels."
+          }
+          variant="error"
+          onDismiss={() => void channelsQuery.refetch()}
+        />
+      ) : null}
 
       {loading ? (
-        <IntegrationCardSkeleton />
-      ) : showWizard ? (
-        <WhatsAppOnboardingWizard
-          phase={connectPhase}
-          loading={connecting}
-          errorMessage={connectError}
-          onConnect={() => void launchSignup()}
-          onReset={resetConnect}
+        <ChannelsHeroSkeleton />
+      ) : !hasChannels ? (
+        <WhatsAppConnectCard
+          onConnect={() => void startConnect()}
+          loading={connectMutation.isPending}
         />
       ) : (
         <div className="space-y-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="text-lg font-semibold tracking-tight">
-                Connected channels
+                Connected numbers
               </h3>
               <p className="text-sm text-muted-foreground">
-                Manage your WhatsApp Business numbers and reconnect via Meta
-                when needed.
+                Manage WhatsApp sessions linked through Evolution API.
               </p>
             </div>
             <Button
-              onClick={handleAddAnother}
-              disabled={connecting}
+              onClick={() => void startConnect()}
+              disabled={connectMutation.isPending}
               className="h-11 rounded-xl bg-[#25D366] font-semibold text-white hover:bg-[#1fb855]"
             >
-              {connecting ? (
+              {connectMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <Plus className="h-4 w-4" />
@@ -151,23 +163,18 @@ export function WhatsAppChannelsSection() {
             </Button>
           </div>
 
-          {connecting ? (
-            <div className="rounded-2xl border border-border/60 bg-card/60 p-5 backdrop-blur-xl">
-              <p className="mb-4 text-sm font-medium">Connecting another number</p>
-              <WhatsAppConnectionProgress phase={connectPhase} className="rounded-xl" />
-            </div>
-          ) : null}
-
           <div className="space-y-4">
-            {whatsappChannels.map((channel, index) => (
-              <WhatsAppChannelCard
-                key={channel.id}
+            {channels.map((channel, index) => (
+              <WhatsAppChannelDashboardCard
+                key={channel.instanceId}
                 channel={channel}
                 index={index}
-                loading={actionChannelId === channel.id}
+                loading={
+                  disconnectMutation.isPending &&
+                  disconnectTarget?.instanceId === channel.instanceId
+                }
                 onDisconnect={setDisconnectTarget}
-                onRefresh={handleRefresh}
-                onReconnect={() => void launchSignup()}
+                onReconnect={handleReconnect}
               />
             ))}
           </div>
@@ -177,18 +184,8 @@ export function WhatsAppChannelsSection() {
             animate={{ opacity: 1 }}
             className="grid gap-3 sm:grid-cols-2"
           >
-            <MetricTile
-              icon={Radio}
-              label="Connected numbers"
-              value={String(whatsappChannels.length)}
-              accent="text-emerald-400"
-            />
-            <MetricTile
-              icon={MessageCircle}
-              label="Inbound routing"
-              value="Active"
-              accent="text-primary"
-            />
+            <SummaryTile label="Connected lines" value={String(channels.length)} />
+            <SummaryTile label="Routing" value="Active" />
           </motion.div>
         </div>
       )}
@@ -196,32 +193,15 @@ export function WhatsAppChannelsSection() {
   );
 }
 
-function MetricTile({
-  icon: Icon,
-  label,
-  value,
-  accent,
-}: {
-  icon: typeof Radio;
-  label: string;
-  value: string;
-  accent: string;
-}) {
+function SummaryTile({ label, value }: { label: string; value: string }) {
   return (
     <div className="glass rounded-2xl border border-border/50 p-4">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {label}
-          </p>
-          <p className={cn("mt-1 text-2xl font-semibold tracking-tight", accent)}>
-            {value}
-          </p>
-        </div>
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-          <Icon className="h-4 w-4 text-primary" />
-        </div>
-      </div>
+      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-1 text-2xl font-semibold tracking-tight text-emerald-400">
+        {value}
+      </p>
     </div>
   );
 }

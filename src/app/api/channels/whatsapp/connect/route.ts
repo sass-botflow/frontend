@@ -1,21 +1,7 @@
-import { NextResponse } from "next/server";
-import { BackendAuthError, BackendApiError } from "@/lib/backend/errors";
-import { resolveWhatsAppEmbeddedSignupConnectSession } from "@/lib/meta/whatsapp-connect-session";
+import { proxyBackendJson } from "@/lib/backend/proxy";
 
-export async function GET() {
-  try {
-    const session = await resolveWhatsAppEmbeddedSignupConnectSession();
-    return NextResponse.json(session);
-  } catch (err) {
-    if (err instanceof BackendAuthError) {
-      return NextResponse.json({ error: err.message }, { status: 401 });
-    }
-    if (err instanceof BackendApiError) {
-      return NextResponse.json({ error: err.message }, { status: err.status });
-    }
-    return NextResponse.json(
-      { error: "Failed to start WhatsApp signup." },
-      { status: 500 },
-    );
-  }
+export async function POST() {
+  return proxyBackendJson("/api/channels/whatsapp/connect", {
+    method: "POST",
+  });
 }

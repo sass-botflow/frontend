@@ -3,7 +3,6 @@ import { getBackendAuthHeaders } from "@/lib/backend/auth";
 import { BackendApiError, BackendAuthError } from "@/lib/backend/errors";
 import {
   authHeaderLogMeta,
-  logBackendOAuthRedirect,
   logBackendRequest,
   logBackendResponse,
 } from "@/lib/backend/logger";
@@ -94,53 +93,6 @@ export async function disconnectBackendChannel(channelId: string): Promise<void>
   await backendFetch<void>(`/api/channels/${encodeURIComponent(channelId)}/disconnect`, {
     method: "POST",
   });
-}
-
-export async function startWhatsAppOAuthRedirectUrl(): Promise<string> {
-  const headers = await getBackendAuthHeaders();
-  const path = "/api/channels/whatsapp/connect";
-
-  logBackendRequest("GET", path, {
-    ...authHeaderLogMeta(headers.Authorization),
-    redirect: "manual",
-  });
-
-  const response = await fetch(getBackendApiUrl(path), {
-    method: "GET",
-    headers,
-    redirect: "manual",
-    cache: "no-store",
-  });
-
-  logBackendResponse("GET", path, response.status, { redirect: "manual" });
-
-  if (response.status >= 300 && response.status < 400) {
-    const location = response.headers.get("location");
-    if (location) {
-      logBackendOAuthRedirect(location);
-      return location;
-    }
-  }
-
-  if (!response.ok) {
-    const body = await response.json().catch(() => ({}));
-    throw new BackendApiError(
-      extractErrorMessage(body, "Failed to start WhatsApp OAuth."),
-      response.status,
-    );
-  }
-
-  const body = (await response.json().catch(() => ({}))) as {
-    url?: string;
-    redirectUrl?: string;
-  };
-  const redirectUrl = body.url ?? body.redirectUrl;
-  if (redirectUrl) {
-    logBackendOAuthRedirect(redirectUrl);
-    return redirectUrl;
-  }
-
-  throw new BackendApiError("Backend did not return a Meta OAuth redirect URL.", 502);
 }
 
 export async function fetchBackendBots(): Promise<BackendBot[]> {
