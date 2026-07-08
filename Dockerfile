@@ -4,7 +4,8 @@ FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci
 
 FROM node:20-alpine AS builder
 RUN apk add --no-cache libc6-compat openssl git
@@ -26,6 +27,8 @@ ARG APP_VERSION=dev
 ARG BUILD_TIME=unknown
 ARG GITHUB_SHA
 ARG COMMIT_SHA
+ARG GIT_COMMIT
+ARG SOURCE_COMMIT
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
@@ -36,7 +39,7 @@ ENV NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=$NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL
 ENV NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=$NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL
 ENV NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=$NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL
 ENV NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=$NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL
-ENV NODE_OPTIONS=--max-old-space-size=2048
+ENV NODE_OPTIONS=--max-old-space-size=1536
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV DOCKER_BUILD=1
 
@@ -46,6 +49,8 @@ RUN set -e; \
     if [ "$V" = "dev" ] || [ -z "$V" ]; then \
       if [ -n "$GITHUB_SHA" ]; then V=$(echo "$GITHUB_SHA" | cut -c1-7); \
       elif [ -n "$COMMIT_SHA" ]; then V=$(echo "$COMMIT_SHA" | cut -c1-7); \
+      elif [ -n "$GIT_COMMIT" ]; then V=$(echo "$GIT_COMMIT" | cut -c1-7); \
+      elif [ -n "$SOURCE_COMMIT" ]; then V=$(echo "$SOURCE_COMMIT" | cut -c1-7); \
       else V=$(git rev-parse --short HEAD 2>/dev/null || echo dev); fi; \
     fi; \
     BT="$BUILD_TIME"; \
@@ -56,7 +61,8 @@ RUN set -e; \
 ENV APP_VERSION=$APP_VERSION
 ENV BUILD_TIME=$BUILD_TIME
 
-RUN npm run build
+RUN --mount=type=cache,target=/app/.next/cache \
+    npm run build
 
 FROM node:20-alpine AS runner
 RUN apk add --no-cache libc6-compat curl openssl

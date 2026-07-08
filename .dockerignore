@@ -2,11 +2,9 @@ node_modules
 .next
 .env
 .env*.local
-.git
 .github
 backend-patches
-*.md
-!public/**
 coverage
 .turbo
 *.log
+# Keep .git in context so EasyPanel GitHub builds can stamp BUILD_VERSION from git rev-parse
