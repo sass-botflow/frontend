@@ -25,8 +25,22 @@ function getBuildTime(): string | null {
   return readBuildFile("BUILD_TIME.txt") ?? process.env.BUILD_TIME ?? null;
 }
 
+function getDeployHint(version: string, buildTime: string | null): string | null {
+  if (version === "dev") {
+    return "Deploy ma kheddamch — Source = GitHub + Dockerfile, w stana 5-10 d9aya (mashi 2 thaniya).";
+  }
+  if (!buildTime) return null;
+  const ageHours = (Date.now() - new Date(buildTime).getTime()) / 3_600_000;
+  if (ageHours > 6) {
+    return `Build 9dim (${Math.floor(ageHours)}h). EasyPanel Deploy f 2s = restart ghir. Source → GitHub → Deploy w stana 10 d9aya.`;
+  }
+  return null;
+}
+
 export async function GET() {
   const version = getVersion();
+  const buildTime = getBuildTime();
+  const deployHint = getDeployHint(version, buildTime);
   const configuredBackendUrl = getConfiguredBackendApiUrl();
   const resolvedBackendUrl = getBackendApiUrl();
 
@@ -58,7 +72,8 @@ export async function GET() {
       status: backendReachable ? "ok" : "degraded",
       service: "botflow-frontend",
       version,
-      buildTime: getBuildTime(),
+      buildTime,
+      deployHint,
       persistence: "backend-api",
       whatsappProvider: "evolution-api",
       evolutionBff: isEvolutionConfigured(),
