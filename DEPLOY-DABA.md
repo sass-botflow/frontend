@@ -36,7 +36,13 @@ EVOLUTION_API_URL=https://evolution.api.botflow.ink
 EVOLUTION_API_KEY=<nfs Evolution AUTHENTICATION_API_KEY>
 ```
 
-**Supprimer** ila kaynin: `DATABASE_URL`, `META_*`, `INTEGRATION_ENCRYPTION_KEY`
+**Supprimer** ila kaynin: `DATABASE_URL`, `INTEGRATION_ENCRYPTION_KEY`
+
+**Zid bach Instagram OAuth ykhdem:**
+```env
+META_APP_ID=<nfs backend>
+META_APP_SECRET=<nfs backend>
+```
 
 ### 3 — Domains
 

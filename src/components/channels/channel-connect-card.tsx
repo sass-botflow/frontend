@@ -9,6 +9,19 @@ import type {
 } from "@/lib/channels/connect-themes";
 import { cn } from "@/lib/utils";
 
+function resolveAppOrigin(): string {
+  if (typeof window === "undefined") {
+    return process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ?? "https://www.botflow.ink";
+  }
+
+  const { hostname, origin } = window.location;
+  if (hostname === "botflow.ink") {
+    return "https://www.botflow.ink";
+  }
+
+  return origin;
+}
+
 interface ChannelConnectCardProps {
   config: ChannelConnectCardConfig;
   onConnect?: () => void;
@@ -37,7 +50,10 @@ export function ChannelConnectCard({
 
   const handleConnect = () => {
     if (connectHref) {
-      window.location.href = connectHref;
+      const target = connectHref.startsWith("http")
+        ? connectHref
+        : `${resolveAppOrigin()}${connectHref}`;
+      window.location.href = target;
       return;
     }
     onConnect?.();
