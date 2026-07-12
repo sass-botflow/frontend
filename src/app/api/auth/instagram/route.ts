@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import {
   buildInstagramAuthorizationUrl,
   createInstagramOAuthState,
-  getMetaAppConfig,
+  getInstagramAppConfig,
 } from "@/lib/integrations/instagram-oauth";
 import { logBackendOAuthRedirect } from "@/lib/backend/logger";
 
@@ -19,12 +19,12 @@ export async function GET() {
     );
   }
 
-  const config = getMetaAppConfig();
+  const config = getInstagramAppConfig();
   if (!config) {
     return NextResponse.json(
       {
         error:
-          "Instagram OAuth is not configured. Add META_APP_ID and META_APP_SECRET to the frontend environment.",
+          "Instagram OAuth is not configured. Add INSTAGRAM_APP_ID and INSTAGRAM_APP_SECRET (from Meta → Instagram → Business login settings).",
       },
       { status: 503 },
     );

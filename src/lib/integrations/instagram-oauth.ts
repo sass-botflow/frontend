@@ -1,17 +1,16 @@
 import { createHmac, randomBytes, timingSafeEqual } from "crypto";
 
-const META_GRAPH_VERSION = "v21.0";
+const INSTAGRAM_GRAPH_VERSION = "v21.0";
 const STATE_TTL_MS = 10 * 60 * 1000;
 
-const INSTAGRAM_SCOPES = [
-  "instagram_basic",
-  "instagram_manage_messages",
-  "pages_show_list",
-  "pages_read_engagement",
-  "business_management",
+/** Instagram API with Instagram Login — direct IG professional account connect */
+const INSTAGRAM_BUSINESS_SCOPES = [
+  "instagram_business_basic",
+  "instagram_business_manage_messages",
+  "instagram_business_manage_comments",
 ].join(",");
 
-export interface MetaAppConfig {
+export interface InstagramAppConfig {
   appId: string;
   appSecret: string;
   redirectUri: string;
@@ -21,6 +20,7 @@ export interface InstagramOAuthAccount {
   username: string;
   pageId: string;
   accessToken: string;
+  instagramUserId: string;
 }
 
 function base64Url(input: string | Buffer): string {
@@ -49,9 +49,22 @@ function getAppBaseUrl(): string {
   return (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
 }
 
-export function getMetaAppConfig(): MetaAppConfig | null {
-  const appId = process.env.META_APP_ID ?? process.env.FACEBOOK_APP_ID;
-  const appSecret = process.env.META_APP_SECRET ?? process.env.FACEBOOK_APP_SECRET;
+/**
+ * Instagram Business Login uses a dedicated Instagram App ID (not the Facebook App ID).
+ * Meta Dashboard → Instagram → API setup with Instagram login → Business login settings
+ */
+export function getInstagramAppConfig(): InstagramAppConfig | null {
+  const appId =
+    process.env.INSTAGRAM_APP_ID ??
+    process.env.META_INSTAGRAM_APP_ID ??
+    process.env.META_APP_ID ??
+    process.env.FACEBOOK_APP_ID;
+  const appSecret =
+    process.env.INSTAGRAM_APP_SECRET ??
+    process.env.META_INSTAGRAM_APP_SECRET ??
+    process.env.META_APP_SECRET ??
+    process.env.FACEBOOK_APP_SECRET;
+
   if (!appId || !appSecret) return null;
 
   return {
@@ -62,7 +75,7 @@ export function getMetaAppConfig(): MetaAppConfig | null {
 }
 
 export function isInstagramOAuthConfigured(): boolean {
-  return getMetaAppConfig() !== null;
+  return getInstagramAppConfig() !== null;
 }
 
 export function createInstagramOAuthState(userId: string): string {
@@ -106,8 +119,9 @@ export function verifyInstagramOAuthState(state: string): { userId: string } {
   return { userId: payload.userId };
 }
 
+/** Direct Instagram login — user connects their IG Professional account (not generic Facebook). */
 export function buildInstagramAuthorizationUrl(state: string): string {
-  const config = getMetaAppConfig();
+  const config = getInstagramAppConfig();
   if (!config) {
     throw new Error("Instagram OAuth is not configured on the server.");
   }
@@ -116,95 +130,127 @@ export function buildInstagramAuthorizationUrl(state: string): string {
     client_id: config.appId,
     redirect_uri: config.redirectUri,
     state,
-    scope: INSTAGRAM_SCOPES,
+    scope: INSTAGRAM_BUSINESS_SCOPES,
     response_type: "code",
+    enable_fb_login: "0",
+    force_reauth: "1",
   });
 
-  return `https://www.facebook.com/${META_GRAPH_VERSION}/dialog/oauth?${params.toString()}`;
+  return `https://www.instagram.com/oauth/authorize?${params.toString()}`;
 }
 
-async function graphGet<T>(url: string): Promise<T> {
-  const response = await fetch(url, { cache: "no-store" });
+async function parseJsonResponse<T>(response: Response): Promise<T> {
   const body = (await response.json().catch(() => ({}))) as T & {
     error?: { message?: string };
+    error_message?: string;
   };
 
   if (!response.ok) {
-    const message = body.error?.message ?? `Meta API error (${response.status})`;
+    const message =
+      body.error?.message ??
+      body.error_message ??
+      `Instagram API error (${response.status})`;
     throw new Error(message);
   }
 
   return body;
 }
 
-export async function exchangeInstagramCode(code: string): Promise<string> {
-  const config = getMetaAppConfig();
+export async function exchangeInstagramCode(code: string): Promise<{
+  accessToken: string;
+  instagramUserId: string;
+}> {
+  const config = getInstagramAppConfig();
   if (!config) {
     throw new Error("Instagram OAuth is not configured on the server.");
   }
 
-  const shortLivedParams = new URLSearchParams({
-    client_id: config.appId,
-    client_secret: config.appSecret,
-    redirect_uri: config.redirectUri,
-    code,
+  const form = new FormData();
+  form.append("client_id", config.appId);
+  form.append("client_secret", config.appSecret);
+  form.append("grant_type", "authorization_code");
+  form.append("redirect_uri", config.redirectUri);
+  form.append("code", code.replace(/#_$/, ""));
+
+  const response = await fetch("https://api.instagram.com/oauth/access_token", {
+    method: "POST",
+    body: form,
+    cache: "no-store",
   });
 
-  const shortLived = await graphGet<{ access_token?: string }>(
-    `https://graph.facebook.com/${META_GRAPH_VERSION}/oauth/access_token?${shortLivedParams.toString()}`,
-  );
+  const body = await parseJsonResponse<{
+    access_token?: string;
+    user_id?: string;
+    data?: Array<{ access_token?: string; user_id?: string }>;
+  }>(response);
 
-  if (!shortLived.access_token) {
-    throw new Error("Meta did not return an access token.");
+  const entry = body.data?.[0];
+  const accessToken = entry?.access_token ?? body.access_token;
+  const instagramUserId = entry?.user_id ?? body.user_id;
+
+  if (!accessToken || !instagramUserId) {
+    throw new Error("Instagram did not return an access token.");
   }
 
   const longLivedParams = new URLSearchParams({
-    grant_type: "fb_exchange_token",
-    client_id: config.appId,
+    grant_type: "ig_exchange_token",
     client_secret: config.appSecret,
-    fb_exchange_token: shortLived.access_token,
+    access_token: accessToken,
   });
 
-  const longLived = await graphGet<{ access_token?: string }>(
-    `https://graph.facebook.com/${META_GRAPH_VERSION}/oauth/access_token?${longLivedParams.toString()}`,
+  const longLived = await parseJsonResponse<{ access_token?: string }>(
+    await fetch(
+      `https://graph.instagram.com/access_token?${longLivedParams.toString()}`,
+      { cache: "no-store" },
+    ),
   );
-
-  return longLived.access_token ?? shortLived.access_token;
-}
-
-export async function fetchInstagramBusinessAccount(
-  userAccessToken: string,
-): Promise<InstagramOAuthAccount> {
-  const pages = await graphGet<{
-    data?: Array<{
-      id?: string;
-      name?: string;
-      access_token?: string;
-      instagram_business_account?: { id?: string; username?: string };
-    }>;
-  }>(
-    `https://graph.facebook.com/${META_GRAPH_VERSION}/me/accounts?fields=id,name,access_token,instagram_business_account{id,username}&access_token=${encodeURIComponent(userAccessToken)}`,
-  );
-
-  const page = pages.data?.find(
-    (entry) => entry.instagram_business_account?.id && entry.access_token,
-  );
-
-  if (!page?.id || !page.access_token || !page.instagram_business_account?.username) {
-    throw new Error(
-      "No Instagram Professional account found. Link Instagram to a Facebook Page in Meta Business Suite, then try again.",
-    );
-  }
 
   return {
-    username: page.instagram_business_account.username.startsWith("@")
-      ? page.instagram_business_account.username
-      : `@${page.instagram_business_account.username}`,
-    pageId: page.id,
-    accessToken: page.access_token,
+    accessToken: longLived.access_token ?? accessToken,
+    instagramUserId,
+  };
+}
+
+export async function fetchInstagramProfile(
+  accessToken: string,
+  instagramUserId: string,
+): Promise<InstagramOAuthAccount> {
+  const params = new URLSearchParams({
+    fields: "user_id,username,name",
+    access_token: accessToken,
+  });
+
+  const profile = await parseJsonResponse<{
+    user_id?: string;
+    username?: string;
+    name?: string;
+  }>(
+    await fetch(
+      `https://graph.instagram.com/${INSTAGRAM_GRAPH_VERSION}/me?${params.toString()}`,
+      { cache: "no-store" },
+    ),
+  );
+
+  const username = profile.username
+    ? profile.username.startsWith("@")
+      ? profile.username
+      : `@${profile.username}`
+    : profile.name
+      ? `@${profile.name.replace(/\s+/g, "").toLowerCase()}`
+      : "@instagram";
+
+  return {
+    username,
+    pageId: profile.user_id ?? instagramUserId,
+    accessToken,
+    instagramUserId: profile.user_id ?? instagramUserId,
   };
 }
 
 export function getInstagramOAuthStartUrl(): string {
   return `${getAppBaseUrl()}/api/auth/instagram`;
+}
+
+export function getInstagramRedirectUri(): string {
+  return `${getAppBaseUrl()}/api/auth/instagram/callback`;
 }

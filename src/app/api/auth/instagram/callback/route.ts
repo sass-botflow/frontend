@@ -4,7 +4,7 @@ import { getBackendApiUrl } from "@/lib/backend/config";
 import { getBackendAuthHeaders } from "@/lib/backend/auth";
 import {
   exchangeInstagramCode,
-  fetchInstagramBusinessAccount,
+  fetchInstagramProfile,
   verifyInstagramOAuthState,
 } from "@/lib/integrations/instagram-oauth";
 
@@ -54,8 +54,8 @@ export async function GET(request: Request) {
       );
     }
 
-    const userAccessToken = await exchangeInstagramCode(code);
-    const account = await fetchInstagramBusinessAccount(userAccessToken);
+    const { accessToken, instagramUserId } = await exchangeInstagramCode(code);
+    const account = await fetchInstagramProfile(accessToken, instagramUserId);
 
     try {
       const headers = await getBackendAuthHeaders();
