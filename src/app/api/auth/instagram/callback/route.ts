@@ -8,12 +8,20 @@ import {
   verifyInstagramOAuthState,
 } from "@/lib/integrations/instagram-oauth";
 
+function appBaseUrl(): string {
+  return (process.env.NEXT_PUBLIC_APP_URL ?? "https://www.botflow.ink").replace(/\/$/, "");
+}
+
+function completeUrl(params: Record<string, string>) {
+  const url = new URL("/oauth/instagram/complete", appBaseUrl());
+  for (const [key, value] of Object.entries(params)) {
+    url.searchParams.set(key, value);
+  }
+  return url;
+}
+
 function channelsUrl(params?: Record<string, string>) {
-  const base = (process.env.NEXT_PUBLIC_APP_URL ?? "https://www.botflow.ink").replace(
-    /\/$/,
-    "",
-  );
-  const url = new URL("/dashboard/channels", base);
+  const url = new URL("/dashboard/channels", appBaseUrl());
   if (params) {
     for (const [key, value] of Object.entries(params)) {
       url.searchParams.set(key, value);
@@ -30,27 +38,27 @@ export async function GET(request: Request) {
 
   if (oauthError) {
     return NextResponse.redirect(
-      channelsUrl({ error: oauthError || "Instagram authorization was cancelled." }),
+      completeUrl({ error: oauthError || "Instagram authorization was cancelled." }),
     );
   }
 
   if (!code || !state) {
     return NextResponse.redirect(
-      channelsUrl({ error: "Missing Instagram authorization response." }),
+      completeUrl({ error: "Missing Instagram authorization response." }),
     );
   }
 
   try {
-    const { userId: stateUserId } = verifyInstagramOAuthState(state);
+    const { userId: stateUserId, popup } = verifyInstagramOAuthState(state);
     const authState = await auth({ treatPendingAsSignedOut: false });
 
     if (!authState.userId) {
-      return NextResponse.redirect(channelsUrl({ error: "Please sign in and try again." }));
+      return NextResponse.redirect(completeUrl({ error: "Please sign in and try again." }));
     }
 
     if (authState.userId !== stateUserId) {
       return NextResponse.redirect(
-        channelsUrl({ error: "Instagram authorization session mismatch. Please try again." }),
+        completeUrl({ error: "Instagram authorization session mismatch. Please try again." }),
       );
     }
 
@@ -67,29 +75,48 @@ export async function GET(request: Request) {
           username: account.username,
           pageId: account.pageId,
           accessToken: account.accessToken,
+          displayName: account.displayName,
+          profilePictureUrl: account.profilePictureUrl,
         }),
         cache: "no-store",
       });
 
       if (!response.ok) {
-        const body = (await response.json().catch(() => ({}))) as { message?: string; error?: string };
+        const body = (await response.json().catch(() => ({}))) as {
+          message?: string;
+          error?: string;
+        };
         const message =
           body.message ?? body.error ?? "Backend could not save Instagram connection.";
-        return NextResponse.redirect(channelsUrl({ error: message }));
+        return NextResponse.redirect(completeUrl({ error: message }));
       }
     } catch {
       return NextResponse.redirect(
-        channelsUrl({
+        completeUrl({
           error:
             "Instagram authorized with Meta, but the API could not save the connection. Try again later.",
         }),
       );
     }
 
-    return NextResponse.redirect(channelsUrl({ connected: "instagram", success: "1" }));
+    const successParams = {
+      username: account.username,
+      displayName: account.displayName,
+      ...(account.profilePictureUrl
+        ? { profilePictureUrl: account.profilePictureUrl }
+        : {}),
+    };
+
+    if (popup) {
+      return NextResponse.redirect(completeUrl(successParams));
+    }
+
+    return NextResponse.redirect(
+      channelsUrl({ connected: "instagram", success: "1", ...successParams }),
+    );
   } catch (error) {
     return NextResponse.redirect(
-      channelsUrl({
+      completeUrl({
         error:
           error instanceof Error
             ? error.message

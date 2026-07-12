@@ -7,7 +7,10 @@ import {
 } from "@/lib/integrations/instagram-oauth";
 import { logBackendOAuthRedirect } from "@/lib/backend/logger";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const popup = searchParams.get("popup") === "1";
+
   const authState = await auth({ treatPendingAsSignedOut: false });
   if (!authState.userId) {
     const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://www.botflow.ink").replace(
@@ -15,7 +18,10 @@ export async function GET() {
       "",
     );
     return NextResponse.redirect(
-      new URL(`/sign-in?redirect_url=${encodeURIComponent(`${appUrl}/api/auth/instagram`)}`, appUrl),
+      new URL(
+        `/sign-in?redirect_url=${encodeURIComponent(`${appUrl}/api/auth/instagram${popup ? "?popup=1" : ""}`)}`,
+        appUrl,
+      ),
     );
   }
 
@@ -31,7 +37,7 @@ export async function GET() {
   }
 
   try {
-    const state = createInstagramOAuthState(authState.userId);
+    const state = createInstagramOAuthState(authState.userId, { popup });
     const authorizationUrl = buildInstagramAuthorizationUrl(state);
     logBackendOAuthRedirect(authorizationUrl);
     return NextResponse.redirect(authorizationUrl);

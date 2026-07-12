@@ -18,9 +18,11 @@ export interface InstagramAppConfig {
 
 export interface InstagramOAuthAccount {
   username: string;
+  displayName: string;
   pageId: string;
   accessToken: string;
   instagramUserId: string;
+  profilePictureUrl: string | null;
 }
 
 function base64Url(input: string | Buffer): string {
@@ -78,9 +80,13 @@ export function isInstagramOAuthConfigured(): boolean {
   return getInstagramAppConfig() !== null;
 }
 
-export function createInstagramOAuthState(userId: string): string {
+export function createInstagramOAuthState(
+  userId: string,
+  options?: { popup?: boolean },
+): string {
   const payload = {
     userId,
+    popup: Boolean(options?.popup),
     exp: Date.now() + STATE_TTL_MS,
     nonce: randomBytes(16).toString("hex"),
   };
@@ -91,7 +97,10 @@ export function createInstagramOAuthState(userId: string): string {
   return `${data}.${signature}`;
 }
 
-export function verifyInstagramOAuthState(state: string): { userId: string } {
+export function verifyInstagramOAuthState(state: string): {
+  userId: string;
+  popup: boolean;
+} {
   const [data, signature] = state.split(".");
   if (!data || !signature) {
     throw new Error("Invalid OAuth state.");
@@ -109,6 +118,7 @@ export function verifyInstagramOAuthState(state: string): { userId: string } {
 
   const payload = JSON.parse(fromBase64Url(data)) as {
     userId?: string;
+    popup?: boolean;
     exp?: number;
   };
 
@@ -116,7 +126,7 @@ export function verifyInstagramOAuthState(state: string): { userId: string } {
     throw new Error("OAuth state expired. Please try again.");
   }
 
-  return { userId: payload.userId };
+  return { userId: payload.userId, popup: Boolean(payload.popup) };
 }
 
 /** Direct Instagram login — user connects their IG Professional account (not generic Facebook). */
@@ -216,7 +226,7 @@ export async function fetchInstagramProfile(
   instagramUserId: string,
 ): Promise<InstagramOAuthAccount> {
   const params = new URLSearchParams({
-    fields: "user_id,username,name",
+    fields: "user_id,username,name,profile_picture_url",
     access_token: accessToken,
   });
 
@@ -224,6 +234,7 @@ export async function fetchInstagramProfile(
     user_id?: string;
     username?: string;
     name?: string;
+    profile_picture_url?: string;
   }>(
     await fetch(
       `https://graph.instagram.com/${INSTAGRAM_GRAPH_VERSION}/me?${params.toString()}`,
@@ -241,9 +252,11 @@ export async function fetchInstagramProfile(
 
   return {
     username,
+    displayName: profile.name ?? profile.username ?? username.replace(/^@/, ""),
     pageId: profile.user_id ?? instagramUserId,
     accessToken,
     instagramUserId: profile.user_id ?? instagramUserId,
+    profilePictureUrl: profile.profile_picture_url ?? null,
   };
 }
 

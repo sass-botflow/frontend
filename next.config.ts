@@ -38,6 +38,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "**.googleusercontent.com" },
       { protocol: "https", hostname: "api.botflow.ink" },
+      { protocol: "https", hostname: "**.cdninstagram.com" },
+      { protocol: "https", hostname: "**.fbcdn.net" },
     ],
   },
 };
