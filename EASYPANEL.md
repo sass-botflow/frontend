@@ -2,17 +2,13 @@
 
 > **Guide sari3 (Darija):** [EASYPANEL.txt](./EASYPANEL.txt) · [DEPLOY-FACILE.md](./DEPLOY-FACILE.md)
 
-## ⚠️ Ne build PAS sur EasyPanel (sauf si GHCR private)
+## ⚠️ GHCR image est PRIVATE
 
-GitHub Actions bni l'image automatiquement. EasyPanel **ghir kat-pulli**:
+`ghcr.io/sass-botflow/frontend:latest` → **pull access denied** sans credentials.
 
-```
-ghcr.io/sass-botflow/frontend:latest
-```
+**Solution recommandée:** EasyPanel **Source = GitHub** (build sur VPS). Voir [DEPLOY-DABA.md](./DEPLOY-DABA.md).
 
-**Exception:** si GHCR est **private** et tu ne peux pas la rendre public → utilise **GitHub + Dockerfile** (voir Tariqa 1B dans EASYPANEL.txt).
-
-Ila Source = GitHub + Dockerfile sans raison → deploy peut être lent; Docker Image est préféré une fois GHCR public.
+**Alternative:** rendre GHCR public (Actions → **Make GHCR package public**) puis Source = Docker Image.
 
 ---
 
@@ -22,8 +18,10 @@ Ila Source = GitHub + Dockerfile sans raison → deploy peut être lent; Docker 
 |-------|--------|
 | Project | `sass-botflow` |
 | Service | `frontend` |
-| **Source type** | **Docker Image** |
-| **Image** | `ghcr.io/sass-botflow/frontend:latest` |
+| **Source type** | **GitHub** (GHCR private) |
+| **Repo** | `sass-botflow/frontend` |
+| **Branch** | `main` |
+| **Dockerfile** | `Dockerfile` |
 | **Port** | `3000` |
 | Domains | `www.botflow.ink` **et** `botflow.ink` |
 | Health check | `/api/health` |

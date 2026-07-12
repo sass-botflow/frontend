@@ -1,4 +1,5 @@
-# syntax=docker/dockerfile:1
+# BotFlow frontend — works on EasyPanel (GitHub build) + GitHub Actions (GHCR)
+# EasyPanel → Source → GitHub → sass-botflow/frontend → main → Dockerfile → port 3000
 
 FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat openssl
@@ -12,6 +13,13 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+ARG APP_VERSION=dev
+ARG BUILD_TIME=unknown
+ARG GIT_SHA
+ARG GITHUB_SHA
+ARG COMMIT_SHA
+ARG GIT_COMMIT
+ARG SOURCE_COMMIT
 ARG NEXT_PUBLIC_APP_URL=https://www.botflow.ink
 ARG NEXT_PUBLIC_API_URL=https://api.botflow.ink
 ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_build_placeholder
@@ -22,13 +30,6 @@ ARG NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/onboarding
 ARG NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=/en
 ARG NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=/dashboard
 ARG NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=/onboarding
-ARG APP_VERSION=dev
-ARG BUILD_TIME=unknown
-ARG GIT_SHA
-ARG GITHUB_SHA
-ARG COMMIT_SHA
-ARG GIT_COMMIT
-ARG SOURCE_COMMIT
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
@@ -39,11 +40,10 @@ ENV NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=$NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL
 ENV NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=$NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL
 ENV NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=$NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL
 ENV NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=$NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL
-ENV NODE_OPTIONS=--max-old-space-size=1536
+ENV NODE_OPTIONS=--max-old-space-size=1024
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV DOCKER_BUILD=1
 
-# Resolve version: CI passes APP_VERSION; EasyPanel GitHub builds use git / env fallbacks
 RUN set -e; \
     V="$APP_VERSION"; \
     if [ "$V" = "dev" ] || [ -z "$V" ]; then \
@@ -59,41 +59,24 @@ RUN set -e; \
     echo "$V" > /app/BUILD_VERSION.txt && echo "$BT" > /app/BUILD_TIME.txt; \
     echo "Build version: $V at $BT"
 
-ENV APP_VERSION=$APP_VERSION
-ENV BUILD_TIME=$BUILD_TIME
-
 RUN npm run build
 
 FROM node:20-alpine AS runner
 RUN apk add --no-cache libc6-compat curl openssl
 WORKDIR /app
-
-ARG APP_VERSION=dev
-ARG BUILD_TIME=unknown
-
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
-ENV APP_VERSION=$APP_VERSION
-ENV BUILD_TIME=$BUILD_TIME
-
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs
-
+RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder /app/BUILD_VERSION.txt ./BUILD_VERSION.txt
 COPY --from=builder /app/BUILD_TIME.txt ./BUILD_TIME.txt
 COPY scripts/docker-start.sh ./docker-start.sh
-
 RUN chown nextjs:nodejs /app/docker-start.sh && chmod +x /app/docker-start.sh
-
 USER nextjs
-
 EXPOSE 3000
-
-HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=5 \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=5 \
   CMD curl -f http://127.0.0.1:3000/api/health || exit 1
-
 CMD ["./docker-start.sh"]

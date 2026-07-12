@@ -2,8 +2,8 @@
   BOTFLOW FRONTEND — DEPLOY F EASYPANEL (DIR HADI DABA)
 ═══════════════════════════════════════════════════════════
 
-⚠️  Docker Image (GHCR) = PRIVATE → kayfail "pull access denied"
-✅  HAL: GitHub Source + Dockerfile.easypanel
+⚠️  GHCR image = PRIVATE → "pull access denied" ila Source = Docker Image
+✅  HAL: GitHub Source + branch main + Dockerfile
 
 ───────────────────────────────────────────────────────────
 STEP 1 — SOURCE (EasyPanel)
@@ -11,11 +11,12 @@ STEP 1 — SOURCE (EasyPanel)
 http://187.124.12.89:3000
 → sass-botflow → frontend → Source
 
-  Type     = GitHub
-  Repo     = sass-botflow/frontend
-  Branch   = main
-  Dockerfile path = Dockerfile.easypanel    ← MOHIM!
-  Port     = 3000
+  Type           = GitHub
+  Repo           = sass-botflow/frontend
+  Branch         = main
+  Dockerfile     = Dockerfile          ← MOHIM! (wla Dockerfile.easypanel)
+  Port           = 3000
+  Auto Deploy    = ON
 
 ───────────────────────────────────────────────────────────
 STEP 2 — ENVIRONMENT (copier kolchi)
@@ -27,14 +28,14 @@ NEXT_PUBLIC_APP_URL=https://www.botflow.ink
 NEXT_PUBLIC_API_URL=https://api.botflow.ink
 PORT=3000
 
-# WhatsApp QR (server-side only — MOHIM bach ytl3 QR)
+# WhatsApp QR (server-side only)
 EVOLUTION_API_URL=https://evolution.api.botflow.ink
 EVOLUTION_API_KEY=<nfs Evolution AUTHENTICATION_API_KEY>
 
 SUPPRIMER ila kaynin:
   DATABASE_URL
   META_APP_ID / META_*
-  EVOLUTION_API_KEY
+  INTEGRATION_ENCRYPTION_KEY
 
 ───────────────────────────────────────────────────────────
 STEP 3 — DOMAINS
@@ -48,17 +49,16 @@ STEP 4 — DEPLOY
 1. Klik DEPLOY
 2. STANA 5-10 D9AYA — MA TKLIKICH CANCEL!
 3. Chouf Logs — khass yban:
-   "EasyPanel build version: 20ea99d"
+   "Build version: 50d105f"
    "Launching Next.js on 0.0.0.0:3000"
-4. Enable Auto Deploy = ON
 
 ───────────────────────────────────────────────────────────
 STEP 5 — VERIFY
 ───────────────────────────────────────────────────────────
 curl https://www.botflow.ink/api/health
 
-  version = "20ea99d" (git sha)  → OK ✅
-  version = "dev"                → redeploy (Dockerfile path ghalat)
+  version = git sha (ex: "50d105f")  → OK ✅
+  version = "dev"                    → redeploy (Source ghalat)
 
 ───────────────────────────────────────────────────────────
 ILA BA9I KAYFAIL
@@ -66,11 +66,12 @@ ILA BA9I KAYFAIL
 | Erreur              | Hal                                    |
 |---------------------|----------------------------------------|
 | Cancel f 1 thaniya  | Source = GitHub (mashi Docker Image)   |
-| pull access denied  | Nfs l7al — st3mel GitHub Source        |
-| Build Killed        | Dockerfile.easypanel + stana 10 d9aya  |
-| spawn error -8      | VPS RAM 9lila — restart VPS wla upgrade|
+| pull access denied  | GHCR private → GitHub Source           |
+| Build Killed        | Stana 10 d9aya; VPS 2GB+ RAM           |
+| spawn error -8      | VPS RAM 9lila — restart VPS            |
 | Clerk error         | Zid CLERK keys f Environment           |
 
-Webhook auto-deploy: DEPLOY-FACILE.md
+Guide Darija: DEPLOY-DABA.md
+Webhook: DEPLOY-FACILE.md
 
 ═══════════════════════════════════════════════════════════

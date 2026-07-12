@@ -1,5 +1,5 @@
-# EasyPanel VPS build — no BuildKit cache mounts (max compatibility)
-# EasyPanel → Source → GitHub → Dockerfile path: Dockerfile.easypanel
+# EasyPanel alias — same as root Dockerfile (kept for existing EasyPanel configs).
+# EasyPanel → Source → GitHub → Dockerfile path: Dockerfile  (wla Dockerfile.easypanel)
 
 FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat openssl
@@ -13,9 +13,13 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+ARG APP_VERSION=dev
+ARG BUILD_TIME=unknown
 ARG GIT_SHA
 ARG GITHUB_SHA
 ARG COMMIT_SHA
+ARG GIT_COMMIT
+ARG SOURCE_COMMIT
 ARG NEXT_PUBLIC_APP_URL=https://www.botflow.ink
 ARG NEXT_PUBLIC_API_URL=https://api.botflow.ink
 ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_build_placeholder
@@ -24,6 +28,8 @@ ARG NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 ARG NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
 ARG NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/onboarding
 ARG NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=/en
+ARG NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=/dashboard
+ARG NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=/onboarding
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
@@ -32,17 +38,24 @@ ENV NEXT_PUBLIC_CLERK_SIGN_UP_URL=$NEXT_PUBLIC_CLERK_SIGN_UP_URL
 ENV NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=$NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL
 ENV NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=$NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL
 ENV NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=$NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL
+ENV NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=$NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL
+ENV NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=$NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL
 ENV NODE_OPTIONS=--max-old-space-size=1024
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV DOCKER_BUILD=1
 
 RUN set -e; \
-    V="dev"; \
-    if [ -n "$GIT_SHA" ]; then V=$(echo "$GIT_SHA" | cut -c1-7); \
-    elif [ -n "$GITHUB_SHA" ]; then V=$(echo "$GITHUB_SHA" | cut -c1-7); \
-    elif [ -n "$COMMIT_SHA" ]; then V=$(echo "$COMMIT_SHA" | cut -c1-7); \
-    else V=$(git rev-parse --short HEAD 2>/dev/null || echo dev); fi; \
-    BT=$(date -u +%Y-%m-%dT%H:%M:%SZ); \
+    V="$APP_VERSION"; \
+    if [ "$V" = "dev" ] || [ -z "$V" ]; then \
+      if [ -n "$GIT_SHA" ]; then V=$(echo "$GIT_SHA" | cut -c1-7); \
+      elif [ -n "$GITHUB_SHA" ]; then V=$(echo "$GITHUB_SHA" | cut -c1-7); \
+      elif [ -n "$COMMIT_SHA" ]; then V=$(echo "$COMMIT_SHA" | cut -c1-7); \
+      elif [ -n "$GIT_COMMIT" ]; then V=$(echo "$GIT_COMMIT" | cut -c1-7); \
+      elif [ -n "$SOURCE_COMMIT" ]; then V=$(echo "$SOURCE_COMMIT" | cut -c1-7); \
+      else V=$(git rev-parse --short HEAD 2>/dev/null || echo dev); fi; \
+    fi; \
+    BT="$BUILD_TIME"; \
+    if [ "$BT" = "unknown" ] || [ -z "$BT" ]; then BT=$(date -u +%Y-%m-%dT%H:%M:%SZ); fi; \
     echo "$V" > /app/BUILD_VERSION.txt && echo "$BT" > /app/BUILD_TIME.txt; \
     echo "EasyPanel build version: $V at $BT"
 
