@@ -1,12 +1,8 @@
-import { clerkMiddleware, createRouteMatcher, clerkClient } from "@clerk/nextjs/server";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { defaultLocale, isValidLocale } from "@/lib/i18n/config";
 import { LEGAL_PATHS } from "@/lib/legal/constants";
-import {
-  isOnboardingComplete,
-  type UserOnboardingMetadata,
-} from "@/lib/onboarding";
 
 const COOKIE_NAME = "botflow_locale";
 const PUBLIC_PATHS = ["/pricing"];
@@ -81,12 +77,6 @@ function handleLocaleRedirect(request: NextRequest) {
   return null;
 }
 
-async function getUserOnboardingMetadata(userId: string) {
-  const client = await clerkClient();
-  const user = await client.users.getUser(userId);
-  return user.publicMetadata as UserOnboardingMetadata;
-}
-
 function isOAuthCallbackPath(pathname: string) {
   return (
     pathname === "/sso-callback" ||
@@ -116,11 +106,6 @@ export default clerkMiddleware(async (auth, request) => {
   if (isOnboardingRoute(request)) {
     if (!userId) {
       return NextResponse.redirect(new URL("/sign-in", request.url));
-    }
-
-    const metadata = await getUserOnboardingMetadata(userId);
-    if (isOnboardingComplete(metadata)) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 
     return NextResponse.next();
