@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
-import { getStartAppPath, isOpenAccessEnabled } from "@/lib/auth-config";
 import { Button } from "@/components/ui/button";
 
 interface AuthNavActionsProps {
@@ -21,51 +20,27 @@ export function AuthNavActions({
   layout = "desktop",
 }: AuthNavActionsProps) {
   const isMobile = layout === "mobile";
-  const openAccess = isOpenAccessEnabled();
-  const startPath = getStartAppPath();
 
   return (
     <div className={className}>
       <Show when="signed-out">
-        {openAccess ? (
-          <>
-            <Button
-              variant={isMobile ? "outline" : "ghost"}
-              size="sm"
-              className={isMobile ? "w-full" : "hidden sm:inline-flex"}
-              asChild
-            >
-              <Link href={startPath}>{signInLabel}</Link>
-            </Button>
-            <Button
-              size="sm"
-              className={isMobile ? "w-full" : "hidden sm:inline-flex"}
-              asChild
-            >
-              <Link href={startPath}>{signUpLabel}</Link>
-            </Button>
-          </>
-        ) : (
-          <>
-            <SignInButton mode="redirect" forceRedirectUrl="/dashboard">
-              <Button
-                variant={isMobile ? "outline" : "ghost"}
-                size="sm"
-                className={isMobile ? "w-full" : "hidden sm:inline-flex"}
-              >
-                {signInLabel}
-              </Button>
-            </SignInButton>
-            <SignUpButton mode="redirect" forceRedirectUrl="/dashboard">
-              <Button
-                size="sm"
-                className={isMobile ? "w-full" : "hidden sm:inline-flex"}
-              >
-                {signUpLabel}
-              </Button>
-            </SignUpButton>
-          </>
-        )}
+        <SignInButton mode="redirect" forceRedirectUrl="/dashboard">
+          <Button
+            variant={isMobile ? "outline" : "ghost"}
+            size="sm"
+            className={isMobile ? "w-full" : "hidden sm:inline-flex"}
+          >
+            {signInLabel}
+          </Button>
+        </SignInButton>
+        <SignUpButton mode="redirect" forceRedirectUrl="/onboarding">
+          <Button
+            size="sm"
+            className={isMobile ? "w-full" : "hidden sm:inline-flex"}
+          >
+            {signUpLabel}
+          </Button>
+        </SignUpButton>
       </Show>
       <Show when="signed-in">
         <div

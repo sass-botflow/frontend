@@ -1,8 +1,4 @@
-import {
-  autoVerifyUserEmail,
-  bootstrapUserAccess,
-  ensureAuthReady,
-} from "@/app/auth/actions";
+import { autoVerifyUserEmail, bootstrapUserAccess } from "@/app/auth/actions";
 
 /** Full page navigation — required for Clerk session cookies to persist. */
 export function hardRedirect(path: string) {
@@ -17,16 +13,12 @@ export function clerkErrorMessage(
 }
 
 /** Verify email, ensure dashboard access, then hard-redirect (keeps session). */
-export async function finishAuthAndRedirect(path: string, email?: string) {
+export async function finishAuthAndRedirect(path: string) {
   try {
-    await ensureAuthReady(email);
+    await autoVerifyUserEmail();
+    await bootstrapUserAccess();
   } catch {
-    try {
-      await autoVerifyUserEmail();
-      await bootstrapUserAccess();
-    } catch {
-      // Still redirect — user is signed in even if bootstrap fails.
-    }
+    // Still redirect — user is signed in even if bootstrap fails.
   } finally {
     hardRedirect(path);
   }

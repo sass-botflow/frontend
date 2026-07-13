@@ -35,28 +35,6 @@ export async function autoVerifyUserEmail() {
   return { success: true as const };
 }
 
-/** Verify a freshly created account by email — skips inbox confirmation during MVP. */
-export async function forceVerifyEmailByAddress(email: string) {
-  const normalized = email.trim().toLowerCase();
-  if (!normalized) {
-    return { success: false as const };
-  }
-
-  const client = await clerkClient();
-  const { data } = await client.users.getUserList({ emailAddress: [normalized] });
-  const user = data[0];
-
-  if (!user?.primaryEmailAddressId) {
-    return { success: false as const };
-  }
-
-  await client.emailAddresses.updateEmailAddress(user.primaryEmailAddressId, {
-    verified: true,
-  });
-
-  return { success: true as const };
-}
-
 /**
  * Ensures signed-in users can reach the dashboard without getting stuck
  * on onboarding or email verification gates.
@@ -79,7 +57,6 @@ export async function bootstrapUserAccess() {
   const displayName =
     [user.firstName, user.lastName].filter(Boolean).join(" ").trim() ||
     user.emailAddresses[0]?.emailAddress?.split("@")[0] ||
-    user.username ||
     "My Business";
 
   await client.users.updateUserMetadata(userId, {
@@ -92,15 +69,5 @@ export async function bootstrapUserAccess() {
     },
   });
 
-  return { success: true as const };
-}
-
-/** Verify email + skip onboarding — call after every sign-in/sign-up. */
-export async function ensureAuthReady(email?: string) {
-  if (email) {
-    await forceVerifyEmailByAddress(email);
-  }
-  await autoVerifyUserEmail();
-  await bootstrapUserAccess();
   return { success: true as const };
 }

@@ -2,16 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useSignIn } from "@clerk/nextjs";
 import { useLocale } from "@/components/providers/locale-provider";
 import { GoogleAuthButton } from "@/components/auth/google-auth-button";
-import { ensureAuthReady } from "@/app/auth/actions";
 import { clerkErrorMessage, finishAuthAndRedirect } from "@/lib/auth-navigate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export function EmailPasswordSignIn() {
+  const router = useRouter();
   const { t } = useLocale();
   const { signIn, fetchStatus } = useSignIn();
   const [email, setEmail] = useState("");
@@ -24,10 +25,8 @@ export function EmailPasswordSignIn() {
     e.preventDefault();
     setError(null);
 
-    const trimmedEmail = email.trim();
-
     const { error: passwordError } = await signIn.password({
-      emailAddress: trimmedEmail,
+      emailAddress: email.trim(),
       password,
     });
 
@@ -48,22 +47,34 @@ export function EmailPasswordSignIn() {
       return;
     }
 
+    if (signIn.status === "needs_second_factor") {
+      router.push("/sign-in/factor-one");
+      return;
+    }
+
+    if (signIn.status === "needs_new_password") {
+      router.push("/sign-in/reset-password");
+      return;
+    }
+
+    if (signIn.status === "needs_client_trust") {
+      router.push("/sign-in/factor-two");
+      return;
+    }
+
     if (signIn.status !== "complete") {
-      await ensureAuthReady(trimmedEmail);
+      setError(t.auth.signInError);
+      return;
     }
 
     const { error: finalizeError } = await signIn.finalize();
 
     if (finalizeError) {
-      await ensureAuthReady(trimmedEmail);
-      const retry = await signIn.finalize();
-      if (retry.error) {
-        setError(clerkErrorMessage(retry.error, t.auth.signInError));
-        return;
-      }
+      setError(clerkErrorMessage(finalizeError, t.auth.signInError));
+      return;
     }
 
-    await finishAuthAndRedirect("/dashboard", trimmedEmail);
+    await finishAuthAndRedirect("/dashboard");
   }
 
   return (
@@ -73,14 +84,6 @@ export function EmailPasswordSignIn() {
           {t.auth.signInTitle}
         </h1>
         <p className="text-sm text-muted-foreground">{t.auth.signInSubtitle}</p>
-      </div>
-
-      <GoogleAuthButton mode="sign-in" />
-
-      <div className="relative flex items-center gap-3">
-        <div className="h-px flex-1 bg-border" />
-        <span className="text-xs text-muted-foreground">{t.auth.or}</span>
-        <div className="h-px flex-1 bg-border" />
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -130,6 +133,14 @@ export function EmailPasswordSignIn() {
           {loading ? t.auth.signingIn : t.auth.signInButton}
         </Button>
       </form>
+
+      <div className="relative flex items-center gap-3">
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-xs text-muted-foreground">{t.auth.or}</span>
+        <div className="h-px flex-1 bg-border" />
+      </div>
+
+      <GoogleAuthButton mode="sign-in" />
 
       <p className="text-center text-xs leading-relaxed text-muted-foreground">
         {t.auth.termsPrefix}{" "}

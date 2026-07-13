@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useSignUp } from "@clerk/nextjs";
 import { useLocale } from "@/components/providers/locale-provider";
 import { GoogleAuthButton } from "@/components/auth/google-auth-button";
-import { ensureAuthReady } from "@/app/auth/actions";
 import { clerkErrorMessage, finishAuthAndRedirect } from "@/lib/auth-navigate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,12 +24,11 @@ export function EmailPasswordSignUp() {
     e.preventDefault();
     setError(null);
 
-    const trimmedEmail = email.trim();
     const [firstName, ...rest] = name.trim().split(" ");
     const lastName = rest.join(" ") || undefined;
 
     const { error: passwordError } = await signUp.password({
-      emailAddress: trimmedEmail,
+      emailAddress: email.trim(),
       password,
       firstName,
       lastName,
@@ -41,22 +39,14 @@ export function EmailPasswordSignUp() {
       return;
     }
 
-    if (signUp.status !== "complete") {
-      await ensureAuthReady(trimmedEmail);
-    }
-
     const { error: finalizeError } = await signUp.finalize();
 
     if (finalizeError) {
-      await ensureAuthReady(trimmedEmail);
-      const retry = await signUp.finalize();
-      if (retry.error) {
-        setError(clerkErrorMessage(retry.error, t.auth.signUpError));
-        return;
-      }
+      setError(clerkErrorMessage(finalizeError, t.auth.signUpError));
+      return;
     }
 
-    await finishAuthAndRedirect("/dashboard", trimmedEmail);
+    await finishAuthAndRedirect("/dashboard");
   }
 
   return (
@@ -66,14 +56,6 @@ export function EmailPasswordSignUp() {
           {t.auth.signUpTitle}
         </h1>
         <p className="text-sm text-muted-foreground">{t.auth.signUpSubtitle}</p>
-      </div>
-
-      <GoogleAuthButton mode="sign-up" />
-
-      <div className="relative flex items-center gap-3">
-        <div className="h-px flex-1 bg-border" />
-        <span className="text-xs text-muted-foreground">{t.auth.or}</span>
-        <div className="h-px flex-1 bg-border" />
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -130,6 +112,14 @@ export function EmailPasswordSignUp() {
           {loading ? t.auth.creatingAccount : t.auth.signUpButton}
         </Button>
       </form>
+
+      <div className="relative flex items-center gap-3">
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-xs text-muted-foreground">{t.auth.or}</span>
+        <div className="h-px flex-1 bg-border" />
+      </div>
+
+      <GoogleAuthButton mode="sign-up" />
 
       <p className="text-center text-xs leading-relaxed text-muted-foreground">
         {t.auth.termsPrefix}{" "}
