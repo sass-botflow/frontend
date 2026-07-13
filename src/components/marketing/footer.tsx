@@ -4,10 +4,13 @@ import Link from "next/link";
 import { BotFlowLogo } from "@/components/brand/botflow-logo";
 import { useLocale, useLocalizedPath } from "@/components/providers/locale-provider";
 import { APP_NAME } from "@/lib/constants";
+import { getSignInPath, getStartAppPath } from "@/lib/auth-config";
 
 export function Footer() {
   const { t } = useLocale();
   const lp = useLocalizedPath();
+  const startPath = getStartAppPath();
+  const signInPath = getSignInPath();
 
   const footerLinks = {
     [t.footer.product]: [
@@ -17,8 +20,8 @@ export function Footer() {
       { href: lp("/pricing"), label: t.nav.pricing },
     ],
     [t.footer.company]: [
-      { href: "/sign-in", label: t.nav.signIn },
-      { href: "/sign-up", label: t.nav.startFree },
+      { href: signInPath, label: t.nav.signIn },
+      { href: startPath, label: t.nav.startFree },
       { href: "#faq", label: t.nav.faq },
     ],
     [t.footer.legal]: [

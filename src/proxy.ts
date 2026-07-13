@@ -114,7 +114,13 @@ export default clerkMiddleware(async (auth, request) => {
   // Match sign-in page: pending Clerk sessions still count as signed in.
   // auth.protect() defaults treatPendingAsSignedOut=true and caused a loop
   // (sign-in → dashboard → sign-in) with "You're already signed in".
+  // MVP open access — "Start 14-day trial" goes straight to dashboard (no email gate).
+  const openAccess = process.env.NEXT_PUBLIC_AUTH_OPEN_ACCESS !== "false";
+
   if (isProtectedRoute(request) && !userId) {
+    if (openAccess) {
+      return NextResponse.next();
+    }
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 

@@ -8,9 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChannelLogo } from "@/components/channels/channel-logo";
 import { DashboardPreview } from "@/components/marketing/dashboard-preview";
+import { getStartAppPath } from "@/lib/auth-config";
 
 export function Hero() {
   const { t } = useLocale();
+  const startPath = getStartAppPath();
 
   const trustPoints = [t.hero.trust1, t.hero.trust2, t.hero.trust3];
 
@@ -46,7 +48,7 @@ export function Hero() {
 
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button size="lg" className="h-12 px-8 text-base" asChild>
-              <Link href="/sign-up">
+              <Link href={startPath}>
                 {t.hero.ctaPrimary}
                 <ArrowRight className="h-4 w-4" />
               </Link>

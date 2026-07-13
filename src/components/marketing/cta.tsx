@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { useLocale } from "@/components/providers/locale-provider";
+import { getStartAppPath } from "@/lib/auth-config";
 import { Button } from "@/components/ui/button";
 
 export function CTA() {
   const { t } = useLocale();
+  const startPath = getStartAppPath();
   const trustBadges = [t.cta.trust1, t.cta.trust2, t.cta.trust3];
 
   return (
@@ -24,7 +26,7 @@ export function CTA() {
         <p className="mt-4 text-lg text-muted-foreground">{t.cta.subtitle}</p>
 
         <Button size="lg" className="mt-10 h-12 px-10 text-base" asChild>
-          <Link href="/sign-up">
+          <Link href={startPath}>
             {t.cta.button}
             <ArrowRight className="h-4 w-4" />
           </Link>

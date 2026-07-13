@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { PLANS } from "@/lib/constants";
+import { getStartAppPath } from "@/lib/auth-config";
 import { cn, formatCurrency } from "@/lib/utils";
 
 export function Pricing() {
   const { t } = useLocale();
+  const startPath = getStartAppPath();
 
   return (
     <section id="pricing" className="border-t border-border/60 bg-muted/20 py-24">
@@ -63,7 +65,7 @@ export function Pricing() {
                 </CardContent>
                 <CardFooter>
                   <Button className="w-full" variant={"popular" in plan && plan.popular ? "default" : "outline"} asChild>
-                    <Link href="/sign-up">{t.pricing.startTrial}</Link>
+                    <Link href={startPath}>{t.pricing.startTrial}</Link>
                   </Button>
                 </CardFooter>
               </Card>

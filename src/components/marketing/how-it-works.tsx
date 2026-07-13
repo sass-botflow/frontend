@@ -4,11 +4,13 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Brain, Inbox, Radio, TrendingUp } from "lucide-react";
 import { useLocale } from "@/components/providers/locale-provider";
+import { getStartAppPath } from "@/lib/auth-config";
 
 const stepIcons = [Radio, Brain, Inbox, TrendingUp];
 
 export function HowItWorks() {
   const { t } = useLocale();
+  const startPath = getStartAppPath();
 
   return (
     <section id="how-it-works" className="py-24 lg:py-32">
@@ -46,7 +48,7 @@ export function HowItWorks() {
                   {step.description}
                 </p>
                 <Link
-                  href="/sign-up"
+                  href={startPath}
                   className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100"
                 >
                   {step.link}
