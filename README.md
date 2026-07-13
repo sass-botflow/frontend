@@ -4,6 +4,20 @@ Premium AI automation SaaS — unified inbox, AI agent builder, CRM, appointment
 
 **Live:** [botflow.ink](https://botflow.ink) · **API:** [api.botflow.ink](https://api.botflow.ink)
 
+### Ma qdertch tdeployi? (2 dakika)
+
+**L'image kaybni f GitHub** — khass ghir t-triggeri EasyPanel:
+
+| Ila 3andek EasyPanel | Ila ma 3andekch EasyPanel |
+|----------------------|---------------------------|
+| 1. [http://187.124.12.89:3000](http://187.124.12.89:3000) | Sift l'admin message lta7t |
+| 2. `sass-botflow` → `frontend` | |
+| 3. Klik **Restart** ↻ | |
+
+**Wla** (bla secrets): [Actions → Deploy now → Run workflow](https://github.com/sass-botflow/frontend/actions/workflows/deploy-now.yml) — paste **Deployment Trigger** URL mn EasyPanel.
+
+Guide kamil: [DEPLOY-FACILE.md](./DEPLOY-FACILE.md)
+
 ## Stack
 
 - **Next.js 15** + TypeScript + App Router
