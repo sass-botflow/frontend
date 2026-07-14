@@ -206,6 +206,7 @@ export function useWhatsAppQrSession({
   }, [instanceId, isConnected, onConnected, queryClient, statusQuery.data]);
 
   const resolveError = useCallback((): WhatsAppConnectErrorCode | null => {
+    if (qrQuery.isFetching) return null;
     if (errorCode) return errorCode;
 
     const message =
@@ -215,7 +216,7 @@ export function useWhatsAppQrSession({
 
     if (!message) return null;
     return mapApiErrorToWhatsAppCode(message);
-  }, [errorCode, qrQuery.error]);
+  }, [errorCode, qrQuery.error, qrQuery.isFetching]);
 
   const resolveErrorDetail = useCallback((): string | null => {
     if (qrQuery.error instanceof Error) {

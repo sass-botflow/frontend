@@ -16,7 +16,7 @@ import {
 const QR_EXPIRES_IN_SECONDS = 60;
 
 function isTransientEvolutionError(message: string): boolean {
-  return /fetch failed|econnrefused|enotfound|timeout|abort|cloudflare|bad gateway|gateway|could not reach|offline|unreachable|starting|not ready/i.test(
+  return /fetch failed|econnrefused|enotfound|timeout|abort|cloudflare|bad gateway|gateway|could not reach|offline|unreachable|starting|not ready|returned html|<!doctype/i.test(
     message,
   );
 }
@@ -29,6 +29,32 @@ function waitingQrResponse(instanceId: string) {
     expiresIn: 5,
     status: "WAITING_QR" as const,
   };
+}
+
+async function ensureEvolutionInstance(instanceName: string): Promise<void> {
+  let existing = await fetchEvolutionInstance(instanceName);
+
+  if (existing) {
+    const state =
+      typeof existing.connectionStatus === "object"
+        ? (existing.connectionStatus as { state?: string }).state
+        : typeof existing.status === "string"
+          ? existing.status
+          : undefined;
+
+    if (state === "close" || state === "closed") {
+      try {
+        await deleteEvolutionInstance(instanceName);
+        existing = null;
+      } catch {
+        // Continue with reconnect attempt.
+      }
+    }
+  }
+
+  if (!existing) {
+    await createEvolutionInstance(instanceName);
+  }
 }
 
 async function requireUserId(): Promise<string> {
@@ -55,7 +81,16 @@ export async function evolutionConnect() {
   const userId = await requireUserId();
   const instanceName = deriveInstanceName(userId);
 
-  // Return immediately — QR route creates the Evolution instance (avoids Cloudflare timeout).
+  try {
+    await ensureEvolutionInstance(instanceName);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!isTransientEvolutionError(message)) {
+      throw error;
+    }
+    // Instance may still be provisioning — QR polling will retry.
+  }
+
   return {
     instanceId: instanceName,
     status: "waiting_qr" as const,
@@ -67,28 +102,9 @@ export async function evolutionGetQr(instanceId: string) {
   const instanceName = assertOwnedInstance(userId, instanceId);
 
   try {
-    let existing = await fetchEvolutionInstance(instanceName);
-
-    if (existing) {
-      const state =
-        typeof existing.connectionStatus === "object"
-          ? (existing.connectionStatus as { state?: string }).state
-          : typeof existing.status === "string"
-            ? existing.status
-            : undefined;
-
-      if (state === "close" || state === "closed") {
-        try {
-          await deleteEvolutionInstance(instanceName);
-          existing = null;
-        } catch {
-          // Continue with reconnect attempt.
-        }
-      }
-    }
-
+    const existing = await fetchEvolutionInstance(instanceName);
     if (!existing) {
-      await createEvolutionInstance(instanceName);
+      return waitingQrResponse(instanceId);
     }
 
     try {

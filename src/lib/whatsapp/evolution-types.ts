@@ -90,6 +90,7 @@ export function mapApiErrorToWhatsAppCode(message: string): WhatsAppConnectError
   const lower = message.toLowerCase();
 
   if (
+    lower.includes("evolution api key") ||
     lower.includes("api key") ||
     lower.includes("unauthorized") ||
     lower.includes("authentication") ||
@@ -99,13 +100,12 @@ export function mapApiErrorToWhatsAppCode(message: string): WhatsAppConnectError
   }
 
   if (
-    lower.includes("evolution") ||
-    lower.includes("could not reach") ||
+    lower.includes("could not reach evolution") ||
+    lower.includes("evolution api returned html") ||
     lower.includes("offline") ||
     lower.includes("unreachable") ||
     lower.includes("not configured") ||
-    lower.includes("502") ||
-    lower.includes("503") ||
+    lower.includes("temporarily unavailable") ||
     lower.includes("timed out") ||
     lower.includes("timeout")
   ) {

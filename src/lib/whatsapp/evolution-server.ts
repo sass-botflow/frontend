@@ -269,6 +269,7 @@ export async function testEvolutionConnectivity(): Promise<{
   ok: boolean;
   baseUrl: string | null;
   message: string;
+  apiKeyValid?: boolean;
 }> {
   const apiKey = process.env.EVOLUTION_API_KEY?.trim();
   const baseUrls = getEvolutionBaseUrlCandidates();
@@ -278,20 +279,36 @@ export async function testEvolutionConnectivity(): Promise<{
       ok: false,
       baseUrl: null,
       message: "EVOLUTION_API_KEY is not set on the frontend server.",
+      apiKeyValid: false,
     };
   }
 
   for (const baseUrl of baseUrls) {
     try {
-      const response = await fetch(baseUrl, {
+      const response = await fetch(`${baseUrl}/instance/fetchInstances`, {
         headers: { apikey: apiKey },
-        signal: AbortSignal.timeout(5_000),
+        signal: AbortSignal.timeout(8_000),
         cache: "no-store",
       });
       const text = await response.text();
 
+      if (response.status === 401 || response.status === 403) {
+        return {
+          ok: false,
+          baseUrl,
+          message:
+            "EVOLUTION_API_KEY is invalid. It must match AUTHENTICATION_API_KEY on evolution-api.",
+          apiKeyValid: false,
+        };
+      }
+
       if (response.ok && !isHtmlPayload(text)) {
-        return { ok: true, baseUrl, message: "Evolution API reachable" };
+        return {
+          ok: true,
+          baseUrl,
+          message: "Evolution API authenticated and reachable",
+          apiKeyValid: true,
+        };
       }
     } catch {
       continue;
@@ -302,6 +319,7 @@ export async function testEvolutionConnectivity(): Promise<{
     ok: false,
     baseUrl: null,
     message: "Could not reach Evolution API from the frontend container.",
+    apiKeyValid: undefined,
   };
 }
 

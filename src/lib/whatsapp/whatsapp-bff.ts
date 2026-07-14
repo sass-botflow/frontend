@@ -36,6 +36,20 @@ export async function proxyBackendJsonWithEvolutionFallback<T>(
 
       const message =
         error instanceof Error ? error.message : "WhatsApp request failed.";
+
+      if (/could not reach|timeout|offline|unreachable|gateway|returned html|cloudflare/i.test(message)) {
+        return NextResponse.json(
+          {
+            instanceId: "",
+            qrCode: "",
+            base64: "",
+            expiresIn: 5,
+            status: "WAITING_QR",
+          },
+          { status: 200 },
+        );
+      }
+
       return NextResponse.json({ error: message, message }, { status: 502 });
     }
   }
