@@ -26,6 +26,19 @@ export async function GET(
     const message =
       error instanceof Error ? error.message : "Could not load WhatsApp QR code.";
 
+    if (/could not reach|timeout|offline|unreachable|gateway/i.test(message)) {
+      return NextResponse.json(
+        {
+          instanceId,
+          qrCode: "",
+          base64: "",
+          expiresIn: 5,
+          status: "WAITING_QR",
+        },
+        { status: 200 },
+      );
+    }
+
     return NextResponse.json({ error: message, message }, { status: 502 });
   }
 }

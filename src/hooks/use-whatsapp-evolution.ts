@@ -145,8 +145,14 @@ export function useWhatsAppQrSession({
     refetchInterval: shouldPollQr ? WHATSAPP_QR_POLL_MS : false,
     retry: (failureCount, error) => {
       const message = error instanceof Error ? error.message.toLowerCase() : "";
-      if (message.includes("not available")) return failureCount < 12;
-      return failureCount < 3;
+      if (
+        message.includes("not available") ||
+        message.includes("waiting") ||
+        message.includes("temporarily unavailable")
+      ) {
+        return failureCount < 20;
+      }
+      return failureCount < 5;
     },
   });
 
@@ -219,6 +225,11 @@ export function useWhatsAppQrSession({
   }, [qrQuery.error]);
 
   useEffect(() => {
+    if (qrQuery.isFetching) {
+      setErrorCode(null);
+      return;
+    }
+
     const message =
       qrQuery.error instanceof Error
         ? qrQuery.error.message
@@ -227,12 +238,15 @@ export function useWhatsAppQrSession({
     if (message) {
       setErrorCode(mapApiErrorToWhatsAppCode(message));
     }
-  }, [qrQuery.error]);
+  }, [qrQuery.error, qrQuery.isFetching]);
 
   return {
     qrImageSrc,
     status: status as WhatsAppInstanceStatus,
     secondsLeft,
+    isLoadingQr:
+      qrQuery.isLoading ||
+      (qrQuery.isFetching && !qrImageSrc && !qrQuery.isError),
     isLoading: qrQuery.isLoading || statusQuery.isLoading,
     isFetchingQr: qrQuery.isFetching,
     isConnected,

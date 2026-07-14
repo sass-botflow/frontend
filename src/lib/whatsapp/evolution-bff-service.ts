@@ -6,7 +6,7 @@ import {
   deleteEvolutionInstance,
   deriveInstanceName,
   extractPhone,
-  extractQrBase64,
+  extractQrImageData,
   fetchEvolutionInstance,
   getEvolutionConnectionState,
   isEvolutionConfigured,
@@ -14,6 +14,22 @@ import {
 } from "@/lib/whatsapp/evolution-server";
 
 const QR_EXPIRES_IN_SECONDS = 60;
+
+function isTransientEvolutionError(message: string): boolean {
+  return /fetch failed|econnrefused|enotfound|timeout|abort|cloudflare|bad gateway|gateway|could not reach|offline|unreachable|starting|not ready/i.test(
+    message,
+  );
+}
+
+function waitingQrResponse(instanceId: string) {
+  return {
+    instanceId,
+    qrCode: "",
+    base64: "",
+    expiresIn: 5,
+    status: "WAITING_QR" as const,
+  };
+}
 
 async function requireUserId(): Promise<string> {
   const authState = await auth({ treatPendingAsSignedOut: false });
@@ -50,74 +66,78 @@ export async function evolutionGetQr(instanceId: string) {
   const userId = await requireUserId();
   const instanceName = assertOwnedInstance(userId, instanceId);
 
-  let existing = await fetchEvolutionInstance(instanceName);
+  try {
+    let existing = await fetchEvolutionInstance(instanceName);
 
-  if (existing) {
-    const state =
-      typeof existing.connectionStatus === "object"
-        ? (existing.connectionStatus as { state?: string }).state
-        : typeof existing.status === "string"
-          ? existing.status
-          : undefined;
+    if (existing) {
+      const state =
+        typeof existing.connectionStatus === "object"
+          ? (existing.connectionStatus as { state?: string }).state
+          : typeof existing.status === "string"
+            ? existing.status
+            : undefined;
 
-    if (state === "close" || state === "closed") {
-      try {
-        await deleteEvolutionInstance(instanceName);
-        existing = null;
-      } catch {
-        // Continue with reconnect attempt.
+      if (state === "close" || state === "closed") {
+        try {
+          await deleteEvolutionInstance(instanceName);
+          existing = null;
+        } catch {
+          // Continue with reconnect attempt.
+        }
       }
     }
-  }
 
-  if (!existing) {
-    await createEvolutionInstance(instanceName);
-  }
-
-  try {
-    const state = await getEvolutionConnectionState(instanceName);
-    const mapped = mapConnectionState(state.instance?.state ?? state.state);
-
-    if (mapped === "CONNECTED") {
-      return {
-        instanceId,
-        qrCode: "",
-        base64: "",
-        expiresIn: 0,
-        status: "CONNECTED" as const,
-      };
+    if (!existing) {
+      await createEvolutionInstance(instanceName);
     }
-  } catch {
-    // Instance may still be starting — continue to QR connect.
-  }
 
-  const qr = await connectEvolutionInstance(instanceName);
-  let qrCode = extractQrBase64(qr);
+    try {
+      const state = await getEvolutionConnectionState(instanceName);
+      const mapped = mapConnectionState(state.instance?.state ?? state.state);
 
-  if (!qrCode) {
-    const refreshed = await fetchEvolutionInstance(instanceName);
-    if (refreshed) {
-      qrCode = extractQrBase64(refreshed.qrcode ?? refreshed);
+      if (mapped === "CONNECTED") {
+        return {
+          instanceId,
+          qrCode: "",
+          base64: "",
+          expiresIn: 0,
+          status: "CONNECTED" as const,
+        };
+      }
+    } catch {
+      // Instance may still be starting — continue to QR connect.
     }
-  }
 
-  if (!qrCode) {
+    const qr = await connectEvolutionInstance(instanceName);
+    let qrCode = await extractQrImageData(qr);
+
+    if (!qrCode) {
+      const refreshed = await fetchEvolutionInstance(instanceName);
+      if (refreshed) {
+        qrCode = await extractQrImageData(refreshed.qrcode ?? refreshed);
+      }
+    }
+
+    if (!qrCode) {
+      return waitingQrResponse(instanceId);
+    }
+
     return {
       instanceId,
-      qrCode: "",
-      base64: "",
-      expiresIn: 5,
+      qrCode,
+      base64: qrCode,
+      expiresIn: QR_EXPIRES_IN_SECONDS,
       status: "WAITING_QR" as const,
     };
-  }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
 
-  return {
-    instanceId,
-    qrCode,
-    base64: qrCode,
-    expiresIn: QR_EXPIRES_IN_SECONDS,
-    status: "WAITING_QR" as const,
-  };
+    if (isTransientEvolutionError(message)) {
+      return waitingQrResponse(instanceId);
+    }
+
+    throw error;
+  }
 }
 
 export async function evolutionGetStatus(instanceId: string) {
@@ -202,12 +222,21 @@ export async function evolutionListChannels() {
     return { channels: [] as Array<Record<string, unknown>> };
   }
 
-  const state = await getEvolutionConnectionState(instanceName);
-  const mapped = mapConnectionState(
-    state.instance?.state ??
-      state.state ??
-      (typeof details.status === "string" ? details.status : undefined),
-  );
+  let mapped: ReturnType<typeof mapConnectionState> = "WAITING_QR";
+
+  try {
+    const state = await getEvolutionConnectionState(instanceName);
+    mapped = mapConnectionState(
+      state.instance?.state ??
+        state.state ??
+        (typeof details.status === "string" ? details.status : undefined),
+    );
+  } catch {
+    mapped = mapConnectionState(
+      typeof details.status === "string" ? details.status : undefined,
+    );
+  }
+
   const phone = extractPhone(typeof details.owner === "string" ? details.owner : null);
 
   return {
