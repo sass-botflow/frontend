@@ -61,6 +61,53 @@ export function deriveInstanceName(userId: string): string {
   return `botflow-${userShort}`;
 }
 
+export function getInstanceRecordName(
+  record: Record<string, unknown>,
+): string | null {
+  const candidates = [record.instanceName, record.name];
+
+  for (const candidate of candidates) {
+    if (typeof candidate === "string" && candidate.trim()) {
+      return candidate.trim();
+    }
+  }
+
+  const nested = record.instance;
+  if (nested && typeof nested === "object") {
+    return getInstanceRecordName(nested as Record<string, unknown>);
+  }
+
+  return null;
+}
+
+export function getInstanceConnectionStateValue(
+  record: Record<string, unknown>,
+): string | undefined {
+  const connectionStatus = record.connectionStatus;
+
+  if (typeof connectionStatus === "string") {
+    return connectionStatus;
+  }
+
+  if (connectionStatus && typeof connectionStatus === "object") {
+    const state = (connectionStatus as { state?: unknown }).state;
+    if (typeof state === "string") {
+      return state;
+    }
+  }
+
+  if (typeof record.status === "string") {
+    return record.status;
+  }
+
+  return undefined;
+}
+
+export function isInstanceClosedState(state?: string): boolean {
+  const normalized = (state ?? "").toLowerCase();
+  return normalized === "close" || normalized === "closed" || normalized === "refused";
+}
+
 export function extractQrBase64(payload: unknown): string | null {
   if (!payload) return null;
 
@@ -86,7 +133,7 @@ export function extractQrBase64(payload: unknown): string | null {
     }
   }
 
-  const nestedKeys = ["qrcode", "qr", "data", "response"];
+  const nestedKeys = ["qrcode", "qr", "data", "response", "instance"];
   for (const key of nestedKeys) {
     const nested = record[key];
     if (nested && typeof nested === "object") {
@@ -334,7 +381,9 @@ export async function createEvolutionInstance(
   };
 
   const webhookUrl = process.env.EVOLUTION_WEBHOOK_URL?.trim();
-  if (webhookUrl) {
+  const skipWebhook = process.env.EVOLUTION_SKIP_WEBHOOK === "true";
+
+  if (webhookUrl && !skipWebhook) {
     payload.webhook = {
       url: webhookUrl,
       byEvents: true,
@@ -373,10 +422,14 @@ export async function fetchEvolutionInstance(
     for (const row of rows) {
       if (!row || typeof row !== "object") continue;
       const record = row as Record<string, unknown>;
-      const instance = (record.instance ?? record) as Record<string, unknown>;
-      if (instance.instanceName === instanceName) {
+      const resolvedName = getInstanceRecordName(record);
+
+      if (resolvedName === instanceName) {
+        const instance = (record.instance ?? record) as Record<string, unknown>;
         return {
           ...instance,
+          ...record,
+          instanceName: resolvedName,
           qrcode: record.qrcode ?? instance.qrcode,
         };
       }
@@ -389,6 +442,22 @@ export async function fetchEvolutionInstance(
   }
 
   return null;
+}
+
+export async function restartEvolutionInstance(instanceName: string): Promise<void> {
+  try {
+    await evolutionRequest(
+      "POST",
+      `/instance/restart/${encodeURIComponent(instanceName)}`,
+      undefined,
+      30_000,
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!/not found|404|restart/i.test(message)) {
+      throw error;
+    }
+  }
 }
 
 export async function connectEvolutionInstance(instanceName: string) {

@@ -128,5 +128,5 @@ export function mapApiErrorToWhatsAppCode(message: string): WhatsAppConnectError
 }
 
 export const WHATSAPP_QR_POLL_MS = 2_000;
-export const WHATSAPP_QR_POLL_MS_WAITING = 800;
+export const WHATSAPP_QR_POLL_MS_WAITING = 1_500;
 export const WHATSAPP_STATUS_POLL_MS = 2_500;
