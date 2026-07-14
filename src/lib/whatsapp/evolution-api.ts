@@ -48,6 +48,10 @@ async function requestJson<T>(
   return body;
 }
 
+export function fetchWhatsAppConnectPreview(): Promise<WhatsAppConnectResponse> {
+  return requestJson<WhatsAppConnectResponse>("/api/channels/whatsapp/connect");
+}
+
 export function connectWhatsAppInstance(): Promise<WhatsAppConnectResponse> {
   return requestJson<WhatsAppConnectResponse>("/api/channels/whatsapp/connect", {
     method: "POST",

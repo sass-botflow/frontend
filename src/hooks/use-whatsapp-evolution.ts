@@ -17,6 +17,7 @@ import {
   normalizeWhatsAppStatus,
   resolveQrImageSrc,
   WHATSAPP_QR_POLL_MS,
+  WHATSAPP_QR_POLL_MS_WAITING,
   WHATSAPP_STATUS_POLL_MS,
   mapApiErrorToWhatsAppCode,
   type WhatsAppChannel,
@@ -142,7 +143,11 @@ export function useWhatsAppQrSession({
     queryKey: whatsappQueryKeys.qr(instanceId ?? "none"),
     queryFn: () => fetchWhatsAppQr(instanceId!),
     enabled: shouldPollQr,
-    refetchInterval: shouldPollQr ? WHATSAPP_QR_POLL_MS : false,
+    refetchInterval: (query) => {
+      if (!shouldPollQr) return false;
+      const hasQr = Boolean(resolveQrImageSrc(query.state.data));
+      return hasQr ? WHATSAPP_QR_POLL_MS : WHATSAPP_QR_POLL_MS_WAITING;
+    },
     retry: (failureCount, error) => {
       const message = error instanceof Error ? error.message.toLowerCase() : "";
       if (

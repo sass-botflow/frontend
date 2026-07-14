@@ -14,6 +14,7 @@ import {
   useWhatsAppConnect,
   useWhatsAppDisconnect,
 } from "@/hooks/use-whatsapp-evolution";
+import { fetchWhatsAppConnectPreview } from "@/lib/whatsapp/evolution-api";
 import { Button } from "@/components/ui/button";
 import type { WhatsAppChannel } from "@/lib/whatsapp/evolution-types";
 
@@ -39,13 +40,14 @@ export function WhatsAppChannelsSection() {
   const startConnect = useCallback(async () => {
     setBanner(null);
     setQrOpen(true);
-    setActiveInstanceId(null);
 
     try {
-      const result = await connectMutation.mutateAsync();
-      setActiveInstanceId(result.instanceId);
+      const preview = await fetchWhatsAppConnectPreview();
+      setActiveInstanceId(preview.instanceId);
+      void connectMutation.mutateAsync();
     } catch (error) {
       setQrOpen(false);
+      setActiveInstanceId(null);
       setBanner({
         message:
           error instanceof Error
@@ -55,6 +57,20 @@ export function WhatsAppChannelsSection() {
       });
     }
   }, [connectMutation]);
+
+  const handleReconnect = useCallback(
+    async (channel: WhatsAppChannel) => {
+      setActiveInstanceId(channel.instanceId);
+      setQrOpen(true);
+
+      try {
+        await connectMutation.mutateAsync();
+      } catch {
+        // QR polling will still attempt to recover the session.
+      }
+    },
+    [connectMutation],
+  );
 
   const handleConnected = useCallback(async (_channel: WhatsAppChannel) => {
     setBanner({
@@ -85,11 +101,6 @@ export function WhatsAppChannelsSection() {
     },
     [disconnectMutation],
   );
-
-  const handleReconnect = useCallback((channel: WhatsAppChannel) => {
-    setActiveInstanceId(channel.instanceId);
-    setQrOpen(true);
-  }, []);
 
   return (
     <section className="space-y-6">

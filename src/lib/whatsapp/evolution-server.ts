@@ -323,7 +323,9 @@ export async function testEvolutionConnectivity(): Promise<{
   };
 }
 
-export async function createEvolutionInstance(instanceName: string): Promise<void> {
+export async function createEvolutionInstance(
+  instanceName: string,
+): Promise<unknown | null> {
   const CREATE_TIMEOUT_MS = 45_000;
   const payload: Record<string, unknown> = {
     instanceName,
@@ -342,16 +344,24 @@ export async function createEvolutionInstance(instanceName: string): Promise<voi
   }
 
   try {
-    await evolutionRequest("POST", "/instance/create", payload, CREATE_TIMEOUT_MS);
+    return await evolutionRequest<unknown>(
+      "POST",
+      "/instance/create",
+      payload,
+      CREATE_TIMEOUT_MS,
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (!/already|exist/i.test(message)) {
       throw error;
     }
+    return null;
   }
 }
 
-export async function fetchEvolutionInstance(instanceName: string) {
+export async function fetchEvolutionInstance(
+  instanceName: string,
+): Promise<Record<string, unknown> | null> {
   try {
     const data = await evolutionRequest<unknown>(
       "GET",
@@ -365,7 +375,10 @@ export async function fetchEvolutionInstance(instanceName: string) {
       const record = row as Record<string, unknown>;
       const instance = (record.instance ?? record) as Record<string, unknown>;
       if (instance.instanceName === instanceName) {
-        return instance;
+        return {
+          ...instance,
+          qrcode: record.qrcode ?? instance.qrcode,
+        };
       }
     }
   } catch (error) {
