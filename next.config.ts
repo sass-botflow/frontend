@@ -6,6 +6,11 @@ const nextConfig: NextConfig = {
   // CI runs lint/typecheck; skip in EasyPanel Docker builds to cut ~1–2 min off build time.
   eslint: { ignoreDuringBuilds: process.env.DOCKER_BUILD === "1" },
   typescript: { ignoreBuildErrors: process.env.DOCKER_BUILD === "1" },
+  experimental: {
+    // Lower peak RAM during `next build` on small EasyPanel VPS hosts.
+    webpackMemoryOptimizations: true,
+    cpus: 1,
+  },
   async redirects() {
     return [
       {
