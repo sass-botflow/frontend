@@ -10,8 +10,9 @@ import {
   Unlink,
   UserRound,
 } from "lucide-react";
-import { ChannelLogo } from "@/components/channels/channel-logo";
 import { ChannelStatusBadge } from "@/components/channels/channel-status-badge";
+import { WhatsAppIcon } from "@/components/channels/channel-logo";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import type { WhatsAppChannel } from "@/lib/whatsapp/evolution-types";
 import { formatRelativeTime } from "@/lib/utils";
@@ -34,6 +35,14 @@ export function WhatsAppChannelDashboardCard({
 }: WhatsAppChannelDashboardCardProps) {
   const isConnected = channel.status === "CONNECTED";
   const statusLabel = isConnected ? "connected" : "disconnected";
+  const displayName = channel.profileName ?? "WhatsApp Business";
+  const initials = displayName
+    .split(/\s+/)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+  const showProfilePicture = isConnected && Boolean(channel.profilePictureUrl);
 
   return (
     <motion.article
@@ -47,12 +56,34 @@ export function WhatsAppChannelDashboardCard({
       <div className="relative flex flex-col gap-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex items-start gap-4">
-            <ChannelLogo channel="whatsapp" size="lg" />
+            <div className="relative">
+              {showProfilePicture ? (
+                <Avatar className="h-16 w-16 rounded-2xl ring-2 ring-emerald-500/20">
+                  <AvatarImage
+                    src={channel.profilePictureUrl!}
+                    alt={displayName}
+                    className="rounded-2xl object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                  <AvatarFallback className="rounded-2xl bg-emerald-500/15 text-base font-semibold text-emerald-400">
+                    {initials || "WA"}
+                  </AvatarFallback>
+                </Avatar>
+              ) : (
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#25D366] shadow-sm ring-2 ring-emerald-500/20">
+                  <WhatsAppIcon className="h-9 w-9 text-white" />
+                </div>
+              )}
+              {showProfilePicture ? (
+                <div className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-[#25D366] shadow-md">
+                  <WhatsAppIcon className="h-3.5 w-3.5 text-white" />
+                </div>
+              ) : null}
+            </div>
+
             <div className="min-w-0 space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-xl font-semibold tracking-tight">
-                  {channel.profileName ?? "WhatsApp Business"}
-                </h3>
+                <h3 className="text-xl font-semibold tracking-tight">{displayName}</h3>
                 <ChannelStatusBadge status={statusLabel} />
               </div>
               <p className="text-sm text-muted-foreground">

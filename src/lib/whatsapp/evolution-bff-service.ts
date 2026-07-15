@@ -15,6 +15,7 @@ import {
   deleteEvolutionInstance,
   deriveInstanceName,
   extractPhone,
+  extractProfilePictureUrl,
   extractQrImageData,
   fetchEvolutionInstance,
   getEvolutionConnectionState,
@@ -251,12 +252,15 @@ export async function evolutionGetStatus(instanceId: string) {
     null;
   const profileName =
     typeof details.profileName === "string" ? details.profileName : null;
+  const profilePictureUrl = extractProfilePictureUrl(details);
 
   return {
     instanceId,
     status: mapped,
     phone,
     phoneNumber: phone,
+    profileName,
+    profilePictureUrl,
     connectedAt: mapped === "CONNECTED" ? new Date().toISOString() : null,
   };
 }
@@ -322,6 +326,7 @@ export async function evolutionListChannels() {
         displayPhoneNumber: phone,
         businessName:
           typeof details.profileName === "string" ? details.profileName : null,
+        profilePictureUrl: extractProfilePictureUrl(details),
         connectedAt: mapped === "CONNECTED" ? new Date().toISOString() : null,
         updatedAt: new Date().toISOString(),
         phoneNumberId: instanceName,

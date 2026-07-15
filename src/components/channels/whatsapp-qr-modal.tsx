@@ -9,6 +9,8 @@ import {
   UserRound,
 } from "lucide-react";
 import { WhatsAppErrorState } from "@/components/channels/whatsapp-error-state";
+import { WhatsAppIcon } from "@/components/channels/channel-logo";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -84,6 +86,7 @@ export function WhatsAppQrModal({
                 key="connected"
                 phoneNumber={session.phoneNumber}
                 profileName={session.profileName}
+                profilePictureUrl={session.profilePictureUrl}
                 connectedAt={session.connectedAt}
                 onClose={() => onOpenChange(false)}
               />
@@ -189,22 +192,53 @@ export function WhatsAppQrModal({
 function ConnectedPanel({
   phoneNumber,
   profileName,
+  profilePictureUrl,
   connectedAt,
   onClose,
 }: {
   phoneNumber?: string | null;
   profileName?: string | null;
+  profilePictureUrl?: string | null;
   connectedAt?: string | null;
   onClose: () => void;
 }) {
+  const displayName = profileName ?? "WhatsApp User";
+  const initials = displayName
+    .split(/\s+/)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       className="space-y-6 text-center"
     >
-      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/15 ring-1 ring-emerald-500/30">
-        <CheckCircle2 className="h-10 w-10 text-emerald-400" />
+      <div className="relative mx-auto w-fit">
+        {profilePictureUrl ? (
+          <Avatar className="h-20 w-20 rounded-full ring-2 ring-emerald-500/30">
+            <AvatarImage
+              src={profilePictureUrl}
+              alt={displayName}
+              className="rounded-full object-cover"
+              referrerPolicy="no-referrer"
+            />
+            <AvatarFallback className="rounded-full bg-emerald-500/15 text-lg font-semibold text-emerald-400">
+              {initials || "WA"}
+            </AvatarFallback>
+          </Avatar>
+        ) : (
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/15 ring-1 ring-emerald-500/30">
+            <CheckCircle2 className="h-10 w-10 text-emerald-400" />
+          </div>
+        )}
+        {profilePictureUrl ? (
+          <div className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-[#25D366] shadow-md">
+            <WhatsAppIcon className="h-3.5 w-3.5 text-white" />
+          </div>
+        ) : null}
       </div>
 
       <div className="space-y-2">

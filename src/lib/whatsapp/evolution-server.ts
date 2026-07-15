@@ -212,6 +212,27 @@ export function extractPhone(owner?: string | null): string | null {
   return owner.replace(/@.*/, "").replace(/\D/g, "") || null;
 }
 
+export function extractProfilePictureUrl(
+  record?: Record<string, unknown> | null,
+): string | null {
+  if (!record) return null;
+
+  const candidates = [
+    record.profilePicUrl,
+    record.profilePictureUrl,
+    record.picture,
+    record.avatar,
+  ];
+
+  for (const candidate of candidates) {
+    if (typeof candidate === "string" && /^https?:\/\//i.test(candidate.trim())) {
+      return candidate.trim();
+    }
+  }
+
+  return null;
+}
+
 function isHtmlPayload(text: string): boolean {
   const trimmed = text.trimStart().toLowerCase();
   return trimmed.startsWith("<!") || trimmed.includes("<html");
