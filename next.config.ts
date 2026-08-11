@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
     webpackMemoryOptimizations: true,
     cpus: 1,
   },
+  productionBrowserSourceMaps: false,
   async redirects() {
     return [
       {

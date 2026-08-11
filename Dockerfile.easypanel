@@ -5,7 +5,7 @@ FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --no-audit --no-fund
 
 FROM node:20-alpine AS builder
 RUN apk add --no-cache libc6-compat openssl git
@@ -43,7 +43,7 @@ ENV NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=$NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL
 ENV NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=$NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL
 ENV NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=$NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL
 ENV NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=$NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL
-ENV NODE_OPTIONS=--max-old-space-size=768
+ENV NODE_OPTIONS=--max-old-space-size=640
 ENV GENERATE_SOURCEMAP=false
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV DOCKER_BUILD=1
@@ -62,7 +62,8 @@ RUN set -e; \
     BT="$BUILD_TIME"; \
     if [ "$BT" = "unknown" ] || [ -z "$BT" ]; then BT=$(date -u +%Y-%m-%dT%H:%M:%SZ); fi; \
     echo "$V" > /app/BUILD_VERSION.txt && echo "$BT" > /app/BUILD_TIME.txt; \
-    echo "EasyPanel build version: $V at $BT"
+    echo "EasyPanel build version: $V at $BT"; \
+    rm -rf .git node_modules/.cache 2>/dev/null || true
 
 RUN npm run build
 
