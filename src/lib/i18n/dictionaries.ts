@@ -191,6 +191,45 @@ export const en = {
       },
     ],
   },
+  videoTestimonials: {
+    title: "Real businesses automated on BotFlow. No extra hires. No missed leads.",
+    subtitle:
+      "Hear from owners in every niche — all in English — on how BotFlow runs their WhatsApp, Instagram & TikTok replies 24/7.",
+    ctaText: "Ready to automate your customer replies? Start Free • No credit card",
+    ctaButton: "Start Free",
+    items: [
+      {
+        id: "dental",
+        niche: "Dental",
+        business: "SmileCare Dental Clinic",
+      },
+      {
+        id: "ecommerce",
+        niche: "E-commerce",
+        business: "LuxeSkin Online Store",
+      },
+      {
+        id: "restaurant",
+        niche: "Restaurant",
+        business: "Bella Vista Kitchen",
+      },
+      {
+        id: "beauty",
+        niche: "Beauty",
+        business: "Glow Studio Salon",
+      },
+      {
+        id: "auto",
+        niche: "Auto",
+        business: "ProShine Car Detailing",
+      },
+      {
+        id: "agency",
+        niche: "Agency",
+        business: "ScaleUp Marketing Agency",
+      },
+    ],
+  },
   faq: {
     title: "Frequently Asked Questions",
     subtitle: "Everything you need to know about BotFlow.",
@@ -481,6 +520,47 @@ export const fr: Dictionary = {
       },
     ],
   },
+  videoTestimonials: {
+    title:
+      "De vraies entreprises automatisées sur BotFlow. Sans embauche. Sans lead manqué.",
+    subtitle:
+      "Des propriétaires de chaque secteur — en anglais — expliquent comment BotFlow gère leurs réponses WhatsApp, Instagram et TikTok 24h/24.",
+    ctaText:
+      "Prêt à automatiser vos réponses clients ? Commencer gratuitement • Sans carte",
+    ctaButton: "Commencer gratuitement",
+    items: [
+      {
+        id: "dental",
+        niche: "Dentaire",
+        business: "SmileCare Dental Clinic",
+      },
+      {
+        id: "ecommerce",
+        niche: "E-commerce",
+        business: "LuxeSkin Online Store",
+      },
+      {
+        id: "restaurant",
+        niche: "Restaurant",
+        business: "Bella Vista Kitchen",
+      },
+      {
+        id: "beauty",
+        niche: "Beauté",
+        business: "Glow Studio Salon",
+      },
+      {
+        id: "auto",
+        niche: "Auto",
+        business: "ProShine Car Detailing",
+      },
+      {
+        id: "agency",
+        niche: "Agence",
+        business: "ScaleUp Marketing Agency",
+      },
+    ],
+  },
   faq: {
     title: "Questions fréquentes",
     subtitle: "Tout ce que vous devez savoir sur BotFlow.",
@@ -767,6 +847,45 @@ export const ar: Dictionary = {
         author: "صوفيا م.",
         role: "مالكة مطعم",
         metric: "رد خلال أقل من 3 ثوانٍ",
+      },
+    ],
+  },
+  videoTestimonials: {
+    title: "شركات حقيقية أتمتت عملها عبر BotFlow. بدون توظيف إضافي. بدون عملاء ضائعين.",
+    subtitle:
+      "أصحاب أعمال من كل قطاع — بالإنجليزية — يشرحون كيف يدير BotFlow ردود واتساب وإنستغرام وتيك توك على مدار الساعة.",
+    ctaText: "هل أنت مستعد لأتمتة ردودك على العملاء؟ ابدأ مجاناً • بدون بطاقة بنكية",
+    ctaButton: "ابدأ مجاناً",
+    items: [
+      {
+        id: "dental",
+        niche: "أسنان",
+        business: "SmileCare Dental Clinic",
+      },
+      {
+        id: "ecommerce",
+        niche: "تجارة إلكترونية",
+        business: "LuxeSkin Online Store",
+      },
+      {
+        id: "restaurant",
+        niche: "مطعم",
+        business: "Bella Vista Kitchen",
+      },
+      {
+        id: "beauty",
+        niche: "تجميل",
+        business: "Glow Studio Salon",
+      },
+      {
+        id: "auto",
+        niche: "سيارات",
+        business: "ProShine Car Detailing",
+      },
+      {
+        id: "agency",
+        niche: "وكالة",
+        business: "ScaleUp Marketing Agency",
       },
     ],
   },
