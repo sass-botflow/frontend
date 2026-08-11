@@ -67,8 +67,9 @@ curl https://www.botflow.ink/api/health
 
 | Symptôme | Cause | Fix |
 |----------|-------|-----|
-| Deploy → **Cancel** en 1s | Source = GitHub build | Passer à **Docker Image** |
-| **pull access denied** | GHCR image private | GitHub Packages → `frontend` → **Public** (ou PAT registry) |
+| Deploy **f 2-3 thaniya** | Source = **Docker Image** (restart ghir, ma kaybuildich) | Source = **GitHub** + Dockerfile → Deploy → stana **5-10 d9aya** |
+| Deploy → **Cancel** + `pull access denied` | GHCR image **private** | GitHub Packages → `frontend` → **Public** (wla Source = GitHub) |
+| **Build Killed** / timeout | VPS RAM 9lila | Redeploy; VPS khass **2GB+ RAM**; stana 10 d9aya |
 | EasyPanel 404 (logo vert) | Container down ou domain manquant | Port `3000`, ajouter `botflow.ink` |
 | `getaddrinfo EAI_AGAIN` | HOSTNAME bug | Image récente (docker-start.sh force `0.0.0.0`) |
 | `version: "dev"` | Pas le GHCR image | Source = Docker Image + redeploy |

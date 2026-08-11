@@ -31,28 +31,33 @@ jobs:
       - name: Trigger EasyPanel deploy
         run: |
           echo "Triggering EasyPanel deploy..."
+          BEFORE=$(curl -fsS https://www.botflow.ink/api/health 2>/dev/null | grep -o '"version":"[^"]*"' | cut -d'"' -f4 || echo "unknown")
+          echo "Production version before: $BEFORE"
           curl -fsS -X POST "${{ inputs.easypanel_webhook }}"
           echo "EasyPanel deploy triggered."
 
       - name: Wait for rollout
-        run: sleep 25
+        run: sleep 45
 
       - name: Verify production health
         run: |
           HEALTH=$(curl -fsS https://www.botflow.ink/api/health || echo '{"version":"error"}')
           echo "$HEALTH"
           VERSION=$(echo "$HEALTH" | grep -o '"version":"[^"]*"' | cut -d'"' -f4 || echo "unknown")
+          HINT=$(echo "$HEALTH" | grep -o '"deployHint":"[^"]*"' | cut -d'"' -f4 || echo "")
           {
             echo "## Deploy result"
             echo ""
             echo "| Field | Value |"
             echo "|-------|-------|"
-            echo "| Health | \`$HEALTH\` |"
             echo "| version | \`$VERSION\` |"
+            echo "| deployHint | ${HINT:-none} |"
             echo ""
           } >> "$GITHUB_STEP_SUMMARY"
-          if [ "$VERSION" = "dev" ]; then
-            echo "::warning::Server mazal 3la version 'dev'. T2akked EasyPanel Source = Docker Image ghcr.io/sass-botflow/frontend:latest"
-          else
-            echo "Deploy success — version: $VERSION"
+          if [ "$VERSION" = "dev" ] || [ "$VERSION" = "98feaff" ]; then
+            echo "::error::Deploy ma kheddamch — version mazal 9dima ($VERSION)."
+            echo "Fix: EasyPanel Source = GitHub + Dockerfile (stana 5-10 d9aya)"
+            echo "Wla: GHCR public / Registry PAT — DEPLOY-EASYPANEL-REGISTRY.md"
+            exit 1
           fi
+          echo "Deploy success — version: $VERSION"
