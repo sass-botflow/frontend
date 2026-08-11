@@ -184,3 +184,12 @@ body {
 .auth-page .cl-formFieldAction {
   font-size: 0.8125rem;
 }
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
