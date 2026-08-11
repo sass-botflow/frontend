@@ -54,6 +54,7 @@ jobs:
           OWNER: ${{ github.repository_owner }}
         run: |
           set -e
+          made_public=0
           for BASE in "orgs/${OWNER}" "users/${OWNER}"; do
             CODE=$(curl -sS -o /tmp/pkg.json -w "%{http_code}" \
               -X PATCH \
@@ -64,12 +65,16 @@ jobs:
               -d '{"visibility":"public"}')
             echo "${BASE}: HTTP ${CODE}"
             if [ "$CODE" = "200" ]; then
+              made_public=1
               echo "GHCR package is public — EasyPanel can pull without registry credentials."
               cat /tmp/pkg.json
-              exit 0
+              break
             fi
           done
-          echo "::warning::GHCR still private. EasyPanel: use GitHub Source (see DEPLOY-DABA.md) OR add GH_PACKAGES_ADMIN_TOKEN secret OR make package Public manually."
+
+          if [ "$made_public" = "0" ]; then
+            echo "::warning::Could not set GHCR public via API. Run workflow 'Make GHCR package public' manually, or use EasyPanel Source = GitHub + Dockerfile."
+          fi
 
       - name: Verify GHCR is publicly pullable
         run: |
@@ -78,7 +83,11 @@ jobs:
             "https://ghcr.io/v2/${{ github.repository }}/manifests/latest")
           echo "Anonymous GHCR pull check: HTTP ${CODE}"
           if [ "$CODE" != "200" ]; then
-            echo "::warning::GHCR image NOT public (HTTP ${CODE}). EasyPanel Docker Image deploy will fail. Use GitHub Source — DEPLOY-DABA.md"
+            echo "::warning::GHCR image NOT public (HTTP ${CODE}). EasyPanel Docker Image deploy will fail with pull access denied."
+            echo "Fix: GitHub → Packages → frontend → Package settings → Change visibility → Public"
+            echo "Or: EasyPanel Source = GitHub → sass-botflow/frontend → main → Dockerfile (wait 5-10 min, do not cancel)"
+          else
+            echo "GHCR image is publicly pullable."
           fi
 
       - name: Publish to Docker Hub (public mirror, optional)

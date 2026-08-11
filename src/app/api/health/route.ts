@@ -27,12 +27,12 @@ function getBuildTime(): string | null {
 
 function getDeployHint(version: string, buildTime: string | null): string | null {
   if (version === "dev") {
-    return "Deploy ma kheddamch — Source = GitHub + Dockerfile, w stana 5-10 d9aya (mashi 2 thaniya).";
+    return "Deploy ma kheddamch — EasyPanel Source = GitHub + branch main + Dockerfile. Deploy w stana 5-10 d9aya (mashi 2-3 thaniya).";
   }
   if (!buildTime) return null;
   const ageHours = (Date.now() - new Date(buildTime).getTime()) / 3_600_000;
   if (ageHours > 6) {
-    return `Build 9dim (${Math.floor(ageHours)}h). EasyPanel Deploy f 2s = restart ghir. Source → GitHub → Deploy w stana 10 d9aya.`;
+    return `Build 9dim (${Math.floor(ageHours)}h). Deploy f 2-3s = restart ghir. EasyPanel → Source = GitHub → main → Dockerfile → Deploy (stana 5-10 d9aya, ma tklikich Cancel).`;
   }
   return null;
 }
