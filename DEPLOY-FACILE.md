@@ -7,6 +7,9 @@
 
 ## 🚀 Option 0 — Deploy DABA (2 min, bla secrets)
 
+> ⚠️ **GHCR private** — webhook ghir kaydir **restart** f 1s, ma kaypullich image jdid.  
+> Ila `version` ma katbeddelch → chouf **[DEPLOY-EASYPANEL-REGISTRY.md](./DEPLOY-EASYPANEL-REGISTRY.md)**
+
 Ma khassk **la Settings, la secrets**. Ghir paste URL w klik:
 
 ### Step 1 — Copier URL mn EasyPanel
@@ -33,52 +36,38 @@ GitHub ghadi ytrigger EasyPanel → pull image jdid → deploy ✅
 curl https://www.botflow.ink/api/health
 ```
 
-Ila `version` mazal `"dev"` → EasyPanel Source khasso ykon **Docker Image** `ghcr.io/sass-botflow/frontend:latest` (port `3000`).
+Ila `version` mazal `"98feaff"` wla 9dima → GHCR private. Dir **[DEPLOY-EASYPANEL-REGISTRY.md](./DEPLOY-EASYPANEL-REGISTRY.md)** (Hal 1 wla Hal 2).
 
 ---
 
-## ✅ Option 1 — GitHub Webhook (auto kol push — 5 min)
+## ✅ Option 1 — GitHub Source build (RECOMMANDÉ — ma khassch GHCR public)
 
-Ma khassk **la secrets** f GitHub Actions, la SSH. Ghir 2 configs:
+As7al ila deploy kaykamel f **0-1 seconde**:
 
-### Step 1 — Copier URL mn EasyPanel
+1. EasyPanel → **frontend** → **Source** = **GitHub**
+2. Repo: `sass-botflow/frontend` · Branch: `main` · Dockerfile: `Dockerfile` · Port: `3000`
+3. **Deploy** → stana **5-10 d9aya** (Logs: `npm run build`)
+4. **Enable Auto Deploy** ON
 
-1. Dkhol: **http://187.124.12.89:3000**
-2. **sass-botflow** → **frontend**
-3. Tab **Deployments** (wla **Deploy**)
-4. Copier **Deployment Trigger** URL — format:
-   ```
-   http://187.124.12.89:3000/api/deploy/xxxxxxxx
-   ```
+---
 
-### Step 2 — Zid webhook f GitHub
-
-1. Dkhol: https://github.com/sass-botflow/frontend/settings/hooks
-2. **Add webhook**
-3. **Payload URL:** URL li copiti mn EasyPanel
-4. **Content type:** `application/json`
-5. **SSL verification:** Disable (7it HTTP mashi HTTPS)
-6. **Events:** Just the **push** event
-7. **Active:** ✅ checked
-8. **Add webhook**
-
-### Step 3 — T2akked Source f EasyPanel
+## Option 1b — Docker Image + webhook (ghir ila GHCR public wla Registry PAT)
 
 F service **frontend**, **Source** khasso ykon:
 
 | Champ | Valeur |
 |-------|--------|
-| Type | **Docker Image** |
+| Type | **Docker Image** (+ Registry PAT — voir DEPLOY-EASYPANEL-REGISTRY.md) |
 | Image | `ghcr.io/sass-botflow/frontend:latest` |
 | Port | `3000` |
 
-**Men daba:** kol `git push origin main` → GitHub webhook → EasyPanel deploy ✅
+**Men daba:** kol `git push origin main` → GitHub webhook → EasyPanel pull + deploy (1-2 d9aya)
 
 ---
 
 ## ✅ Option 2 — Auto Deploy f EasyPanel (GitHub build)
 
-Ila bghiti EasyPanel ybuildi direct mn code:
+Nfs Option 1 GitHub Source — ila bghiti EasyPanel ybuildi direct mn code:
 
 1. EasyPanel → **frontend** → **Source** = **GitHub**
 2. Repo: `sass-botflow/frontend` · Branch: `main` · Dockerfile
@@ -90,7 +79,7 @@ Ila bghiti EasyPanel ybuildi direct mn code:
    NEXT_PUBLIC_API_URL=https://api.botflow.ink
    ```
 
-⚠️ Option 1 (Docker Image) **as7al** — ma kaybuildich f server.
+⚠️ **GitHub Source** (Option 1) — ma khassch GHCR public. Docker Image khass Registry PAT wla package public.
 
 ---
 
@@ -132,9 +121,10 @@ Hard refresh: **Ctrl+Shift+R** f browser.
 
 | Mochkil | Hal |
 |---------|-----|
-| Deploy → **Cancel** | Source = **Docker Image**, mashi GitHub build |
+| Deploy **0-1 seconde**, version 9dima | GHCR private — [DEPLOY-EASYPANEL-REGISTRY.md](./DEPLOY-EASYPANEL-REGISTRY.md) |
+| Deploy → **Cancel** | Source = GitHub → stana 5-10 d9aya |
 | Webhook failed (404) | URL ghalat — copier mn EasyPanel → Deployments |
-| Pull access denied | GHCR image private → Actions → **Make GHCR package public** wla GitHub Packages → Public |
+| Pull access denied | GHCR private → Registry PAT wla GitHub Source |
 | Ma 3andekch login EasyPanel | Sift l'admin: webhook URL + "enable Docker Image source" |
 | Port 404 / logo vert | Internal port = **3000** |
 
