@@ -14,6 +14,7 @@ export function getClerkPublishableKeyForProvider(): string | undefined {
   if (runtime) {
     return runtime;
   }
+  // Never mount Clerk with placeholder at runtime — causes 500 on every page.
   if (process.env.DOCKER_BUILD === "1" || process.env.CI === "1") {
     return PLACEHOLDER_KEY;
   }
