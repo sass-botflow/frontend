@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 jobs:
@@ -89,6 +89,25 @@ jobs:
           else
             echo "GHCR image is publicly pullable."
           fi
+
+      - name: Publish standalone bundle for fast EasyPanel deploy
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          IMAGE="ghcr.io/${{ github.repository }}:latest"
+          docker create --name bf-bundle "$IMAGE"
+          mkdir -p /tmp/bf-bundle
+          docker cp bf-bundle:/app/. /tmp/bf-bundle/
+          docker rm bf-bundle
+          tar czf botflow-frontend-standalone.tar.gz -C /tmp/bf-bundle .
+          ls -lh botflow-frontend-standalone.tar.gz
+          gh release delete deploy-latest -y 2>/dev/null || true
+          gh release create deploy-latest \
+            --title "BotFlow frontend (latest)" \
+            --notes "Pre-built standalone bundle for EasyPanel Dockerfile.release — commit ${{ github.sha }}" \
+            botflow-frontend-standalone.tar.gz
+          echo "✅ Release bundle: https://github.com/${{ github.repository }}/releases/tag/deploy-latest"
 
       - name: Publish to Docker Hub (public mirror, optional)
         env:
