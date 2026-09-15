@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AppProviders } from "@/components/providers/app-providers";
 import { APP_NAME } from "@/lib/constants";
+import { getClerkPublishableKeyForProvider } from "@/lib/clerk-config";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -44,7 +45,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen font-sans antialiased`}
       >
-        <AppProviders>{children}</AppProviders>
+        <AppProviders clerkPublishableKey={getClerkPublishableKeyForProvider()}>
+          {children}
+        </AppProviders>
       </body>
     </html>
   );

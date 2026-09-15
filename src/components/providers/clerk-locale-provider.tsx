@@ -7,13 +7,20 @@ import { getClerkLocalization } from "@/lib/clerk-localization";
 
 export function ClerkLocaleProvider({
   children,
+  publishableKey,
 }: {
   children: React.ReactNode;
+  publishableKey?: string;
 }) {
   const { locale } = useLocale();
 
+  if (!publishableKey) {
+    return <>{children}</>;
+  }
+
   return (
     <ClerkProvider
+      publishableKey={publishableKey}
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
       signInFallbackRedirectUrl="/dashboard"
