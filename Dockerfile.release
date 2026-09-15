@@ -17,9 +17,8 @@ RUN echo "Downloading BotFlow bundle (${RELEASE_TAG})..." && \
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
-RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
-COPY scripts/docker-start.sh ./docker-start.sh
-RUN chown -R nextjs:nodejs /app && chmod +x /app/docker-start.sh
+RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs && \
+    chown -R nextjs:nodejs /app && chmod +x /app/docker-start.sh
 USER nextjs
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=45s --retries=3 \

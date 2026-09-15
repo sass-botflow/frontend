@@ -1,6 +1,6 @@
 import { clerkMiddleware, createRouteMatcher, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import type { NextFetchEvent, NextRequest } from "next/server";
 import { defaultLocale, isValidLocale } from "@/lib/i18n/config";
 import { LEGAL_PATHS } from "@/lib/legal/constants";
 import {
@@ -95,12 +95,12 @@ function isOAuthCallbackPath(pathname: string) {
   );
 }
 
-export default clerkMiddleware(async (auth, request) => {
-  const { pathname } = request.nextUrl;
+function isHealthProbe(pathname: string) {
+  return pathname === "/api/health/live" || pathname === "/api/health";
+}
 
-  if (pathname === "/api/health/live") {
-    return NextResponse.next();
-  }
+const runClerkMiddleware = clerkMiddleware(async (auth, request) => {
+  const { pathname } = request.nextUrl;
 
   const apexRedirect = redirectApexToWww(request);
   if (apexRedirect) {
@@ -113,10 +113,6 @@ export default clerkMiddleware(async (auth, request) => {
   }
 
   const { userId } = await auth({ treatPendingAsSignedOut: false });
-
-  if (pathname === "/api/health") {
-    return NextResponse.next();
-  }
 
   if (userId && isAuthRoute(request) && !isOAuthCallbackPath(pathname)) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
@@ -145,10 +141,17 @@ export default clerkMiddleware(async (auth, request) => {
   return NextResponse.next();
 });
 
+export default function middleware(request: NextRequest, event: NextFetchEvent) {
+  if (isHealthProbe(request.nextUrl.pathname)) {
+    return NextResponse.next();
+  }
+  return runClerkMiddleware(request, event);
+}
+
 export const config = {
   matcher: [
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    // Exclude /api/health* so Docker healthcheck works even if Clerk env is missing.
+    "/((?!_next|api/health|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     "/__clerk/:path*",
-    "/(api|trpc)(.*)",
   ],
 };

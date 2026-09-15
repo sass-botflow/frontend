@@ -1,6 +1,6 @@
 # Deploy FAST — 1 dqiqa (bla build f VPS)
 
-> **Site 502?** VPS kayfail f `next build` (RAM 9lila). **Hal sari3:**
+> **Site 502?** 1) Dockerfile path = **`Dockerfile.release`** 2) Environment = Clerk keys (see `easypanel.env.example`) 3) Deploy
 
 ## Dir hadchi daba f EasyPanel
 
