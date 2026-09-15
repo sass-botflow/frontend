@@ -21,4 +21,5 @@ if [ -n "$missing" ]; then
 fi
 
 echo "[botflow] Launching Next.js on 0.0.0.0:${PORT} (version=${APP_VERSION:-dev})..."
+echo "[botflow] Health: http://0.0.0.0:${PORT}/api/health/live"
 exec node server.js
