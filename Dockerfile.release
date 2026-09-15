@@ -1,0 +1,27 @@
+# Fast EasyPanel deploy — NO `next build` on VPS (downloads pre-built bundle from GitHub Release).
+# EasyPanel → Source → GitHub → sass-botflow/frontend → main → Dockerfile path: Dockerfile.release
+# Build time on VPS: ~1 minute (download + unpack only).
+
+FROM node:20-alpine AS runner
+RUN apk add --no-cache libc6-compat curl openssl
+WORKDIR /app
+
+ARG RELEASE_TAG=deploy-latest
+RUN echo "Downloading BotFlow bundle (${RELEASE_TAG})..." && \
+    curl -fsSL -o /tmp/bundle.tar.gz \
+      "https://github.com/sass-botflow/frontend/releases/download/${RELEASE_TAG}/botflow-frontend-standalone.tar.gz" && \
+    tar xzf /tmp/bundle.tar.gz -C /app && \
+    rm /tmp/bundle.tar.gz && \
+    echo "Bundle ready."
+
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
+RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
+COPY scripts/docker-start.sh ./docker-start.sh
+RUN chown -R nextjs:nodejs /app && chmod +x /app/docker-start.sh
+USER nextjs
+EXPOSE 3000
+HEALTHCHECK --interval=30s --timeout=3s --start-period=45s --retries=3 \
+  CMD curl -fsS http://127.0.0.1:3000/api/health/live || exit 1
+CMD ["./docker-start.sh"]

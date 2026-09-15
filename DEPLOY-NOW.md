@@ -2,6 +2,8 @@
 
 Site **502** = container ma kaykhdemch. Deploy **0-1s** = ma tbana image jdida.
 
+> **⚡ SARI3 (1 dqiqa):** chouf **[DEPLOY-FAST.md](./DEPLOY-FAST.md)** — Dockerfile.release (bla build f VPS)
+
 ---
 
 ## Tari9a A — GitHub + Dockerfile (ma khasskch GHCR)
