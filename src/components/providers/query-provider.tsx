@@ -11,7 +11,8 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
           queries: {
             staleTime: 5_000,
             retry: 1,
-            refetchOnWindowFocus: true,
+            refetchOnWindowFocus: false,
+            refetchIntervalInBackground: false,
           },
           mutations: {
             retry: 0,

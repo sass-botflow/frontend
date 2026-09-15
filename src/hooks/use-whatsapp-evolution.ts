@@ -6,6 +6,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { usePageVisible } from "@/hooks/use-page-visible";
 import {
   connectWhatsAppInstance,
   disconnectWhatsAppInstance,
@@ -28,6 +29,9 @@ import {
 export function useWhatsAppChannels() {
   return useQuery({
     queryKey: whatsappQueryKeys.channels(),
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+    refetchInterval: false,
     queryFn: async (): Promise<WhatsAppChannel[]> => {
       const response = await fetch("/api/channels", { cache: "no-store" });
       const body = (await response.json()) as {
@@ -120,6 +124,7 @@ export function useWhatsAppQrSession({
   onConnected,
 }: UseWhatsAppQrSessionOptions) {
   const queryClient = useQueryClient();
+  const pageVisible = usePageVisible();
   const [errorCode, setErrorCode] = useState<WhatsAppConnectErrorCode | null>(
     null,
   );
@@ -129,8 +134,11 @@ export function useWhatsAppQrSession({
   const statusQuery = useQuery({
     queryKey: whatsappQueryKeys.status(instanceId ?? "none"),
     queryFn: () => fetchWhatsAppStatus(instanceId!),
-    enabled: enabled && Boolean(instanceId),
+    enabled: enabled && Boolean(instanceId) && pageVisible,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: false,
     refetchInterval: (query) => {
+      if (!pageVisible) return false;
       const status = normalizeWhatsAppStatus(query.state.data?.status);
       if (status === "CONNECTED" || status === "DISCONNECTED") return false;
       return WHATSAPP_STATUS_POLL_MS;
@@ -139,14 +147,16 @@ export function useWhatsAppQrSession({
 
   const status = normalizeWhatsAppStatus(statusQuery.data?.status);
   const isConnected = status === "CONNECTED";
-  const shouldPollQr = enabled && Boolean(instanceId) && !isConnected;
+  const shouldPollQr = enabled && Boolean(instanceId) && !isConnected && pageVisible;
 
   const qrQuery = useQuery({
     queryKey: whatsappQueryKeys.qr(instanceId ?? "none"),
     queryFn: () => fetchWhatsAppQr(instanceId!),
     enabled: shouldPollQr,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: false,
     refetchInterval: (query) => {
-      if (!shouldPollQr) return false;
+      if (!shouldPollQr || !pageVisible) return false;
       const hasQr = Boolean(resolveQrImageSrc(query.state.data));
       return hasQr ? WHATSAPP_QR_POLL_MS : WHATSAPP_QR_POLL_MS_WAITING;
     },

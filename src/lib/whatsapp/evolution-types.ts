@@ -129,6 +129,6 @@ export function mapApiErrorToWhatsAppCode(message: string): WhatsAppConnectError
   return "UNKNOWN";
 }
 
-export const WHATSAPP_QR_POLL_MS = 2_000;
-export const WHATSAPP_QR_POLL_MS_WAITING = 1_500;
-export const WHATSAPP_STATUS_POLL_MS = 2_500;
+export const WHATSAPP_QR_POLL_MS = 3_000;
+export const WHATSAPP_QR_POLL_MS_WAITING = 2_500;
+export const WHATSAPP_STATUS_POLL_MS = 4_000;

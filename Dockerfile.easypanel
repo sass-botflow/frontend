@@ -73,6 +73,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
+ENV NODE_OPTIONS=--max-old-space-size=384
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
@@ -83,6 +84,6 @@ COPY scripts/docker-start.sh ./docker-start.sh
 RUN chown nextjs:nodejs /app/docker-start.sh && chmod +x /app/docker-start.sh
 USER nextjs
 EXPOSE 3000
-HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=5 \
-  CMD curl -f http://127.0.0.1:3000/api/health || exit 1
+HEALTHCHECK --interval=30s --timeout=3s --start-period=45s --retries=3 \
+  CMD curl -fsS http://127.0.0.1:3000/api/health/live || exit 1
 CMD ["./docker-start.sh"]

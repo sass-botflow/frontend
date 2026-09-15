@@ -96,6 +96,12 @@ function isOAuthCallbackPath(pathname: string) {
 }
 
 export default clerkMiddleware(async (auth, request) => {
+  const { pathname } = request.nextUrl;
+
+  if (pathname === "/api/health/live") {
+    return NextResponse.next();
+  }
+
   const apexRedirect = redirectApexToWww(request);
   if (apexRedirect) {
     return apexRedirect;
@@ -107,7 +113,10 @@ export default clerkMiddleware(async (auth, request) => {
   }
 
   const { userId } = await auth({ treatPendingAsSignedOut: false });
-  const { pathname } = request.nextUrl;
+
+  if (pathname === "/api/health") {
+    return NextResponse.next();
+  }
 
   if (userId && isAuthRoute(request) && !isOAuthCallbackPath(pathname)) {
     return NextResponse.redirect(new URL("/dashboard", request.url));

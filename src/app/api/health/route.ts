@@ -50,7 +50,7 @@ export async function GET() {
   try {
     const response = await fetch(getBackendApiUrl("/health"), {
       cache: "no-store",
-      signal: AbortSignal.timeout(8_000),
+      signal: AbortSignal.timeout(2_000),
     });
     backendReachable = response.ok;
     const contentType = response.headers.get("content-type") ?? "";
