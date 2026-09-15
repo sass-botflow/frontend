@@ -1,4 +1,6 @@
 # EasyPanel → frontend → Source → Build Arguments (copy-paste)
+# Only needed for Dockerfile / Dockerfile.easypanel — NOT for Dockerfile.release
+EASYPANEL_SWAP=1
 NEXT_PUBLIC_APP_URL=https://www.botflow.ink
 NEXT_PUBLIC_API_URL=https://api.botflow.ink
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...

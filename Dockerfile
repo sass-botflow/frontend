@@ -8,10 +8,13 @@ COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
 
 FROM node:20-alpine AS builder
-# Swap prevents OOM "Killed" during next build on 1-2GB EasyPanel VPS hosts.
+ARG EASYPANEL_SWAP=0
+# Optional swap for EasyPanel VPS builds (set EASYPANEL_SWAP=1 in Build Arguments).
 RUN apk add --no-cache libc6-compat openssl git && \
-    dd if=/dev/zero of=/swapfile bs=1M count=2048 status=none && \
-    chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+    if [ "$EASYPANEL_SWAP" = "1" ]; then \
+      dd if=/dev/zero of=/swapfile bs=1M count=2048 status=none && \
+      chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile || true; \
+    fi
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 
