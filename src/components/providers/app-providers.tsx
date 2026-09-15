@@ -6,7 +6,13 @@ import { ClerkLocaleProvider } from "@/components/providers/clerk-locale-provide
 import { QueryProvider } from "@/components/providers/query-provider";
 import { FloatingSupport } from "@/components/support/floating-support";
 
-export function AppProviders({ children }: { children: React.ReactNode }) {
+export function AppProviders({
+  children,
+  clerkPublishableKey,
+}: {
+  children: React.ReactNode;
+  clerkPublishableKey?: string;
+}) {
   return (
     <ThemeProvider
       attribute="class"
@@ -16,7 +22,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     >
       <QueryProvider>
         <LocaleProvider>
-          <ClerkLocaleProvider>
+          <ClerkLocaleProvider publishableKey={clerkPublishableKey}>
             {children}
             <FloatingSupport />
           </ClerkLocaleProvider>

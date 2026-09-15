@@ -1,6 +1,7 @@
 import { clerkMiddleware, createRouteMatcher, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import type { NextFetchEvent, NextRequest } from "next/server";
+import { isClerkConfigured } from "@/lib/clerk-config";
 import { defaultLocale, isValidLocale } from "@/lib/i18n/config";
 import { LEGAL_PATHS } from "@/lib/legal/constants";
 import {
@@ -99,18 +100,18 @@ function isHealthProbe(pathname: string) {
   return pathname === "/api/health/live" || pathname === "/api/health";
 }
 
+function routeNeedsClerk(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  return (
+    isProtectedRoute(request) ||
+    isOnboardingRoute(request) ||
+    isAuthRoute(request) ||
+    pathname.startsWith("/__clerk")
+  );
+}
+
 const runClerkMiddleware = clerkMiddleware(async (auth, request) => {
   const { pathname } = request.nextUrl;
-
-  const apexRedirect = redirectApexToWww(request);
-  if (apexRedirect) {
-    return apexRedirect;
-  }
-
-  const localeResponse = handleLocaleRedirect(request);
-  if (localeResponse) {
-    return localeResponse;
-  }
 
   const { userId } = await auth({ treatPendingAsSignedOut: false });
 
@@ -131,9 +132,6 @@ const runClerkMiddleware = clerkMiddleware(async (auth, request) => {
     return NextResponse.next();
   }
 
-  // Match sign-in page: pending Clerk sessions still count as signed in.
-  // auth.protect() defaults treatPendingAsSignedOut=true and caused a loop
-  // (sign-in → dashboard → sign-in) with "You're already signed in".
   if (isProtectedRoute(request) && !userId) {
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
@@ -142,15 +140,38 @@ const runClerkMiddleware = clerkMiddleware(async (auth, request) => {
 });
 
 export default function middleware(request: NextRequest, event: NextFetchEvent) {
-  if (isHealthProbe(request.nextUrl.pathname)) {
+  const { pathname } = request.nextUrl;
+
+  if (isHealthProbe(pathname)) {
     return NextResponse.next();
   }
+
+  const apexRedirect = redirectApexToWww(request);
+  if (apexRedirect) {
+    return apexRedirect;
+  }
+
+  const localeResponse = handleLocaleRedirect(request);
+  if (localeResponse) {
+    return localeResponse;
+  }
+
+  if (!routeNeedsClerk(request)) {
+    return NextResponse.next();
+  }
+
+  if (!isClerkConfigured()) {
+    if (isProtectedRoute(request) || isOnboardingRoute(request)) {
+      return NextResponse.redirect(new URL("/sign-in", request.url));
+    }
+    return NextResponse.next();
+  }
+
   return runClerkMiddleware(request, event);
 }
 
 export const config = {
   matcher: [
-    // Exclude /api/health* so Docker healthcheck works even if Clerk env is missing.
     "/((?!_next|api/health|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     "/__clerk/:path*",
   ],
