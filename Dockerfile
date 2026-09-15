@@ -43,7 +43,7 @@ ENV NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=$NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL
 ENV NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=$NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL
 ENV NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=$NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL
 ENV NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=$NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL
-ENV NODE_OPTIONS=--max-old-space-size=640
+ENV NODE_OPTIONS=--max-old-space-size=512
 ENV GENERATE_SOURCEMAP=false
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV DOCKER_BUILD=1
@@ -65,7 +65,7 @@ RUN set -e; \
     echo "Build version: $V at $BT"; \
     rm -rf .git node_modules/.cache 2>/dev/null || true
 
-RUN npm run build
+RUN npm run build:easypanel
 
 FROM node:20-alpine AS runner
 RUN apk add --no-cache libc6-compat curl openssl
@@ -73,7 +73,6 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
-ENV NODE_OPTIONS=--max-old-space-size=384
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
