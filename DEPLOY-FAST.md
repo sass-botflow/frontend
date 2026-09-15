@@ -4,10 +4,9 @@
 
 ## Dir hadchi daba f EasyPanel
 
-1. **frontend** → **Source**
-2. Badel **Dockerfile** → **`Dockerfile.release`** (mashi `Dockerfile`)
-3. **Save**
-4. **Deploy** → stana **1-2 d9aya** (download ghir, ma kaybuildich)
+1. **frontend** → **Source** → Dockerfile = **`Dockerfile`** (default daba — sari3)
+2. **Environment** → Clerk keys (see `easypanel.env.example`)
+3. **Deploy** → stana **1-2 d9aya** (download ghir, ma kaybuildich)
 
 Logs khasshom:
 ```
