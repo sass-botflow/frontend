@@ -31,8 +31,8 @@ function getDeployHint(version: string, buildTime: string | null): string | null
   }
   if (!buildTime) return null;
   const ageHours = (Date.now() - new Date(buildTime).getTime()) / 3_600_000;
-  if (ageHours > 6) {
-    return `Build 9dim (${Math.floor(ageHours)}h). Deploy f 2-3s = restart ghir. EasyPanel → Source = GitHub → main → Dockerfile → Deploy (stana 5-10 d9aya, ma tklikich Cancel).`;
+  if (ageHours > 1) {
+    return `Build 9dim (${Math.floor(ageHours)}h). Deploy <30s = restart bla bundle jdid. EasyPanel → frontend → Stop → Start (wla Redeploy). Logs: "Downloading latest bundle". Verify: /api/health version = dernier commit main.`;
   }
   return null;
 }

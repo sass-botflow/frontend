@@ -1,4 +1,5 @@
-# EasyPanel — tiny image; app bundle downloads on EVERY container start (always latest).
+# EasyPanel — tiny image; bundle downloads on container start via entrypoint.
+# Deploy <30s = restart only. For new code: EasyPanel → Stop → Start (check logs for bundle download).
 # EasyPanel → Source → GitHub → main → Dockerfile → port 3000
 
 FROM node:20-alpine AS runner
