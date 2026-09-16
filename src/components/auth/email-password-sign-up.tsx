@@ -2,51 +2,44 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useSignUp } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import { useLocale } from "@/components/providers/locale-provider";
 import { GoogleAuthButton } from "@/components/auth/google-auth-button";
-import { clerkErrorMessage, finishAuthAndRedirect } from "@/lib/auth-navigate";
+import { authClient } from "@/lib/auth-client";
+import { getAuthErrorMessage } from "@/lib/auth/errors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export function EmailPasswordSignUp() {
+  const router = useRouter();
   const { t } = useLocale();
-  const { signUp, fetchStatus } = useSignUp();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-
-  const loading = fetchStatus === "fetching";
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setLoading(true);
 
-    const [firstName, ...rest] = name.trim().split(" ");
-    const lastName = rest.join(" ") || undefined;
-
-    const { error: passwordError } = await signUp.password({
-      emailAddress: email.trim(),
+    const { error: signUpError } = await authClient.signUp.email({
+      name: name.trim(),
+      email: email.trim(),
       password,
-      firstName,
-      lastName,
+      callbackURL: `${window.location.origin}/verify-email?status=verified`,
     });
 
-    if (passwordError) {
-      setError(clerkErrorMessage(passwordError, t.auth.signUpError));
+    setLoading(false);
+
+    if (signUpError) {
+      setError(getAuthErrorMessage(signUpError, t.auth.signUpError));
       return;
     }
 
-    const { error: finalizeError } = await signUp.finalize();
-
-    if (finalizeError) {
-      setError(clerkErrorMessage(finalizeError, t.auth.signUpError));
-      return;
-    }
-
-    await finishAuthAndRedirect("/dashboard");
+    router.push(`/verify-email?email=${encodeURIComponent(email.trim())}`);
   }
 
   return (

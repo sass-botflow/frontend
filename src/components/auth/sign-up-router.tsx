@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { EmailPasswordSignUp } from "@/components/auth/email-password-sign-up";
 import { OAuthCallback } from "@/components/auth/oauth-callback";
 import { AuthRedirectIfSignedIn } from "@/components/auth/auth-redirect-if-signed-in";
+import { BetterAuthRedirectIfSignedIn } from "@/components/auth/better-auth-redirect-if-signed-in";
 
 const SSO_PATHS = ["/sign-up/sso-callback"];
 
@@ -32,14 +33,18 @@ export function SignUpRouter() {
   if (pathname !== "/sign-up") {
     return (
       <AuthRedirectIfSignedIn>
-        <SignUpSubpathRedirect />
+        <BetterAuthRedirectIfSignedIn>
+          <SignUpSubpathRedirect />
+        </BetterAuthRedirectIfSignedIn>
       </AuthRedirectIfSignedIn>
     );
   }
 
   return (
     <AuthRedirectIfSignedIn>
-      <EmailPasswordSignUp />
+      <BetterAuthRedirectIfSignedIn>
+        <EmailPasswordSignUp />
+      </BetterAuthRedirectIfSignedIn>
     </AuthRedirectIfSignedIn>
   );
 }

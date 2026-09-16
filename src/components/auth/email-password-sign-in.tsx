@@ -3,10 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useSignIn } from "@clerk/nextjs";
 import { useLocale } from "@/components/providers/locale-provider";
 import { GoogleAuthButton } from "@/components/auth/google-auth-button";
-import { clerkErrorMessage, finishAuthAndRedirect } from "@/lib/auth-navigate";
+import { authClient } from "@/lib/auth-client";
+import { getAuthErrorMessage } from "@/lib/auth/errors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,67 +14,36 @@ import { Label } from "@/components/ui/label";
 export function EmailPasswordSignIn() {
   const router = useRouter();
   const { t } = useLocale();
-  const { signIn, fetchStatus } = useSignIn();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-
-  const loading = fetchStatus === "fetching";
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setLoading(true);
 
-    const { error: passwordError } = await signIn.password({
-      emailAddress: email.trim(),
+    const { error: signInError } = await authClient.signIn.email({
+      email: email.trim(),
       password,
+      rememberMe: true,
+      callbackURL: `${window.location.origin}/dashboard`,
     });
 
-    if (passwordError) {
-      const code =
-        "code" in passwordError
-          ? String((passwordError as { code?: string }).code)
-          : "";
-      const isGoogleOnly =
-        code === "strategy_for_user_invalid" ||
-        passwordError.message?.toLowerCase().includes("google");
+    setLoading(false);
 
-      setError(
-        isGoogleOnly
-          ? t.auth.googleOnlyAccount
-          : clerkErrorMessage(passwordError, t.auth.signInError),
-      );
+    if (signInError) {
+      if (signInError.status === 403) {
+        router.push(`/verify-email?email=${encodeURIComponent(email.trim())}`);
+        return;
+      }
+
+      setError(getAuthErrorMessage(signInError, t.auth.signInError));
       return;
     }
 
-    if (signIn.status === "needs_second_factor") {
-      router.push("/sign-in/factor-one");
-      return;
-    }
-
-    if (signIn.status === "needs_new_password") {
-      router.push("/sign-in/reset-password");
-      return;
-    }
-
-    if (signIn.status === "needs_client_trust") {
-      router.push("/sign-in/factor-two");
-      return;
-    }
-
-    if (signIn.status !== "complete") {
-      setError(t.auth.signInError);
-      return;
-    }
-
-    const { error: finalizeError } = await signIn.finalize();
-
-    if (finalizeError) {
-      setError(clerkErrorMessage(finalizeError, t.auth.signInError));
-      return;
-    }
-
-    await finishAuthAndRedirect("/dashboard");
+    window.location.href = "/dashboard";
   }
 
   return (
@@ -105,7 +74,7 @@ export function EmailPasswordSignIn() {
           <div className="flex items-center justify-between">
             <Label htmlFor="password">{t.auth.password}</Label>
             <Link
-              href="/sign-in/forgot-password"
+              href="/forgot-password"
               className="text-sm font-medium text-primary hover:text-primary/90"
             >
               {t.auth.forgotPassword}

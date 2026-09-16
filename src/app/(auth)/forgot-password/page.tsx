@@ -1,11 +1,11 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { SignUpRouter } from "@/components/auth/sign-up-router";
+import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 import { getBetterAuthSession } from "@/lib/auth-server";
 
-export const metadata = { title: "Create account" };
+export const metadata = { title: "Forgot password" };
 
-export default async function SignUpPage() {
+export default async function ForgotPasswordPage() {
   const { userId } = await auth({ treatPendingAsSignedOut: false });
   const session = await getBetterAuthSession();
 
@@ -13,5 +13,5 @@ export default async function SignUpPage() {
     redirect("/dashboard");
   }
 
-  return <SignUpRouter />;
+  return <ForgotPasswordForm />;
 }
