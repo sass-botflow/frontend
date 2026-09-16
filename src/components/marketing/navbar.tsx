@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Menu, Moon, Sun, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { BotFlowLogo } from "@/components/brand/botflow-logo";
 import { AuthNavActions } from "@/components/auth/auth-nav-actions";
@@ -15,8 +15,15 @@ import { cn } from "@/lib/utils";
 export function MarketingNavbar() {
   const { theme, setTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { t } = useLocale();
   const lp = useLocalizedPath();
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const links = [
     { href: "#how-it-works", label: t.nav.howItWorks },
@@ -30,19 +37,24 @@ export function MarketingNavbar() {
     <motion.header
       initial={{ y: -16, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className="fixed inset-x-0 top-0 z-50 border-b border-border/40 bg-background/70 backdrop-blur-xl"
+      className={cn(
+        "fixed inset-x-0 top-0 z-50 transition-all duration-300",
+        scrolled
+          ? "border-b border-border/50 bg-background/80 shadow-sm backdrop-blur-2xl"
+          : "border-b border-transparent bg-transparent backdrop-blur-md",
+      )}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <Link href={lp("/")} className="transition-opacity hover:opacity-90">
           <BotFlowLogo size="lg" />
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex">
+        <nav className="hidden items-center gap-1 rounded-full border border-border/40 bg-card/30 px-2 py-1 backdrop-blur-xl md:flex">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="rounded-full px-4 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
             >
               {link.label}
             </Link>
